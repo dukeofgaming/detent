@@ -74,6 +74,31 @@ Create `src/bpmn/types.rs` with:
 - `SequenceFlow`
 - Common attributes (id, name, incoming, outgoing)
 
+## Alternative Approaches Investigated
+
+### XSD → Protobuf → Rust (2026-01-20)
+
+After the xsd-parser failure, we investigated using Protobuf as an intermediate:
+1. Convert XSD to .proto files
+2. Use `prost-build` to generate Rust types from .proto
+
+**Research findings:**
+- GitHub search for "xsd to protobuf" returned only 2 results, both doing the
+  *reverse* direction (proto→xsd), not xsd→proto
+- Tools like `xsdata` (Python) can generate code from XSD but don't output .proto
+- No mature, maintained XSD→Proto converter exists
+- Would require manual Proto schema creation anyway
+
+**Conclusion:** XSD→Proto path is not viable. Continue with handcrafted types.
+
+### XSD → JSON Schema (Future Option)
+
+If runtime validation of YAML frontmatter is needed:
+- Use `xsdata` (Python) with JSON output format to generate JSON Schema from XSD
+- Validate YAML against JSON Schema using a Rust crate like `jsonschema`
+- This could be a pre-commit hook or test-time validation, not build-time codegen
+
 ## Related ADRs
-- ADR-001: XSD as Source of Truth (partially superseded)
+- ADR-001: XSD as Source of Truth (partially superseded for codegen; XSD remains
+  authoritative for validation)
 - ADR-003: Rust Dependencies (updated to remove build-time xsd-parser)

@@ -2,7 +2,7 @@
 //!
 //! These tests validate that we can parse real BPMN files from the test fixtures.
 
-use detent::bpmn::{parse_bpmn, Definitions};
+use detent::bpmn::parse_bpmn;
 use std::fs;
 
 /// Test parsing the hello-world.bpmn2 file

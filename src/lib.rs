@@ -7,7 +7,3 @@
 
 pub mod bpmn;
 pub mod mdx;
-
-pub fn hello() -> &'static str {
-    "Hello, world!"
-}
