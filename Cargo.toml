@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-serde_yaml = "0.9.34"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+quick-xml = { version = "0.37", features = ["serialize"] }
+
+[dev-dependencies]
+# For XSD validation in tests (optional, not WASM-compatible)
+# xmllint can be used via CLI for validation
