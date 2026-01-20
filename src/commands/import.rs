@@ -1,11 +1,14 @@
 //! Import command implementation - BPMN to MDX conversion
+//!
+//! Converts BPMN XML files to MDX files with YAML frontmatter.
+//! The frontmatter uses the exact same structure as BPMN types.
 
 use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use detent::bpmn::{parse_bpmn, Process, SequenceFlow};
-use detent::mdx::{FlowFrontmatter, NodeFrontmatter, ProcessFrontmatter};
+use detent::bpmn::parse_bpmn;
+use serde::Serialize;
 
 /// Run the import command
 pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
@@ -45,27 +48,21 @@ pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
         }
     };
 
-    // Generate MDX files
+    // Generate MDX files for individual flow elements
+    // (Process metadata is not duplicated - the individual element files are the canonical definitions)
     let mut generated_count = 0;
 
-    // Generate process MDX
-    if let Err(e) = generate_process_mdx(process, &output_directory) {
-        eprintln!("Failed to generate process MDX: {}", e);
-        return ExitCode::FAILURE;
-    }
-    generated_count += 1;
-
     // Generate node MDX files
-    for start_event in &process.start_events {
-        if let Err(e) = generate_start_event_mdx(start_event, &output_directory) {
+    for event in &process.start_events {
+        if let Err(e) = write_mdx(&event.id, "bpmn:startEvent", event, &output_directory) {
             eprintln!("Failed to generate startEvent MDX: {}", e);
             return ExitCode::FAILURE;
         }
         generated_count += 1;
     }
 
-    for end_event in &process.end_events {
-        if let Err(e) = generate_end_event_mdx(end_event, &output_directory) {
+    for event in &process.end_events {
+        if let Err(e) = write_mdx(&event.id, "bpmn:endEvent", event, &output_directory) {
             eprintln!("Failed to generate endEvent MDX: {}", e);
             return ExitCode::FAILURE;
         }
@@ -73,8 +70,40 @@ pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
     }
 
     for task in &process.tasks {
-        if let Err(e) = generate_task_mdx(task, &output_directory) {
+        if let Err(e) = write_mdx(&task.id, "bpmn:task", task, &output_directory) {
             eprintln!("Failed to generate task MDX: {}", e);
+            return ExitCode::FAILURE;
+        }
+        generated_count += 1;
+    }
+
+    for task in &process.service_tasks {
+        if let Err(e) = write_mdx(&task.id, "bpmn:serviceTask", task, &output_directory) {
+            eprintln!("Failed to generate serviceTask MDX: {}", e);
+            return ExitCode::FAILURE;
+        }
+        generated_count += 1;
+    }
+
+    for task in &process.script_tasks {
+        if let Err(e) = write_mdx(&task.id, "bpmn:scriptTask", task, &output_directory) {
+            eprintln!("Failed to generate scriptTask MDX: {}", e);
+            return ExitCode::FAILURE;
+        }
+        generated_count += 1;
+    }
+
+    for gateway in &process.exclusive_gateways {
+        if let Err(e) = write_mdx(&gateway.id, "bpmn:exclusiveGateway", gateway, &output_directory) {
+            eprintln!("Failed to generate exclusiveGateway MDX: {}", e);
+            return ExitCode::FAILURE;
+        }
+        generated_count += 1;
+    }
+
+    for gateway in &process.parallel_gateways {
+        if let Err(e) = write_mdx(&gateway.id, "bpmn:parallelGateway", gateway, &output_directory) {
+            eprintln!("Failed to generate parallelGateway MDX: {}", e);
             return ExitCode::FAILURE;
         }
         generated_count += 1;
@@ -82,7 +111,7 @@ pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
 
     // Generate sequence flow MDX files
     for flow in &process.sequence_flows {
-        if let Err(e) = generate_sequence_flow_mdx(flow, &output_directory) {
+        if let Err(e) = write_mdx(&flow.id, "bpmn:sequenceFlow", flow, &output_directory) {
             eprintln!("Failed to generate sequenceFlow MDX: {}", e);
             return ExitCode::FAILURE;
         }
@@ -97,161 +126,46 @@ pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
     ExitCode::SUCCESS
 }
 
-/// Generate process MDX file
-fn generate_process_mdx(process: &Process, output_dir: &PathBuf) -> Result<(), std::io::Error> {
-    let frontmatter = ProcessFrontmatter {
-        id: process.id.clone(),
-        process_type: "bpmn:process".to_string(),
-        name: process.name.clone(),
-        is_executable: process.is_executable,
-        process_type_attr: process.process_type.clone(),
-        documentation: process.documentation.as_ref().map(|d| d.text.clone()),
-        flow_elements: collect_flow_element_ids(process),
-    };
-
-    let yaml = serde_yaml::to_string(&frontmatter).map_err(|e| {
-        std::io::Error::new(std::io::ErrorKind::Other, format!("YAML error: {}", e))
-    })?;
-
-    let mdx_content = format!("---\n{}---\n", yaml);
-
-    let file_path = output_dir.join("_process.mdx");
-    fs::write(file_path, mdx_content)
+/// Clean YAML output by stripping @ and $ prefixes that come from quick-xml conventions
+/// Also removes unnecessary quotes around keys
+fn clean_yaml_for_mdx(yaml: &str) -> String {
+    use regex::Regex;
+    
+    // Pattern to match quoted keys with @ prefix: '@key': or "@key":
+    let re_single_at = Regex::new(r"'@([a-zA-Z_][a-zA-Z0-9_]*)':").unwrap();
+    let re_double_at = Regex::new(r#""@([a-zA-Z_][a-zA-Z0-9_]*)":"#).unwrap();
+    
+    // Pattern for $ prefix (quoted and unquoted)
+    let re_single_dollar = Regex::new(r"'\$([a-zA-Z_][a-zA-Z0-9_]*)':").unwrap();
+    let re_double_dollar = Regex::new(r#""\$([a-zA-Z_][a-zA-Z0-9_]*)":"#).unwrap();
+    // Also handle unquoted $text: at start of line or after whitespace
+    let re_unquoted_dollar = Regex::new(r"(\s)\$([a-zA-Z_][a-zA-Z0-9_]*):").unwrap();
+    
+    let result = re_single_at.replace_all(yaml, "$1:");
+    let result = re_double_at.replace_all(&result, "$1:");
+    let result = re_single_dollar.replace_all(&result, "$1:");
+    let result = re_double_dollar.replace_all(&result, "$1:");
+    let result = re_unquoted_dollar.replace_all(&result, "$1$2:");
+    
+    result.to_string()
 }
 
-/// Collect all flow element IDs for the process frontmatter
-fn collect_flow_element_ids(process: &Process) -> Vec<String> {
-    let mut ids = Vec::new();
-
-    for e in &process.start_events {
-        ids.push(e.id.clone());
-    }
-    for e in &process.tasks {
-        ids.push(e.id.clone());
-    }
-    for e in &process.end_events {
-        ids.push(e.id.clone());
-    }
-    for e in &process.sequence_flows {
-        ids.push(e.id.clone());
-    }
-
-    ids
-}
-
-/// Generate startEvent MDX file
-fn generate_start_event_mdx(
-    event: &detent::bpmn::StartEvent,
-    output_dir: &PathBuf,
-) -> Result<(), std::io::Error> {
-    let frontmatter = NodeFrontmatter {
-        id: event.id.clone(),
-        node_type: "bpmn:startEvent".to_string(),
-        name: event.name.clone(),
-        incoming: vec![],
-        outgoing: event.outgoing.clone(),
-        documentation: event.documentation.as_ref().map(|d| d.text.clone()),
-        implementation: None,
-        service_ref: None,
-        script_format: None,
-        script: None,
-        gateway_direction: None,
-        default: None,
-        conditions: None,
-        io_spec: None,
-        retry: None,
-    };
-
-    write_node_mdx(&event.id, &frontmatter, output_dir)
-}
-
-/// Generate endEvent MDX file
-fn generate_end_event_mdx(
-    event: &detent::bpmn::EndEvent,
-    output_dir: &PathBuf,
-) -> Result<(), std::io::Error> {
-    let frontmatter = NodeFrontmatter {
-        id: event.id.clone(),
-        node_type: "bpmn:endEvent".to_string(),
-        name: event.name.clone(),
-        incoming: event.incoming.clone(),
-        outgoing: vec![],
-        documentation: event.documentation.as_ref().map(|d| d.text.clone()),
-        implementation: None,
-        service_ref: None,
-        script_format: None,
-        script: None,
-        gateway_direction: None,
-        default: None,
-        conditions: None,
-        io_spec: None,
-        retry: None,
-    };
-
-    write_node_mdx(&event.id, &frontmatter, output_dir)
-}
-
-/// Generate task MDX file
-fn generate_task_mdx(
-    task: &detent::bpmn::Task,
-    output_dir: &PathBuf,
-) -> Result<(), std::io::Error> {
-    let frontmatter = NodeFrontmatter {
-        id: task.id.clone(),
-        node_type: "bpmn:task".to_string(),
-        name: task.name.clone(),
-        incoming: task.incoming.clone(),
-        outgoing: task.outgoing.clone(),
-        documentation: task.documentation.as_ref().map(|d| d.text.clone()),
-        implementation: None,
-        service_ref: None,
-        script_format: None,
-        script: None,
-        gateway_direction: None,
-        default: None,
-        conditions: None,
-        io_spec: None,
-        retry: None,
-    };
-
-    write_node_mdx(&task.id, &frontmatter, output_dir)
-}
-
-/// Generate sequenceFlow MDX file
-fn generate_sequence_flow_mdx(
-    flow: &SequenceFlow,
-    output_dir: &PathBuf,
-) -> Result<(), std::io::Error> {
-    let frontmatter = FlowFrontmatter {
-        id: flow.id.clone(),
-        flow_type: "bpmn:sequenceFlow".to_string(),
-        name: flow.name.clone(),
-        source_ref: flow.source_ref.clone(),
-        target_ref: flow.target_ref.clone(),
-        condition_expression: flow.condition_expression.as_ref().map(|c| c.expression.clone()),
-    };
-
-    let yaml = serde_yaml::to_string(&frontmatter).map_err(|e| {
-        std::io::Error::new(std::io::ErrorKind::Other, format!("YAML error: {}", e))
-    })?;
-
-    let mdx_content = format!("---\n{}---\n", yaml);
-
-    let file_path = output_dir.join(format!("{}.mdx", flow.id));
-    fs::write(file_path, mdx_content)
-}
-
-/// Write a node MDX file
-fn write_node_mdx(
+/// Write any serializable BPMN type as MDX frontmatter
+fn write_mdx<T: Serialize>(
     id: &str,
-    frontmatter: &NodeFrontmatter,
+    bpmn_type: &str,
+    data: &T,
     output_dir: &PathBuf,
 ) -> Result<(), std::io::Error> {
-    let yaml = serde_yaml::to_string(frontmatter).map_err(|e| {
+    let yaml = serde_yaml::to_string(data).map_err(|e| {
         std::io::Error::new(std::io::ErrorKind::Other, format!("YAML error: {}", e))
     })?;
 
-    let mdx_content = format!("---\n{}---\n", yaml);
+    // Clean the YAML to remove @ and $ prefixes
+    let clean_yaml = clean_yaml_for_mdx(&yaml);
+
+    // Add type field at the beginning (after the first line which may be an id)
+    let mdx_content = format!("---\ntype: {}\n{}---\n", bpmn_type, clean_yaml);
 
     let file_path = output_dir.join(format!("{}.mdx", id));
     fs::write(file_path, mdx_content)

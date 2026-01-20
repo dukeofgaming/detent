@@ -8,16 +8,16 @@ use super::{ConditionExpression, Documentation};
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "sequenceFlow")]
 pub struct SequenceFlow {
-    #[serde(rename = "@id")]
+    #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    #[serde(rename = "@sourceRef")]
+    #[serde(rename = "@sourceRef", alias = "sourceRef")]
     pub source_ref: String,
 
-    #[serde(rename = "@targetRef")]
+    #[serde(rename = "@targetRef", alias = "targetRef")]
     pub target_ref: String,
 
     #[serde(rename = "conditionExpression", skip_serializing_if = "Option::is_none")]

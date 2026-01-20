@@ -17,13 +17,13 @@ fn detent() -> Command {
 const REFERENCE_DIR: &str = "tests/assets/processes/hello-world";
 
 /// Expected MDX files (excluding the BPMN source file)
+/// Individual flow elements only - no process container file needed
 const EXPECTED_MDX_FILES: &[&str] = &[
     "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx", // startEvent
     "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx", // task
     "_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx", // endEvent
     "_4083739B-66F0-4B92-A348-A37DF3B29083.mdx", // sequenceFlow
     "_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx", // sequenceFlow
-    "_process.mdx",                              // process
 ];
 
 #[test]

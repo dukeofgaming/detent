@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use detent::bpmn::parse_bpmn;
+use detent::bpmn::{parse_bpmn, StartEvent, EndEvent, Task, SequenceFlow, Process};
 use detent::mdx::MdxFile;
 
 /// Run the validate command
@@ -65,7 +65,7 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
 }
 
 /// Validate a BPMN process
-fn validate_process(process: &detent::bpmn::Process) -> Result<(), String> {
+fn validate_process(process: &Process) -> Result<(), String> {
     if process.id.is_empty() {
         return Err("Process must have an id".to_string());
     }
@@ -91,67 +91,77 @@ fn validate_mdx(path: &PathBuf) -> Result<(), String> {
     let mdx = MdxFile::parse(&content)
         .map_err(|e| format!("Invalid MDX: {}", e))?;
 
-    // Try to parse as node frontmatter first
-    if let Ok(node) = mdx.parse_node_frontmatter() {
-        validate_node_frontmatter(&node)?;
-        return Ok(());
+    // Try to parse frontmatter as various BPMN types
+    // Start with process (for _process.mdx files)
+    if let Ok(process) = mdx.parse_process() {
+        return validate_process_frontmatter(&process);
     }
 
-    // Try to parse as flow frontmatter
-    if let Ok(flow) = mdx.parse_flow_frontmatter() {
-        validate_flow_frontmatter(&flow)?;
-        return Ok(());
+    // Try as start event
+    if let Ok(event) = mdx.parse_start_event() {
+        return validate_start_event(&event);
     }
 
-    // Try to parse as process frontmatter
-    if let Ok(process) = mdx.parse_process_frontmatter() {
-        validate_process_frontmatter(&process)?;
-        return Ok(());
+    // Try as end event
+    if let Ok(event) = mdx.parse_end_event() {
+        return validate_end_event(&event);
     }
 
-    Err("Could not parse frontmatter as node, flow, or process".to_string())
+    // Try as task
+    if let Ok(task) = mdx.parse_task() {
+        return validate_task(&task);
+    }
+
+    // Try as sequence flow
+    if let Ok(flow) = mdx.parse_sequence_flow() {
+        return validate_sequence_flow(&flow);
+    }
+
+    Err("Could not parse frontmatter as a valid BPMN type".to_string())
 }
 
-/// Validate node frontmatter
-fn validate_node_frontmatter(node: &detent::mdx::NodeFrontmatter) -> Result<(), String> {
-    if node.id.is_empty() {
-        return Err("Node must have an id".to_string());
+/// Validate a start event
+fn validate_start_event(event: &StartEvent) -> Result<(), String> {
+    if event.id.is_empty() {
+        return Err("StartEvent must have an id".to_string());
     }
-
-    if node.node_type.is_empty() {
-        return Err("Node must have a type".to_string());
-    }
-
-    // Validate type prefix
-    if !node.node_type.starts_with("bpmn:") {
-        return Err(format!("Invalid node type: {} (must start with 'bpmn:')", node.node_type));
-    }
-
     Ok(())
 }
 
-/// Validate flow frontmatter
-fn validate_flow_frontmatter(flow: &detent::mdx::FlowFrontmatter) -> Result<(), String> {
+/// Validate an end event
+fn validate_end_event(event: &EndEvent) -> Result<(), String> {
+    if event.id.is_empty() {
+        return Err("EndEvent must have an id".to_string());
+    }
+    Ok(())
+}
+
+/// Validate a task
+fn validate_task(task: &Task) -> Result<(), String> {
+    if task.id.is_empty() {
+        return Err("Task must have an id".to_string());
+    }
+    Ok(())
+}
+
+/// Validate a sequence flow
+fn validate_sequence_flow(flow: &SequenceFlow) -> Result<(), String> {
     if flow.id.is_empty() {
-        return Err("Flow must have an id".to_string());
+        return Err("SequenceFlow must have an id".to_string());
     }
-
     if flow.source_ref.is_empty() {
-        return Err("Flow must have a sourceRef".to_string());
+        return Err("SequenceFlow must have a sourceRef".to_string());
     }
-
     if flow.target_ref.is_empty() {
-        return Err("Flow must have a targetRef".to_string());
+        return Err("SequenceFlow must have a targetRef".to_string());
     }
-
     Ok(())
 }
 
 /// Validate process frontmatter
-fn validate_process_frontmatter(process: &detent::mdx::ProcessFrontmatter) -> Result<(), String> {
+fn validate_process_frontmatter(process: &Process) -> Result<(), String> {
     if process.id.is_empty() {
         return Err("Process must have an id".to_string());
     }
-
     Ok(())
 }

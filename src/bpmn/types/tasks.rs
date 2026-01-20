@@ -8,10 +8,10 @@ use super::Documentation;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "task")]
 pub struct Task {
-    #[serde(rename = "@id")]
+    #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
     #[serde(rename = "incoming", default)]
@@ -28,13 +28,13 @@ pub struct Task {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "serviceTask")]
 pub struct ServiceTask {
-    #[serde(rename = "@id")]
+    #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    #[serde(rename = "@implementation", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@implementation", alias = "implementation", skip_serializing_if = "Option::is_none")]
     pub implementation: Option<String>,
 
     #[serde(rename = "incoming", default)]
@@ -51,13 +51,13 @@ pub struct ServiceTask {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "scriptTask")]
 pub struct ScriptTask {
-    #[serde(rename = "@id")]
+    #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    #[serde(rename = "@scriptFormat", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@scriptFormat", alias = "scriptFormat", skip_serializing_if = "Option::is_none")]
     pub script_format: Option<String>,
 
     #[serde(rename = "incoming", default)]

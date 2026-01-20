@@ -8,16 +8,16 @@ use super::Documentation;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "exclusiveGateway")]
 pub struct ExclusiveGateway {
-    #[serde(rename = "@id")]
+    #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    #[serde(rename = "@gatewayDirection", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@gatewayDirection", alias = "gatewayDirection", skip_serializing_if = "Option::is_none")]
     pub gateway_direction: Option<String>,
 
-    #[serde(rename = "@default", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@default", alias = "default", skip_serializing_if = "Option::is_none")]
     pub default: Option<String>,
 
     #[serde(rename = "incoming", default)]
@@ -34,13 +34,13 @@ pub struct ExclusiveGateway {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "parallelGateway")]
 pub struct ParallelGateway {
-    #[serde(rename = "@id")]
+    #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    #[serde(rename = "@gatewayDirection", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@gatewayDirection", alias = "gatewayDirection", skip_serializing_if = "Option::is_none")]
     pub gateway_direction: Option<String>,
 
     #[serde(rename = "incoming", default)]

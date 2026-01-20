@@ -71,16 +71,6 @@ fn test_validate_mdx_sequence_flow() {
 }
 
 #[test]
-fn test_validate_mdx_process() {
-    detent()
-        .arg("validate")
-        .arg("tests/assets/processes/hello-world/_process.mdx")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("✓"));
-}
-
-#[test]
 fn test_validate_multiple_files() {
     detent()
         .arg("validate")
@@ -105,7 +95,7 @@ fn test_validate_missing_file() {
 fn test_validate_unknown_extension() {
     detent()
         .arg("validate")
-        .arg("tests/assets/processes/hello-world/_process.mdx")
+        .arg("tests/assets/processes/hello-world/_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")
         .arg("Cargo.toml")
         .assert()
         .failure()
