@@ -28,8 +28,11 @@ const EXPECTED_MDX_FILES: &[&str] = &[
 
 #[test]
 fn test_import_help() {
-    detent()
-        .arg("import")
+    // Arrange
+    let mut cmd = detent();
+
+    // Act & Assert
+    cmd.arg("import")
         .arg("--help")
         .assert()
         .success()
@@ -38,10 +41,11 @@ fn test_import_help() {
 
 #[test]
 fn test_import_generates_all_expected_files() {
+    // Arrange
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let output_dir = temp_dir.path();
 
-    // Run import command
+    // Act
     detent()
         .arg("import")
         .arg("tests/assets/processes/hello-world/hello-world.bpmn2")
@@ -50,7 +54,7 @@ fn test_import_generates_all_expected_files() {
         .assert()
         .success();
 
-    // Check that all expected files were generated
+    // Assert
     for file_name in EXPECTED_MDX_FILES {
         let generated_path = output_dir.join(file_name);
         assert!(
@@ -60,7 +64,6 @@ fn test_import_generates_all_expected_files() {
         );
     }
 
-    // Check that no extra files were generated
     let generated_files: Vec<_> = fs::read_dir(output_dir)
         .expect("Failed to read output dir")
         .filter_map(|e| e.ok())
@@ -78,10 +81,11 @@ fn test_import_generates_all_expected_files() {
 
 #[test]
 fn test_import_frontmatter_matches_reference() {
+    // Arrange
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let output_dir = temp_dir.path();
 
-    // Run import command
+    // Act
     detent()
         .arg("import")
         .arg("tests/assets/processes/hello-world/hello-world.bpmn2")
@@ -90,7 +94,7 @@ fn test_import_frontmatter_matches_reference() {
         .assert()
         .success();
 
-    // Compare frontmatter of each generated file with reference
+    // Assert
     for file_name in EXPECTED_MDX_FILES {
         let generated_path = output_dir.join(file_name);
         let reference_path = Path::new(REFERENCE_DIR).join(file_name);
@@ -100,13 +104,11 @@ fn test_import_frontmatter_matches_reference() {
         let reference_content =
             fs::read_to_string(&reference_path).expect("Failed to read reference file");
 
-        // Extract frontmatter from both files
         let generated_frontmatter = extract_frontmatter(&generated_content)
             .unwrap_or_else(|| panic!("No frontmatter in generated file: {}", file_name));
         let reference_frontmatter = extract_frontmatter(&reference_content)
             .unwrap_or_else(|| panic!("No frontmatter in reference file: {}", file_name));
 
-        // Parse as YAML and compare
         let generated_yaml: serde_yaml::Value =
             serde_yaml::from_str(&generated_frontmatter).expect("Invalid YAML in generated file");
         let reference_yaml: serde_yaml::Value =
@@ -134,8 +136,11 @@ fn extract_frontmatter(content: &str) -> Option<String> {
 
 #[test]
 fn test_import_missing_bpmn_file() {
-    detent()
-        .arg("import")
+    // Arrange
+    let mut cmd = detent();
+
+    // Act & Assert
+    cmd.arg("import")
         .arg("nonexistent.bpmn")
         .assert()
         .failure()
@@ -144,8 +149,11 @@ fn test_import_missing_bpmn_file() {
 
 #[test]
 fn test_import_requires_bpmn_file() {
-    detent()
-        .arg("import")
+    // Arrange
+    let mut cmd = detent();
+
+    // Act & Assert
+    cmd.arg("import")
         .assert()
         .failure();
 }
