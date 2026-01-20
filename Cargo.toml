@@ -13,3 +13,4 @@ quick-xml = { version = "0.37", features = ["serialize"] }
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "3.1"
+tempfile = "3.19"

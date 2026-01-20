@@ -23,6 +23,16 @@ enum Commands {
         #[arg(required = true)]
         files: Vec<PathBuf>,
     },
+    /// Import a BPMN file and generate MDX files
+    Import {
+        /// BPMN file to import
+        #[arg(required = true)]
+        bpmn_file: PathBuf,
+
+        /// Output directory for generated MDX files
+        #[arg(short, long, default_value = ".")]
+        output_directory: PathBuf,
+    },
 }
 
 fn main() -> ExitCode {
@@ -30,5 +40,9 @@ fn main() -> ExitCode {
 
     match cli.command {
         Commands::Validate { files } => commands::validate::run(files),
+        Commands::Import {
+            bpmn_file,
+            output_directory,
+        } => commands::import::run(bpmn_file, output_directory),
     }
 }
