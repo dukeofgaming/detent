@@ -1,5 +1,5 @@
 {
-  "name": "Rust Hello World",
+  "name": "halt – BPMN Engine",
   "build": {
     "dockerfile": "Dockerfile"
   },
@@ -7,14 +7,19 @@
     "vscode": {
       "extensions": [
         "rust-lang.rust-analyzer",
-        "serayuzgur.crates"
-      ]
+        "serayuzgur.crates",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+        "rust-analyzer.checkOnSave.command": "clippy"
+      },
     }
-  },
-  "settings": {
-    "terminal.integrated.defaultProfile.linux": "bash",
-    "rust-analyzer.cargo.loadOutDirsFromCheck": true
-  },
-  "postCreateCommand": "cargo check",
+},
+  "postCreateCommand": "cargo fetch && cargo check",
   "remoteUser": "vscode"
 }
