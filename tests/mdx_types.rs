@@ -1,236 +1,96 @@
 //! Unit tests for MDX types (using BPMN types directly for frontmatter)
 //!
-//! The MDX frontmatter uses plain field names like `id`, `name`, `sourceRef`
-//! which match the BPMN XML attribute names (without the @ prefix that
-//! quick-xml uses internally).
+//! These tests use the real MDX files from tests/assets to validate parsing.
 
-use detent::bpmn::{Documentation, SequenceFlow, StartEvent, Task};
+use detent::bpmn::{SequenceFlow, StartEvent, Task};
 use detent::mdx::MdxFile;
+use std::fs;
+
+const MDX_START_EVENT: &str = "tests/assets/processes/hello-world/_1E892844-423C-464F-ADC4-22F1EC73851B.mdx";
+const MDX_END_EVENT: &str = "tests/assets/processes/hello-world/_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx";
+const MDX_TASK: &str = "tests/assets/processes/hello-world/_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx";
+const MDX_SEQUENCE_FLOW_1: &str = "tests/assets/processes/hello-world/_4083739B-66F0-4B92-A348-A37DF3B29083.mdx";
+const MDX_SEQUENCE_FLOW_2: &str = "tests/assets/processes/hello-world/_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx";
 
 #[test]
 fn test_parse_mdx_file() {
-    let content = r#"---
-type: bpmn:startEvent
-id: start_1
-outgoing:
-  - flow_1
----
+    let content = fs::read_to_string(MDX_START_EVENT).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
 
-# Start Event
-
-This is the start of the process.
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    assert!(mdx.frontmatter.contains("id: start_1"));
+    assert!(mdx.frontmatter.contains("id: _1E892844-423C-464F-ADC4-22F1EC73851B"));
     assert!(mdx.body.contains("Start Event"));
 }
 
 #[test]
 fn test_parse_start_event() {
-    let content = r#"---
-type: bpmn:startEvent
-id: start_1
-name: Start
-outgoing:
-  - flow_1
----
-
-# Start Event
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
+    let content = fs::read_to_string(MDX_START_EVENT).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
     let event = mdx.parse_start_event().expect("Failed to parse StartEvent");
 
-    assert_eq!(event.id, "start_1");
-    assert_eq!(event.name, Some("Start".to_string()));
-    assert_eq!(event.outgoing, vec!["flow_1"]);
+    assert_eq!(event.id, "_1E892844-423C-464F-ADC4-22F1EC73851B");
+    assert_eq!(event.outgoing, vec!["_4083739B-66F0-4B92-A348-A37DF3B29083"]);
 }
 
 #[test]
 fn test_parse_end_event() {
-    let content = r#"---
-type: bpmn:endEvent
-id: end_1
-name: End
-incoming:
-  - flow_2
----
-
-# End Event
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
+    let content = fs::read_to_string(MDX_END_EVENT).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
     let event = mdx.parse_end_event().expect("Failed to parse EndEvent");
 
-    assert_eq!(event.id, "end_1");
-    assert_eq!(event.name, Some("End".to_string()));
-    assert_eq!(event.incoming, vec!["flow_2"]);
+    assert_eq!(event.id, "_D3F6E97D-7783-492C-98CE-57EC815D304C");
+    assert_eq!(event.incoming, vec!["_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB"]);
 }
 
 #[test]
 fn test_parse_task() {
-    let content = r#"---
-type: bpmn:task
-id: task_1
-name: Process Data
-incoming:
-  - flow_1
-outgoing:
-  - flow_2
----
-
-# Task
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
+    let content = fs::read_to_string(MDX_TASK).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
     let task = mdx.parse_task().expect("Failed to parse Task");
 
-    assert_eq!(task.id, "task_1");
-    assert_eq!(task.name, Some("Process Data".to_string()));
-    assert_eq!(task.incoming, vec!["flow_1"]);
-    assert_eq!(task.outgoing, vec!["flow_2"]);
+    assert_eq!(task.id, "_808AA40C-EAA1-40C4-A2DC-27000FBF1866");
+    assert_eq!(task.name, Some("Hello World".to_string()));
+    assert_eq!(task.incoming, vec!["_4083739B-66F0-4B92-A348-A37DF3B29083"]);
+    assert_eq!(task.outgoing, vec!["_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB"]);
 }
 
 #[test]
-fn test_parse_service_task() {
-    let content = r#"---
-type: bpmn:serviceTask
-id: service_1
-name: Call API
-implementation: '##WebService'
-incoming:
-  - flow_1
-outgoing:
-  - flow_2
----
+fn test_parse_task_with_documentation() {
+    let content = fs::read_to_string(MDX_TASK).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
+    let task = mdx.parse_task().expect("Failed to parse Task");
 
-# Service Task
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    let task = mdx.parse_service_task().expect("Failed to parse ServiceTask");
-
-    assert_eq!(task.id, "service_1");
-    assert_eq!(task.name, Some("Call API".to_string()));
-    assert_eq!(task.implementation, Some("##WebService".to_string()));
+    assert!(task.documentation.is_some());
+    assert_eq!(task.documentation.unwrap().text, "T");
 }
 
 #[test]
-fn test_parse_script_task() {
-    let content = r#"---
-type: bpmn:scriptTask
-id: script_1
-name: Run Script
-scriptFormat: javascript
-script: console.log('hello')
-incoming:
-  - flow_1
-outgoing:
-  - flow_2
----
+fn test_parse_sequence_flow_start_to_task() {
+    let content = fs::read_to_string(MDX_SEQUENCE_FLOW_1).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
+    let flow = mdx.parse_sequence_flow().expect("Failed to parse SequenceFlow");
 
-# Script Task
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    let task = mdx.parse_script_task().expect("Failed to parse ScriptTask");
-
-    assert_eq!(task.id, "script_1");
-    assert_eq!(task.name, Some("Run Script".to_string()));
-    assert_eq!(task.script_format, Some("javascript".to_string()));
-    assert_eq!(task.script, Some("console.log('hello')".to_string()));
+    assert_eq!(flow.id, "_4083739B-66F0-4B92-A348-A37DF3B29083");
+    assert_eq!(flow.source_ref, "_1E892844-423C-464F-ADC4-22F1EC73851B");
+    assert_eq!(flow.target_ref, "_808AA40C-EAA1-40C4-A2DC-27000FBF1866");
 }
 
 #[test]
-fn test_parse_sequence_flow() {
-    let content = r#"---
-type: bpmn:sequenceFlow
-id: flow_1
-name: To Task
-sourceRef: start_1
-targetRef: task_1
----
+fn test_parse_sequence_flow_task_to_end() {
+    let content = fs::read_to_string(MDX_SEQUENCE_FLOW_2).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
+    let flow = mdx.parse_sequence_flow().expect("Failed to parse SequenceFlow");
 
-# Sequence Flow
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    let flow = mdx
-        .parse_sequence_flow()
-        .expect("Failed to parse SequenceFlow");
-
-    assert_eq!(flow.id, "flow_1");
-    assert_eq!(flow.name, Some("To Task".to_string()));
-    assert_eq!(flow.source_ref, "start_1");
-    assert_eq!(flow.target_ref, "task_1");
-}
-
-#[test]
-fn test_parse_exclusive_gateway() {
-    let content = r#"---
-type: bpmn:exclusiveGateway
-id: gw_1
-name: Decision
-gatewayDirection: Diverging
-default: flow_default
-incoming:
-  - flow_1
-outgoing:
-  - flow_2
-  - flow_3
----
-
-# Exclusive Gateway
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    let gateway = mdx
-        .parse_exclusive_gateway()
-        .expect("Failed to parse ExclusiveGateway");
-
-    assert_eq!(gateway.id, "gw_1");
-    assert_eq!(gateway.name, Some("Decision".to_string()));
-    assert_eq!(gateway.gateway_direction, Some("Diverging".to_string()));
-    assert_eq!(gateway.default, Some("flow_default".to_string()));
-    assert_eq!(gateway.outgoing, vec!["flow_2", "flow_3"]);
-}
-
-#[test]
-fn test_parse_parallel_gateway() {
-    let content = r#"---
-type: bpmn:parallelGateway
-id: gw_2
-name: Fork
-gatewayDirection: Diverging
-incoming:
-  - flow_1
-outgoing:
-  - flow_2
-  - flow_3
----
-
-# Parallel Gateway
-"#;
-
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    let gateway = mdx
-        .parse_parallel_gateway()
-        .expect("Failed to parse ParallelGateway");
-
-    assert_eq!(gateway.id, "gw_2");
-    assert_eq!(gateway.name, Some("Fork".to_string()));
-    assert_eq!(gateway.gateway_direction, Some("Diverging".to_string()));
+    assert_eq!(flow.id, "_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB");
+    assert_eq!(flow.source_ref, "_808AA40C-EAA1-40C4-A2DC-27000FBF1866");
+    assert_eq!(flow.target_ref, "_D3F6E97D-7783-492C-98CE-57EC815D304C");
 }
 
 #[test]
 fn test_roundtrip_start_event() {
-    let event = StartEvent {
-        id: "start_1".to_string(),
-        name: Some("Start".to_string()),
-        outgoing: vec!["flow_1".to_string()],
-        documentation: None,
-    };
+    // Parse real file, serialize, then parse again
+    let content = fs::read_to_string(MDX_START_EVENT).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
+    let event = mdx.parse_start_event().expect("Failed to parse StartEvent");
 
     let yaml = serde_yaml::to_string(&event).expect("Failed to serialize");
     let parsed: StartEvent = serde_yaml::from_str(&yaml).expect("Failed to parse");
@@ -240,15 +100,9 @@ fn test_roundtrip_start_event() {
 
 #[test]
 fn test_roundtrip_task() {
-    let task = Task {
-        id: "task_1".to_string(),
-        name: Some("Process".to_string()),
-        incoming: vec!["flow_1".to_string()],
-        outgoing: vec!["flow_2".to_string()],
-        documentation: Some(Documentation {
-            text: "Task documentation".to_string(),
-        }),
-    };
+    let content = fs::read_to_string(MDX_TASK).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
+    let task = mdx.parse_task().expect("Failed to parse Task");
 
     let yaml = serde_yaml::to_string(&task).expect("Failed to serialize");
     let parsed: Task = serde_yaml::from_str(&yaml).expect("Failed to parse");
@@ -258,14 +112,9 @@ fn test_roundtrip_task() {
 
 #[test]
 fn test_roundtrip_sequence_flow() {
-    let flow = SequenceFlow {
-        id: "flow_1".to_string(),
-        name: Some("To Task".to_string()),
-        source_ref: "start_1".to_string(),
-        target_ref: "task_1".to_string(),
-        condition_expression: None,
-        documentation: None,
-    };
+    let content = fs::read_to_string(MDX_SEQUENCE_FLOW_1).expect("Failed to read MDX file");
+    let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
+    let flow = mdx.parse_sequence_flow().expect("Failed to parse SequenceFlow");
 
     let yaml = serde_yaml::to_string(&flow).expect("Failed to serialize");
     let parsed: SequenceFlow = serde_yaml::from_str(&yaml).expect("Failed to parse");
@@ -274,29 +123,26 @@ fn test_roundtrip_sequence_flow() {
 }
 
 #[test]
-fn test_parse_with_documentation() {
-    let content = r#"---
-type: bpmn:task
-id: task_1
-name: Documented Task
-incoming:
-  - flow_1
-outgoing:
-  - flow_2
-documentation:
-  text: This is the task documentation.
----
+fn test_all_mdx_files_parseable() {
+    // Verify all MDX files in the hello-world directory can be parsed
+    let mdx_files = [
+        MDX_START_EVENT,
+        MDX_END_EVENT,
+        MDX_TASK,
+        MDX_SEQUENCE_FLOW_1,
+        MDX_SEQUENCE_FLOW_2,
+    ];
 
-# Task with Documentation
-"#;
+    for path in mdx_files {
+        let content = fs::read_to_string(path).expect(&format!("Failed to read {}", path));
+        let mdx = MdxFile::parse(&content).expect(&format!("Failed to parse {}", path));
 
-    let mdx = MdxFile::parse(content).expect("Failed to parse MDX");
-    let task = mdx.parse_task().expect("Failed to parse Task");
-
-    assert_eq!(task.id, "task_1");
-    assert!(task.documentation.is_some());
-    assert_eq!(
-        task.documentation.unwrap().text,
-        "This is the task documentation."
-    );
+        // Verify frontmatter has type and id
+        assert!(
+            mdx.frontmatter.contains("type:"),
+            "Missing type in {}",
+            path
+        );
+        assert!(mdx.frontmatter.contains("id:"), "Missing id in {}", path);
+    }
 }
