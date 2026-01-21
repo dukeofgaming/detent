@@ -1,5 +1,7 @@
 //! MDX file parsing and serialization
 
+use serde::de::DeserializeOwned;
+
 use crate::bpmn::{
     EndEvent, ExclusiveGateway, ParallelGateway, Process, ScriptTask, SequenceFlow, ServiceTask,
     StartEvent, Task,
@@ -42,49 +44,62 @@ impl MdxFile {
         format!("---\n{}\n---\n\n{}\n", self.frontmatter, self.body)
     }
 
+    /// Generic method to parse frontmatter as any deserializable BPMN type
+    ///
+    /// # Example
+    /// ```ignore
+    /// let start_event: StartEvent = mdx.parse_as()?;
+    /// let task: Task = mdx.parse_as()?;
+    /// ```
+    pub fn parse_as<T: DeserializeOwned>(&self) -> Result<T, serde_yaml::Error> {
+        serde_yaml::from_str(&self.frontmatter)
+    }
+
+    // Convenience methods for common types (delegate to parse_as)
+
     /// Parse the frontmatter as a StartEvent
     pub fn parse_start_event(&self) -> Result<StartEvent, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as an EndEvent
     pub fn parse_end_event(&self) -> Result<EndEvent, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as a Task
     pub fn parse_task(&self) -> Result<Task, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as a ServiceTask
     pub fn parse_service_task(&self) -> Result<ServiceTask, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as a ScriptTask
     pub fn parse_script_task(&self) -> Result<ScriptTask, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as a SequenceFlow
     pub fn parse_sequence_flow(&self) -> Result<SequenceFlow, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as an ExclusiveGateway
     pub fn parse_exclusive_gateway(&self) -> Result<ExclusiveGateway, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as a ParallelGateway
     pub fn parse_parallel_gateway(&self) -> Result<ParallelGateway, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Parse the frontmatter as a Process
     pub fn parse_process(&self) -> Result<Process, serde_yaml::Error> {
-        serde_yaml::from_str(&self.frontmatter)
+        self.parse_as()
     }
 
     /// Get raw frontmatter for generic parsing
