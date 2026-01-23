@@ -1,25 +1,32 @@
 {
-  "name": "halt – BPMN Engine",
+  "name": "detent",
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "runArgs": [
+    "-v",
+    "/var/run/docker.sock:/var/run/docker.sock",
+    "--security-opt",
+    "no-new-privileges"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
         "rust-lang.rust-analyzer",
-        "serayuzgur.crates",
         "tamasfe.even-better-toml",
         "redhat.vscode-xml",
         "redhat.vscode-yaml",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "fill-labs.dependi",
+        "unifiedjs.vscode-mdx"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "rust-analyzer.cargo.loadOutDirsFromCheck": true,
         "rust-analyzer.checkOnSave.command": "clippy"
-      },
+      }
     }
-},
+  },
   "postCreateCommand": "cargo fetch && cargo check",
   "remoteUser": "vscode"
 }
