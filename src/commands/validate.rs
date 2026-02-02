@@ -5,6 +5,8 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use detent::bpmn::{parse_bpmn, StartEvent, EndEvent, Task, SequenceFlow, Process};
+#[cfg(feature = "xsd-validation")]
+use detent::bpmn::validate_bpmn_xsd;
 use detent::mdx::MdxFile;
 
 /// Run the validate command
@@ -49,10 +51,18 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
     let content = fs::read_to_string(path)
         .map_err(|e| format!("Failed to read file: {}", e))?;
 
+    // Step 1: XSD Schema validation (when feature is enabled)
+    #[cfg(feature = "xsd-validation")]
+    {
+        validate_bpmn_xsd(&content)
+            .map_err(|e| format!("XSD validation failed: {}", e))?;
+    }
+
+    // Step 2: Parse into Rust types
     let defs = parse_bpmn(&content)
         .map_err(|e| format!("Invalid BPMN: {}", e))?;
 
-    // Basic validation checks
+    // Step 3: Semantic validation checks
     if defs.id.is_empty() {
         return Err("BPMN definitions must have an id".to_string());
     }
