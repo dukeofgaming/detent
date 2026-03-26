@@ -43,6 +43,11 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --de
     printf '#!/bin/bash\nexec sudo /usr/bin/docker "$@"\n' > /home/${USERNAME}/bin/docker && \
     chmod +x /home/${USERNAME}/bin/docker
 
+
+# Install OpenCode
+RUN curl -fsSL https://opencode.ai/install | bash
+
+# TODO: Make this dynamic
 ENV CARGO_TARGET_DIR=/workspaces/detent/target
 WORKDIR /workspaces/detent
 

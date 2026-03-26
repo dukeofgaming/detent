@@ -6,6 +6,8 @@
   "runArgs": [
     "-v",
     "/var/run/docker.sock:/var/run/docker.sock",
+    "-v",
+    "${localEnv:HOME}/.config/opencode:/home/vscode/.config/opencode:ro",
     "--security-opt",
     "no-new-privileges"
   ],
@@ -19,6 +21,7 @@
         "esbenp.prettier-vscode",
         "fill-labs.dependi",
         "unifiedjs.vscode-mdx"
+        "sst-dev.opencode"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
