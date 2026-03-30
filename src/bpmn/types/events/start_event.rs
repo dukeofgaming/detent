@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::bpmn::Documentation;
+use crate::bpmn::Validate;
 
 /// BPMN Start Event
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -23,4 +24,13 @@ pub struct StartEvent {
 
     #[serde(rename = "documentation", skip_serializing_if = "Option::is_none")]
     pub documentation: Option<Documentation>,
+}
+
+impl Validate for StartEvent {
+    fn validate(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("StartEvent must have an id".to_string());
+        }
+        Ok(())
+    }
 }

@@ -17,7 +17,7 @@ fn test_parse_hello_world_bpmn() {
     let defs = parse_bpmn(&xml).expect("Failed to parse hello-world.bpmn2");
 
     // Assert
-    assert_eq!(defs.id, "_LvBOwNfUED6W5vyiHBWrAg");
+    assert_eq!(defs.id, "_sogPkOUBED6gTICEHR0M4w");
 
     let process = defs.process.expect("Expected a process");
     assert_eq!(process.id, "hello_world");

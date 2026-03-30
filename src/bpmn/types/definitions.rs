@@ -31,3 +31,17 @@ pub struct Definitions {
     #[serde(skip)]
     pub bpmn_diagram: Option<String>,
 }
+
+impl Definitions {
+    pub fn validate_for_bpmn(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("BPMN definitions must have an id".to_string());
+        }
+
+        if let Some(process) = &self.process {
+            process.validate_for_bpmn()?;
+        }
+
+        Ok(())
+    }
+}

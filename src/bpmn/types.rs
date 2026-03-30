@@ -25,6 +25,10 @@ pub use process::Process;
 pub use sequence_flow::SequenceFlow;
 pub use tasks::{ScriptTask, ServiceTask, Task};
 
+pub trait Validate {
+    fn validate(&self) -> Result<(), String>;
+}
+
 /// BPMN 2.0 namespace
 pub const BPMN_NS: &str = "http://www.omg.org/spec/BPMN/20100524/MODEL";
 /// BPMN DI namespace

@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{ConditionExpression, Documentation};
+use crate::bpmn::Validate;
 
 /// BPMN Sequence Flow (edge between nodes)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -25,4 +26,19 @@ pub struct SequenceFlow {
 
     #[serde(rename = "documentation", skip_serializing_if = "Option::is_none")]
     pub documentation: Option<Documentation>,
+}
+
+impl Validate for SequenceFlow {
+    fn validate(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("SequenceFlow must have an id".to_string());
+        }
+        if self.source_ref.is_empty() {
+            return Err("SequenceFlow must have a sourceRef".to_string());
+        }
+        if self.target_ref.is_empty() {
+            return Err("SequenceFlow must have a targetRef".to_string());
+        }
+        Ok(())
+    }
 }

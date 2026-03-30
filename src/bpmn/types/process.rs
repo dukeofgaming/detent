@@ -6,6 +6,7 @@ use super::{
     Documentation, EndEvent, ExclusiveGateway, FlowElements, ParallelGateway, ScriptTask,
     SequenceFlow, ServiceTask, StartEvent, Task,
 };
+use crate::bpmn::Validate;
 
 /// BPMN Process - container for flow elements
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -64,5 +65,30 @@ impl Process {
             parallel_gateways: self.parallel_gateways.clone(),
             sequence_flows: self.sequence_flows.clone(),
         }
+    }
+
+    pub fn validate_for_bpmn(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("Process must have an id".to_string());
+        }
+
+        if self.start_events.is_empty() {
+            return Err("Process must have at least one start event".to_string());
+        }
+
+        if self.end_events.is_empty() {
+            return Err("Process must have at least one end event".to_string());
+        }
+
+        Ok(())
+    }
+}
+
+impl Validate for Process {
+    fn validate(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("Process must have an id".to_string());
+        }
+        Ok(())
     }
 }

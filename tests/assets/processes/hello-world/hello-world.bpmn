@@ -1,39 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1i0bpnf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.10.1">
-  <bpmn:process id="Process_0wmaqe8" isExecutable="false">
-    <bpmn:startEvent id="StartEvent_1ux8uno">
-      <bpmn:outgoing>Flow_0ufrh7g</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:task id="Activity_0lh17j7" name="Hello World">
-      <bpmn:incoming>Flow_0ufrh7g</bpmn:incoming>
-      <bpmn:outgoing>Flow_031xc5r</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0ufrh7g" sourceRef="StartEvent_1ux8uno" targetRef="Activity_0lh17j7" />
-    <bpmn:endEvent id="Event_15cxyy5">
-      <bpmn:incoming>Flow_031xc5r</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_031xc5r" sourceRef="Activity_0lh17j7" targetRef="Event_15cxyy5" />
-  </bpmn:process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0wmaqe8">
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1ux8uno">
-        <dc:Bounds x="156" y="82" width="36" height="36" />
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xmlns:xsi="xsi" id="_6QEF0P45ED6q5fN_4n-x6w" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd http://www.omg.org/spec/DD/20100524/DC DC.xsd http://www.omg.org/spec/DD/20100524/DI DI.xsd " exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
+  <bpmn2:itemDefinition id="_A578E479-3C36-4EFD-962C-E0AFD58E8CA0" structureRef=""/>
+  <bpmn2:itemDefinition id="_7E9EBF02-6CD6-49E4-B3C5-E28A95942DE4" structureRef=""/>
+  <bpmn2:collaboration id="_9AE65359-F987-41AB-BC3B-93DBDCDA7D13" name="Default Collaboration">
+    <bpmn2:participant id="_785EA845-4D6B-4C2B-9D32-E3FFA4E5DA49" name="Pool Participant" processRef="hello_world"/>
+  </bpmn2:collaboration>
+  <bpmn2:process id="hello_world" drools:packageName="com.example" drools:version="1.0" drools:adHoc="false" name="hello-world" processType="Public">
+    <bpmn2:sequenceFlow id="Flow_031xc5r" sourceRef="Activity_0lh17j7" targetRef="_AD10C879-AD70-4DF7-B08F-2EEFB6573578"/>
+    <bpmn2:sequenceFlow id="Flow_0ufrh7g" sourceRef="StartEvent_1ux8uno" targetRef="Activity_0lh17j7"/>
+    <bpmn2:sequenceFlow id="_393007E8-64F5-47CE-B8D6-C10EAF98BE2B" sourceRef="_AD10C879-AD70-4DF7-B08F-2EEFB6573578" targetRef="Event_15cxyy5"/>
+    <bpmn2:intermediateCatchEvent id="_AD10C879-AD70-4DF7-B08F-2EEFB6573578">
+      <bpmn2:incoming>Flow_031xc5r</bpmn2:incoming>
+      <bpmn2:outgoing>_393007E8-64F5-47CE-B8D6-C10EAF98BE2B</bpmn2:outgoing>
+      <bpmn2:escalationEventDefinition/>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:startEvent id="StartEvent_1ux8uno">
+      <bpmn2:outgoing>Flow_0ufrh7g</bpmn2:outgoing>
+      <bpmn2:messageEventDefinition/>
+    </bpmn2:startEvent>
+    <bpmn2:task id="Activity_0lh17j7" name="Hello World">
+      <bpmn2:extensionElements>
+        <drools:metaData name="elementname">
+          <drools:metaValue><![CDATA[Hello World]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0ufrh7g</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_031xc5r</bpmn2:outgoing>
+    </bpmn2:task>
+    <bpmn2:endEvent id="Event_15cxyy5">
+      <bpmn2:incoming>_393007E8-64F5-47CE-B8D6-C10EAF98BE2B</bpmn2:incoming>
+    </bpmn2:endEvent>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram>
+    <bpmndi:BPMNPlane bpmnElement="hello_world">
+      <bpmndi:BPMNShape id="shape_Event_15cxyy5" bpmnElement="Event_15cxyy5">
+        <dc:Bounds height="56" width="56" x="576" y="84"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0lh17j7_di" bpmnElement="Activity_0lh17j7">
-        <dc:Bounds x="260" y="60" width="100" height="80" />
-        <bpmndi:BPMNLabel />
+      <bpmndi:BPMNShape id="shape_Activity_0lh17j7" bpmnElement="Activity_0lh17j7">
+        <dc:Bounds height="80" width="100" x="265" y="72"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_15cxyy5_di" bpmnElement="Event_15cxyy5">
-        <dc:Bounds x="432" y="82" width="36" height="36" />
+      <bpmndi:BPMNShape id="shape_StartEvent_1ux8uno" bpmnElement="StartEvent_1ux8uno">
+        <dc:Bounds height="56" width="56" x="156" y="84"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_0ufrh7g_di" bpmnElement="Flow_0ufrh7g">
-        <di:waypoint x="192" y="100" />
-        <di:waypoint x="260" y="100" />
+      <bpmndi:BPMNShape id="shape__AD10C879-AD70-4DF7-B08F-2EEFB6573578" bpmnElement="_AD10C879-AD70-4DF7-B08F-2EEFB6573578">
+        <dc:Bounds height="56" width="56" x="436" y="84"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_shape__AD10C879-AD70-4DF7-B08F-2EEFB6573578_to_shape_Event_15cxyy5" bpmnElement="_393007E8-64F5-47CE-B8D6-C10EAF98BE2B">
+        <di:waypoint x="464" y="112"/>
+        <di:waypoint x="576" y="102"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_031xc5r_di" bpmnElement="Flow_031xc5r">
-        <di:waypoint x="360" y="100" />
-        <di:waypoint x="432" y="100" />
+      <bpmndi:BPMNEdge id="edge_shape_StartEvent_1ux8uno_to_shape_Activity_0lh17j7" bpmnElement="Flow_0ufrh7g">
+        <di:waypoint x="192" y="102"/>
+        <di:waypoint x="265" y="112"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_shape_Activity_0lh17j7_to_shape__AD10C879-AD70-4DF7-B08F-2EEFB6573578" bpmnElement="Flow_031xc5r">
+        <di:waypoint x="365" y="112"/>
+        <di:waypoint x="464" y="112"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-</bpmn:definitions>
+  <bpmn2:relationship type="BPSimData">
+    <bpmn2:extensionElements>
+      <bpsim:BPSimData>
+        <bpsim:Scenario id="default" name="Simulationscenario">
+          <bpsim:ScenarioParameters/>
+          <bpsim:ElementParameters elementRef="Activity_0lh17j7">
+            <bpsim:TimeParameters>
+              <bpsim:ProcessingTime>
+                <bpsim:NormalDistribution mean="0" standardDeviation="0"/>
+              </bpsim:ProcessingTime>
+            </bpsim:TimeParameters>
+            <bpsim:ResourceParameters>
+              <bpsim:Availability>
+                <bpsim:FloatingParameter value="0"/>
+              </bpsim:Availability>
+              <bpsim:Quantity>
+                <bpsim:FloatingParameter value="0"/>
+              </bpsim:Quantity>
+            </bpsim:ResourceParameters>
+            <bpsim:CostParameters>
+              <bpsim:UnitCost>
+                <bpsim:FloatingParameter value="0"/>
+              </bpsim:UnitCost>
+            </bpsim:CostParameters>
+          </bpsim:ElementParameters>
+        </bpsim:Scenario>
+      </bpsim:BPSimData>
+    </bpmn2:extensionElements>
+    <bpmn2:source>_6QEF0P45ED6q5fN_4n-x6w</bpmn2:source>
+    <bpmn2:target>_6QEF0P45ED6q5fN_4n-x6w</bpmn2:target>
+  </bpmn2:relationship>
+</bpmn2:definitions>

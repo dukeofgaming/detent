@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::bpmn::Documentation;
+use crate::bpmn::Validate;
 
 /// BPMN Service Task
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -33,4 +34,13 @@ pub struct ServiceTask {
 
     #[serde(rename = "documentation", skip_serializing_if = "Option::is_none")]
     pub documentation: Option<Documentation>,
+}
+
+impl Validate for ServiceTask {
+    fn validate(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("ServiceTask must have an id".to_string());
+        }
+        Ok(())
+    }
 }
