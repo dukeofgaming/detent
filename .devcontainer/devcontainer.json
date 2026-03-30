@@ -20,8 +20,9 @@
         "redhat.vscode-yaml",
         "esbenp.prettier-vscode",
         "fill-labs.dependi",
-        "unifiedjs.vscode-mdx"
-        "sst-dev.opencode"
+        "unifiedjs.vscode-mdx",
+        "sst-dev.opencode",
+        "foam.foam-vscode"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
