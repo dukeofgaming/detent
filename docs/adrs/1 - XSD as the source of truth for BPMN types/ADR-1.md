@@ -1,10 +1,9 @@
-# ADR-001: XSD as Source of Truth for BPMN Types
-
-## Status
-Accepted (amended 2026-01-27)
-
-## Date
-2026-01-20
+---
+type: adr
+date: 2026-01-27
+status: proposed
+---
+# ADR-1: XSD as Source of Truth for BPMN Types
 
 ## Context
 

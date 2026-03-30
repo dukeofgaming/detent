@@ -1,10 +1,9 @@
-# ADR-003: Rust Dependencies and Stack
-
-## Status
-Accepted
-
-## Date
-2026-01-20
+---
+type: adr
+date: 2026-01-20
+status: accepted
+---
+# ADR-3: Rust Dependencies and Stack
 
 ## Context
 
@@ -78,5 +77,5 @@ xsd-parser = "1.4"
 ```
 
 ## Related ADRs
-- ADR-001: XSD as Source of Truth
-- ADR-002: Bidirectional Compiler Architecture
+- ADR-1: XSD as Source of Truth
+- ADR-2: Bidirectional Compiler Architecture

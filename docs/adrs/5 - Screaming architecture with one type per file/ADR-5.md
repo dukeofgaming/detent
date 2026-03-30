@@ -1,10 +1,9 @@
-# ADR-005: Screaming Architecture with One Type Per File
-
-## Status
-Accepted
-
-## Date
-2026-01-20
+---
+type: adr
+date: 2026-01-20
+status: accepted
+---
+# ADR-5: Screaming Architecture with One Type Per File
 
 ## Context
 

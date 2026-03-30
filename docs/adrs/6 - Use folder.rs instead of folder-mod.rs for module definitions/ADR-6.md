@@ -1,10 +1,9 @@
-# ADR-006: Use `folder.rs` Instead of `folder/mod.rs` for Module Definitions
-
-## Status
-Accepted
-
-## Date
-2026-01-21
+---
+type: adr
+date: 2026-01-21
+status: accepted
+---
+# ADR-6: Use `folder.rs` Instead of `folder/mod.rs` for Module Definitions
 
 ## Context
 

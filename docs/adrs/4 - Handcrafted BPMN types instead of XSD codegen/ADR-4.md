@@ -1,14 +1,15 @@
-# ADR-004: Handcrafted BPMN Types Instead of XSD Codegen
+---
+type: adr
+date: 2026-01-20
+status: accepted
+---
+# ADR-4: Handcrafted BPMN Types Instead of XSD Codegen
 
-## Status
-Accepted (supersedes ADR-001 approach for type generation)
-
-## Date
-2026-01-20
+Supersedes ADR-1 for type generation.
 
 ## Context
 
-ADR-001 proposed using `xsd-parser` to generate Rust types from BPMN 2.0 XSDs.
+ADR-1 proposed using `xsd-parser` to generate Rust types from BPMN 2.0 XSDs.
 After implementation, this approach failed due to:
 
 1. **Schema complexity**: BPMN 2.0 XSD includes 5+ interconnected schemas 
@@ -99,6 +100,6 @@ If runtime validation of YAML frontmatter is needed:
 - This could be a pre-commit hook or test-time validation, not build-time codegen
 
 ## Related ADRs
-- ADR-001: XSD as Source of Truth (partially superseded for codegen; XSD remains
+- ADR-1: XSD as Source of Truth (partially superseded for codegen; XSD remains
   authoritative for validation)
-- ADR-003: Rust Dependencies (updated to remove build-time xsd-parser)
+- ADR-3: Rust Dependencies (updated to remove build-time xsd-parser)

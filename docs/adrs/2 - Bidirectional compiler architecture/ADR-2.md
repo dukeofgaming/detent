@@ -1,10 +1,9 @@
-# ADR-002: Bidirectional Compiler Architecture
-
-## Status
-Accepted
-
-## Date
-2026-01-20
+---
+type: adr
+date: 2026-01-20
+status: accepted
+---
+# ADR-2: Bidirectional Compiler Architecture
 
 ## Context
 
@@ -35,7 +34,7 @@ We need to decide on the architecture for these transformations.
     └─────────────┘
 ```
 
-The IR uses the XSD-generated Rust types (ADR-001), ensuring the same type system validates both directions.
+The IR uses the XSD-generated Rust types (ADR-1), ensuring the same type system validates both directions.
 
 ## Rationale
 
@@ -78,4 +77,4 @@ src/
 - IR must preserve information from both sources
 
 ## Related ADRs
-- ADR-001: XSD as Source of Truth
+- ADR-1: XSD as Source of Truth
