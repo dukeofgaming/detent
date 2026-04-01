@@ -6,7 +6,36 @@ This allows us to keep track of design decisions and rationale in one place, and
 
 Follow these rules for journaling:
 
-1. Always keep a journal when working on a branch different than `main`
+1. Always keep a journal when working on a branch different than `main` and use this as a base template:
+
+    ```markdown
+    ---
+    type: journal
+    ---
+
+    # {github_id} - {issue_title}
+
+    ## Description
+
+    <!-- (Describe the problem, constraints, and goals here) -->
+
+    ## Tasks
+
+    - [ ] ...<!-- (List the high-level tasks you will take to implement the feature here) -->
+        - [ ] ...<!-- (Break down the tasks into smaller steps as you make progress) -->
+    
+
+    ## Notes
+
+    <!-- >Update this section as you make progress on the implementation -->
+
+    ### {task} ({YYYY-MM-DD HH:mm})
+
+    1. **{YYYY-MM-DD HH:mm}**: ... <!-- Describe the thought, decision, or code change here, make sure you reflect the users intentions, rationale, feedback, blockers and pivots -->
+        2. ... <!-- Add more points as needed sub steps -->
+
+    ```
+
 2. Always inquire if the user wants to add something to the journal after the following events during conversation:
 
     1. A succesful logical code change
