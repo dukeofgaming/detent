@@ -32,5 +32,6 @@
     }
   },
   "postCreateCommand": "cargo fetch && cargo check",
+  "postStartCommand": "npm install -g @devcontainers/cli",
   "remoteUser": "vscode"
 }
