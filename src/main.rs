@@ -33,6 +33,16 @@ enum Commands {
         #[arg(short, long, default_value = ".")]
         output_directory: PathBuf,
     },
+    /// Compile MDX files into BPMN XML
+    Compile {
+        /// Directory containing MDX files
+        #[arg(required = true)]
+        directory: PathBuf,
+
+        /// Output BPMN file (defaults to stdout)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -44,5 +54,6 @@ fn main() -> ExitCode {
             bpmn_file,
             output_directory,
         } => commands::import::run(bpmn_file, output_directory),
+        Commands::Compile { directory, output } => commands::compile::run(directory, output),
     }
 }

@@ -4,9 +4,9 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use detent::bpmn::{parse_bpmn, Validate};
 #[cfg(feature = "xsd-validation")]
 use detent::bpmn::validate_bpmn_xsd;
+use detent::bpmn::{parse_bpmn, Validate};
 use detent::mdx::MdxFile;
 
 /// Run the validate command
@@ -34,10 +34,7 @@ pub fn run(files: Vec<PathBuf>) -> ExitCode {
 
 /// Validate a single file based on its extension
 fn validate_file(path: &PathBuf) -> Result<(), String> {
-    let extension = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("");
+    let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
     match extension {
         "bpmn" | "bpmn2" => validate_bpmn(path),
@@ -48,19 +45,16 @@ fn validate_file(path: &PathBuf) -> Result<(), String> {
 
 /// Validate a BPMN file
 fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
-    let content = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+    let content = fs::read_to_string(path).map_err(|e| format!("Failed to read file: {}", e))?;
 
     // Step 1: XSD Schema validation (when feature is enabled)
     #[cfg(feature = "xsd-validation")]
     {
-        validate_bpmn_xsd(&content)
-            .map_err(|e| format!("XSD validation failed: {}", e))?;
+        validate_bpmn_xsd(&content).map_err(|e| format!("XSD validation failed: {}", e))?;
     }
 
     // Step 2: Parse into Rust types
-    let defs = parse_bpmn(&content)
-        .map_err(|e| format!("Invalid BPMN: {}", e))?;
+    let defs = parse_bpmn(&content).map_err(|e| format!("Invalid BPMN: {}", e))?;
 
     // Step 3: Semantic validation checks
     defs.validate_for_bpmn()?;
@@ -70,11 +64,9 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
 
 /// Validate an MDX file
 fn validate_mdx(path: &PathBuf) -> Result<(), String> {
-    let content = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+    let content = fs::read_to_string(path).map_err(|e| format!("Failed to read file: {}", e))?;
 
-    let mdx = MdxFile::parse(&content)
-        .map_err(|e| format!("Invalid MDX: {}", e))?;
+    let mdx = MdxFile::parse(&content).map_err(|e| format!("Invalid MDX: {}", e))?;
 
     // Try to parse frontmatter as various BPMN types
     // Start with process (for _process.mdx files)

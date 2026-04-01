@@ -44,7 +44,12 @@ impl FlowElements {
             .map(FlowNode::StartEvent)
             .chain(self.end_events.iter().cloned().map(FlowNode::EndEvent))
             .chain(self.tasks.iter().cloned().map(FlowNode::Task))
-            .chain(self.service_tasks.iter().cloned().map(FlowNode::ServiceTask))
+            .chain(
+                self.service_tasks
+                    .iter()
+                    .cloned()
+                    .map(FlowNode::ServiceTask),
+            )
             .chain(self.script_tasks.iter().cloned().map(FlowNode::ScriptTask))
             .chain(
                 self.exclusive_gateways

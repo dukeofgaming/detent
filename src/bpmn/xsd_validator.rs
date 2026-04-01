@@ -70,23 +70,18 @@ pub fn validate_bpmn_xsd(xml_content: &str) -> Result<(), XsdValidationError> {
     // Load and parse the BPMN XSD schema
     let schema_path = get_bpmn_schema_path();
     let mut schema_parser = SchemaParserContext::from_file(schema_path);
-    let schema_ctx = SchemaValidationContext::from_parser(&mut schema_parser).map_err(|errors| {
-        XsdValidationError::SchemaParseError(
-            errors
-                .iter()
-                .filter_map(|e| e.message.clone())
-                .collect(),
-        )
-    })?;
+    let schema_ctx =
+        SchemaValidationContext::from_parser(&mut schema_parser).map_err(|errors| {
+            XsdValidationError::SchemaParseError(
+                errors.iter().filter_map(|e| e.message.clone()).collect(),
+            )
+        })?;
 
     // Validate the document against the schema
     let mut validator = schema_ctx;
     validator.validate_document(&doc).map_err(|errors| {
         XsdValidationError::ValidationError(
-            errors
-                .iter()
-                .filter_map(|e| e.message.clone())
-                .collect(),
+            errors.iter().filter_map(|e| e.message.clone()).collect(),
         )
     })?;
 

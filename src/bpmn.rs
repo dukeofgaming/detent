@@ -2,6 +2,7 @@
 //!
 //! This module provides types and utilities for working with BPMN 2.0 documents.
 
+pub mod graph;
 pub mod types;
 
 #[cfg(feature = "xsd-validation")]
@@ -10,7 +11,7 @@ pub mod xsd_validator;
 pub use types::*;
 
 #[cfg(feature = "xsd-validation")]
-pub use xsd_validator::{validate_bpmn_xsd, validate_bpmn_file_xsd, XsdValidationError};
+pub use xsd_validator::{validate_bpmn_file_xsd, validate_bpmn_xsd, XsdValidationError};
 
 use quick_xml::de::from_str;
 use quick_xml::se::to_string;
@@ -24,4 +25,3 @@ pub fn parse_bpmn(xml: &str) -> Result<Definitions, quick_xml::DeError> {
 pub fn serialize_bpmn(definitions: &Definitions) -> Result<String, quick_xml::SeError> {
     to_string(definitions)
 }
-

@@ -15,13 +15,25 @@ pub struct Process {
     #[serde(rename = "@id", alias = "id")]
     pub id: String,
 
-    #[serde(rename = "@name", alias = "name", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "@name",
+        alias = "name",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub name: Option<String>,
 
-    #[serde(rename = "@isExecutable", alias = "isExecutable", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "@isExecutable",
+        alias = "isExecutable",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub is_executable: Option<bool>,
 
-    #[serde(rename = "@processType", alias = "processType", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "@processType",
+        alias = "processType",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub process_type: Option<String>,
 
     #[serde(rename = "documentation", skip_serializing_if = "Option::is_none")]

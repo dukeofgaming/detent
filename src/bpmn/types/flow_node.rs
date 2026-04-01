@@ -1,6 +1,8 @@
 //! Unified enum for all flow node types
 
-use super::{EndEvent, ExclusiveGateway, ParallelGateway, ScriptTask, ServiceTask, StartEvent, Task};
+use super::{
+    EndEvent, ExclusiveGateway, ParallelGateway, ScriptTask, ServiceTask, StartEvent, Task,
+};
 
 /// Unified enum for all flow node types (for graph operations)
 #[derive(Debug, Clone, PartialEq)]
