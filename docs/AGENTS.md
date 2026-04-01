@@ -25,7 +25,7 @@ Follow these rules for journaling:
         - [ ] ...<!-- (Break down the tasks into smaller steps as you make progress) -->
     
 
-    ## Notes
+    ## Journal
 
     <!-- >Update this section as you make progress on the implementation -->
 
