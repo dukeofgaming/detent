@@ -34,12 +34,13 @@ RUN apt-get update && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends gh && \
-    # Create user with sudo access
-    groupadd --gid "${USER_GID}" "${USERNAME}" && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create user with sudo access - do this in a separate layer that persists after features
+RUN groupadd --gid "${USER_GID}" "${USERNAME}" && \
     useradd -s /bin/bash --uid "${USER_UID}" --gid "${USER_GID}" -m "${USERNAME}" && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
-    chmod 0440 /etc/sudoers.d/${USERNAME} && \
-    rm -rf /var/lib/apt/lists/*
+    chmod 0440 /etc/sudoers.d/${USERNAME}
 
 # Install Rust for the vscode user
 USER "${USERNAME}"
@@ -53,7 +54,6 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --de
     mkdir -p /home/${USERNAME}/bin /home/${USERNAME}/.npm-global && \
     printf '#!/bin/bash\nexec sudo /usr/bin/docker "$@"\n' > /home/${USERNAME}/bin/docker && \
     chmod +x /home/${USERNAME}/bin/docker
-
 
 # Install OpenCode
 RUN curl -fsSL https://opencode.ai/install | bash

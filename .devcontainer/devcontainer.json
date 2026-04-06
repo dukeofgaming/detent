@@ -7,6 +7,7 @@
     "ghcr.io/devcontainers-community/features/deno:1": {}
   },
   "runArgs": [
+    "-u", "root",
     "-v",
     "/var/run/docker.sock:/var/run/docker.sock",
     "-v",
@@ -33,6 +34,6 @@
     }
   },
   "postCreateCommand": "cargo fetch && cargo check",
-  "postStartCommand": "npm install -g @devcontainers/cli",
+  "postStartCommand": "sudo -u vscode npm install -g @devcontainers/cli",
   "remoteUser": "vscode"
 }
