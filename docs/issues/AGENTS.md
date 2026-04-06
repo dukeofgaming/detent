@@ -16,6 +16,8 @@ Follow these rules for journaling:
     created: {YYYY-MM-DD HH:mm}
     updated: {YYYY-MM-DD HH:mm}
     issue:
+        -- `id` is optional
+        id: {github_issue_id}
         tags: 
             - {some_label}
             - {some_tag}: {some_value}
@@ -27,15 +29,15 @@ Follow these rules for journaling:
 
     ## Description
 
-    <!-- (Describe the problem, constraints, and goals here) -->
+    <!-- (Describe the problem, constraints, and goals here), this matches the GitHub issue description when synced -->
 
-    ## Tasks
+    ## Tasks <!-- URL: {synced_tasks_comment_url} -->
 
     - [ ] ...<!-- (List the high-level tasks you will take to implement the feature here) -->
         - [ ] ...<!-- (Break down the tasks into smaller steps as you make progress) -->
     
 
-    # Journal
+    # Journal <!-- URL: {synced_journal_comment_url} -->
 
     <!-- >Update this section as you make progress on the implementation -->
 

@@ -1,0 +1,32 @@
+name: 'Sync Issues to GitHub'
+description: 'Sync issues from docs/issues/ to GitHub Issues'
+
+inputs:
+  dry-run:
+    description: 'Show what would be created without making changes'
+    required: false
+    default: 'false'
+  verbose:
+    description: 'Enable verbose logging'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Run sync-issues
+      shell: bash
+      run: ${{ github.action_path }}/push.sh push ${{ inputs.verbose && '--verbose' || '' }} ${{ inputs.dry-run == 'true' && '--dry-run' || '' }}
+
+outputs:
+  result:
+    description: 'Result of the sync operation'
+    value: ${{ steps.sync.outputs.result }}

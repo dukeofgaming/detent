@@ -1,0 +1,26 @@
+name: Sync Issues
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  sync-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync issues to GitHub
+        uses: ./.github/actions/sync-issues
+        with:
+          verbose: ${{ github.event_name == 'workflow_dispatch' }}
+          dry-run: ${{ github.event_name == 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
