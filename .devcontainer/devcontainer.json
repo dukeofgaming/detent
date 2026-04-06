@@ -7,9 +7,7 @@
     "-v",
     "/var/run/docker.sock:/var/run/docker.sock",
     "-v",
-    "${localEnv:HOME}/.config/opencode:/home/vscode/.config/opencode:ro",
-    "--security-opt",
-    "no-new-privileges"
+    "${localEnv:HOME}/.config/opencode:/home/vscode/.config/opencode:ro"
   ],
   "customizations": {
     "vscode": {
