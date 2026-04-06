@@ -3,6 +3,9 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "features": {
+    "ghcr.io/devcontainers-community/features/deno:1": {}
+  },
   "runArgs": [
     "-v",
     "/var/run/docker.sock:/var/run/docker.sock",

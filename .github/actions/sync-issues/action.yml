@@ -11,22 +11,37 @@ inputs:
     required: false
     default: 'false'
 
+outputs:
+  exit-code:
+    description: 'Exit code from the sync command'
+    value: ${{ steps.sync.outputs.exit-code }}
+  summary:
+    description: 'Summary output from the sync command'
+    value: ${{ steps.sync.outputs.summary }}
+
 runs:
   using: 'composite'
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Deno
+      uses: denoland/setup-deno@v2
       with:
-        node-version: '20'
+        deno-version: v2
 
     - name: Run sync-issues
+      id: sync
       shell: bash
-      run: ${{ github.action_path }}/push.sh push ${{ inputs.verbose && '--verbose' || '' }} ${{ inputs.dry-run == 'true' && '--dry-run' || '' }}
-
-outputs:
-  result:
-    description: 'Result of the sync operation'
-    value: ${{ steps.sync.outputs.result }}
+      run: |
+        set -o pipefail
+        cd ${{ github.action_path }}/../..
+        OUTPUT=$(deno run --allow-all .github/actions/sync-issues/sync-issues/index.ts push ${{ inputs.verbose && '--verbose' || '' }} ${{ inputs.dry-run == 'true' && '--dry-run' || '' }} 2>&1)
+        EXIT_CODE=$?
+        echo "$OUTPUT"
+        echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        SUMMARY=$(echo "$OUTPUT" | tail -5)
+        echo "summary<<EOF" >> $GITHUB_OUTPUT
+        echo "$SUMMARY" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        exit $EXIT_CODE
