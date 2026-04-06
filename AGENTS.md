@@ -4,4 +4,4 @@
 
 ## Documentation
 
-- When making edits, planning or starting a new session, always follow the rules in [[docs/AGENTS]].
+- When making edits, planning or starting a new session, always follow the rules in [[issues/AGENTS]].

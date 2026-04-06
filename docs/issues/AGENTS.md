@@ -10,10 +10,20 @@ Follow these rules for journaling:
 
     ```markdown
     ---
-    type: journal
+    type: issue
+    title: {issue_title}
+    author: {github_username}
+    created: {YYYY-MM-DD HH:mm}
+    updated: {YYYY-MM-DD HH:mm}
+    issue:
+        tags: 
+            - {some_label}
+            - {some_tag}: {some_value}
+        sections:
+            - description: {github_comment_id}
+            - tasks: {github_comment_id}
+            - journal: {github_comment_id}
     ---
-
-    # {github_id} - {issue_title}
 
     ## Description
 
@@ -25,11 +35,11 @@ Follow these rules for journaling:
         - [ ] ...<!-- (Break down the tasks into smaller steps as you make progress) -->
     
 
-    ## Journal
+    # Journal
 
     <!-- >Update this section as you make progress on the implementation -->
 
-    ### {task} ({YYYY-MM-DD HH:mm})
+    ## {task} ({YYYY-MM-DD HH:mm})
 
     1. **{YYYY-MM-DD HH:mm}**: ... <!-- Describe the thought, decision, or code change here, make sure you reflect the users intentions, rationale, feedback, blockers and pivots -->
         2. ... <!-- Add more points as needed sub steps -->
@@ -43,6 +53,8 @@ Follow these rules for journaling:
 
 3. When starting a new session, always check the journal first as a starting point for your thinking.
 
-4. The journal is always named after the branch, since this is a Github project (i.e. `{github_id}-{issue_name}`), the journal always goes in this structure `docs/notes/features/{branch_name}/#{github_id}.md` (create the file if it doesn't exist). 
+4. The journal is always named after the branch, since this is a Github project (i.e. `{github_id}-{issue_name}`), the journal always goes in this structure `docs/issues/{issue_type}/{branch_name|}/#{github_id}.md` (create the file if it doesn't exist). 
 
 5. It is OK to edit the journal after the fact, even when in planning mode, but prompt the user.
+
+6. Whenever deciding not to do a task, don't remove it, cross it out instead.
