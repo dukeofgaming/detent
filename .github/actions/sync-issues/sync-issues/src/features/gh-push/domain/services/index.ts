@@ -3,8 +3,8 @@
  * No ports - ports are in Application layer per Uncle Bob's Clean Architecture
  */
 
-export { parseFrontmatter } from "./ParseFrontmatter.ts";
-export { extractSections } from "./ExtractSections.ts";
-export { extractIssueIdFromFilename } from "./ExtractIssueId.ts";
-export { deriveTitleFromFolder } from "./DeriveTitle.ts";
-export { parseIssueFile } from "./ParseIssueFile.ts";
+export { parseFrontmatter } from "./ParseFrontmatter";
+export { extractSections } from "./ExtractSections";
+export { extractIssueIdFromFilename } from "./ExtractIssueId";
+export { deriveTitleFromFolder } from "./DeriveTitle";
+export { parseIssueFile } from "./ParseIssueFile";
