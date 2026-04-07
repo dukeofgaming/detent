@@ -11,11 +11,9 @@ jobs:
     permissions:
       contents: read
       issues: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Sync issues to GitHub
         uses: ./.github/actions/sync-issues
