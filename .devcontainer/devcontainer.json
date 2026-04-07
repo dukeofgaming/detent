@@ -33,7 +33,7 @@
       }
     }
   },
-  "postCreateCommand": "cargo fetch && cargo check",
+  "postCreateCommand": "mkdir -p /workspaces/detent/target /workspaces/detent/artifacts && cargo fetch && cargo check",
   "postStartCommand": "sudo -u vscode npm install -g @devcontainers/cli",
   "remoteUser": "vscode"
 }

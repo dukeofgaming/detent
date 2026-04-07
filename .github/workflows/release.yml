@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and test in devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: detent-devcontainer
+          cacheFrom: detent-devcontainer:cache
+          subFolder: .
+          runCmd: |
+            cargo test && \
+            cargo build --release && \
+            mkdir -p artifacts && \
+            cp target/release/detent artifacts/detent-${{ github.sha }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: detent
+          path: artifacts/detent-*
+          retention-days: 30
+
+  publish:
+    needs: test-build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: detent
+          path: .
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mv detent-* detent
+          gh release create "${{ github.sha }}" \
+            --title "Release ${{ github.sha }}" \
+            --notes "Automated release from commit ${{ github.sha }}" \
+            ./detent
