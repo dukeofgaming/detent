@@ -41,7 +41,7 @@ This overrides the common `types.ts` pattern because screaming architecture prio
 .github/actions/sync-issues/sync-issues/
 ├── src/
 │   └── features/gh-push/         # Feature module (screaming: "gh-push" feature)
-│       ├── domain/               # Core business logic (no external dependencies)
+│       ├── domain/               # Entities only (no external dependencies)
 │       │   ├── types/
 │       │   │   ├── index.ts          # Re-exports all types
 │       │   │   ├── IssueFile.ts      # IssueFile, IssueFrontmatter
@@ -49,25 +49,26 @@ This overrides the common `types.ts` pattern because screaming architecture prio
 │       │   │   ├── GitHubComment.ts  # GitHubComment
 │       │   │   ├── SyncResult.ts     # SyncResult
 │       │   │   └── SyncOptions.ts    # SyncOptions
-│       │   └── services/
-│       │   │   ├── ParseFrontmatter.ts     # parseFrontmatter
-│       │   │   ├── ExtractSections.ts      # extractSections
-│       │   │   ├── ExtractIssueId.ts       # extractIssueIdFromFilename
-│       │   │   ├── DeriveTitle.ts          # deriveTitleFromFolder
-│       │   │   └── ParseIssueFile.ts       # parseIssueFile (composed)
+│       │   └── services/             # Pure functions (no ports here)
+│       │       ├── index.ts          # Re-exports functions
+│       │       ├── ParseFrontmatter.ts   # parseFrontmatter
+│       │       ├── ExtractSections.ts    # extractSections
+│       │       , ExtractIssueId.ts      # extractIssueIdFromFilename
+│       │       , DeriveTitle.ts          # deriveTitleFromFolder
+│       │       └── ParseIssueFile.ts    # parseIssueFile (composed)
 │       ├── application/
+│       │   ├── ports/                # Port interfaces (Uncle Bob's Interface Adapters)
+│       │   │   ├── index.ts          # Re-exports ports
+│       │   │   ├── IssueAdapterPort.ts   # GitHub issue port
+│       │   │   └── FileAdapterPort.ts    # File system port
 │       │   └── usecases/
-│       │       └── SyncIssueUseCase.ts     # SyncIssueUseCase
-│       ├── adapter/
-│       │   ├── index.ts                # Re-exports all ports
-│       │   ├── IssueAdapterPort.ts     # IssueAdapterPort interface
-│       │   └── FileAdapterPort.ts      # FileAdapterPort interface
-│       └── infrastructure/
-│           └── gh-cli/
-│               ├── RunGh.ts                 # runGh helper
-│               ├── NodeIdToNumericId.ts     # nodeIdToNumericId helper
-│               ├── GhCliAdapter.ts           # GhCliAdapter
-│               └── NodeFileAdapter.ts       # NodeFileAdapter
+│       │       └── SyncIssueUseCase.ts   # SyncIssueUseCase
+│       ├── adapters/                 # Implementations of Application ports
+│       │   ├── GhCliAdapter.ts       # GitHub CLI implementation
+│       │   └── NodeFileAdapter.ts    # Node.js fs implementation
+│       └── infrastructure/           # External dependencies (frameworks, drivers)
+│           ├── RunGh.ts             # gh CLI wrapper
+│           └── NodeIdToNumericId.ts # Node ID converter
 ├── docs/
 │   ├── plan.md
 │   └── adrs/
@@ -75,14 +76,37 @@ This overrides the common `types.ts` pattern because screaming architecture prio
 └── index.ts                  # CLI entry point (thin, orchestrates layers)
 ```
 
-**Note:** Each `.ts` file contains one type or class. File names match the exact PascalCase of the entity they contain.
+**Note:** Following Uncle Bob's Clean Architecture:
+- Ports (interfaces) are in **Application layer** 
+- Adapters (implementations) are in **Adapters layer**
+- Infrastructure has external dependencies (node:fs, gh CLI, spawnSync)
 
-### Layer Dependencies
+### Layer Dependencies (Uncle Bob's Clean Architecture)
 
-- Domain: No dependencies on other layers (pure TypeScript)
-- Application: Depends only on Domain (uses types, knows nothing about infra)
-- Adapter: Depends on Domain (defines interfaces using Domain types)
-- Infrastructure: Implements Adapter interfaces (depends on Adapter + Domain)
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Infrastructure (External: node:fs, gh CLI, spawn)         │
+│    - RunGh.ts, NodeIdToNumericId.ts                       │
+├─────────────────────────────────────────────────────────────┤
+│  Adapters (Implements Application ports)                   │
+│    - GhCliAdapter implements IssueAdapterPort              │
+│    - NodeFileAdapter implements FileAdapterPort           │
+├─────────────────────────────────────────────────────────────┤
+│  Application (Use Cases + Ports)                           │
+│    - SyncIssueUseCase uses IssueAdapterPort, FileAdapterPort│
+│    - IssueAdapterPort, FileAdapterPort (interfaces)       │
+├─────────────────────────────────────────────────────────────┤
+│  Domain (Entities: IssueFile, GitHubIssue, etc.)           │
+└─────────────────────────────────────────────────────────────┘
+                    ▲
+                    │
+            Dependencies point inward
+```
+
+- **Domain**: Entities only, no external dependencies
+- **Application**: Contains use cases AND port interfaces ( Uncle Bob's "Interface Adapters")
+- **Adapters**: Implement the Application ports  
+- **Infrastructure**: External dependencies (framework code, CLI wrappers)
 
 ### Screaming Architecture Benefits
 

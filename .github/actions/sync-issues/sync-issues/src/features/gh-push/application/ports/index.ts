@@ -1,5 +1,5 @@
 /**
- * Adapter Ports - Re-export all adapter interfaces
+ * Application Ports - Re-export all port interfaces
  */
 
 export type { IssueAdapterPort } from "./IssueAdapterPort.ts";

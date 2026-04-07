@@ -1,5 +1,6 @@
 /**
  * FileAdapterPort - Interface for file system operations
+ * Port interface in Application layer per Uncle Bob's Clean Architecture
  */
 
 export interface FileAdapterPort {

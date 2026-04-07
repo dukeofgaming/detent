@@ -1,11 +1,12 @@
 /**
  * GhCliAdapter - GitHub CLI adapter implementation
+ * Adapter that implements Application port
  */
 
-import type { GitHubIssue, GitHubComment } from "../../../domain/types/index.ts";
-import type { IssueAdapterPort } from "../../../adapter/index.ts";
-import { runGh } from "./RunGh.ts";
-import { nodeIdToNumericId } from "./NodeIdToNumericId.ts";
+import type { GitHubIssue, GitHubComment } from "../../domain/types/index.ts";
+import type { IssueAdapterPort } from "../../application/ports/index.ts";
+import { runGh } from "../infrastructure/RunGh.ts";
+import { nodeIdToNumericId } from "../infrastructure/NodeIdToNumericId.ts";
 
 export class GhCliAdapter implements IssueAdapterPort {
   async findIssueByNumber(number: number): Promise<GitHubIssue | null> {

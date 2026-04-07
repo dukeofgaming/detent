@@ -1,5 +1,6 @@
 /**
  * IssueAdapterPort - Interface for GitHub issue operations
+ * Port interface in Application layer per Uncle Bob's Clean Architecture
  */
 
 import type { GitHubIssue, GitHubComment } from "../../domain/types/index.ts";

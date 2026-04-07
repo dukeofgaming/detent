@@ -10,8 +10,8 @@ import { parseArgs } from "node:util";
 import { parseIssueFile } from "./src/features/gh-push/domain/services/ParseIssueFile.ts";
 import type { IssueFile } from "./src/features/gh-push/domain/types/index.ts";
 import { SyncIssueUseCase } from "./src/features/gh-push/application/usecases/SyncIssueUseCase.ts";
-import { GhCliAdapter } from "./src/features/gh-push/infrastructure/gh-cli/GhCliAdapter.ts";
-import { NodeFileAdapter } from "./src/features/gh-push/infrastructure/gh-cli/NodeFileAdapter.ts";
+import { GhCliAdapter } from "./src/features/gh-push/adapters/GhCliAdapter.ts";
+import { NodeFileAdapter } from "./src/features/gh-push/adapters/NodeFileAdapter.ts";
 
 const ISSUES_DIR = Deno.cwd() + "/docs/issues";
 
