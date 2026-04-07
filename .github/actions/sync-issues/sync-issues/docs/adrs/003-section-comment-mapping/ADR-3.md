@@ -1,8 +1,9 @@
+---
+type: adr
+date: 2026-04-07
+status: accepted
+---
 # ADR-003: Section-to-Comment Mapping
-
-## Status
-
-Accepted
 
 ## Context
 
@@ -35,8 +36,11 @@ issue:
 
 ## Consequences
 
-- Positive: Clear separation of concerns
-- Positive: Journal/Tasks preserved as comments
+### Positive
+- Clear separation of concerns
+- Journal/Tasks preserved as comments
+
+### Negative
 - Need to track comment IDs in frontmatter for idempotency
 
 ## References

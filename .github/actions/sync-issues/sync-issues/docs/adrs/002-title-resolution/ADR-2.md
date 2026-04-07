@@ -1,8 +1,9 @@
+---
+type: adr
+date: 2026-04-07
+status: accepted
+---
 # ADR-002: Title Resolution Order
-
-## Status
-
-Accepted
 
 ## Context
 
@@ -26,8 +27,11 @@ Title resolution order:
 
 ## Consequences
 
-- Positive: Works with minimal frontmatter
-- Positive: Parent folder provides semantic context
+### Positive
+- Works with minimal frontmatter
+- Parent folder provides semantic context
+
+### Negative
 - Need to handle various folder naming conventions
 
 ## References

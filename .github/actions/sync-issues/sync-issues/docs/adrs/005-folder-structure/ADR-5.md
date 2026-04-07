@@ -1,8 +1,9 @@
+---
+type: adr
+date: 2026-04-07
+status: accepted
+---
 # ADR-005: Folder Structure (Vertical Slice + Clean Architecture)
-
-## Status
-
-Accepted
 
 ## Context
 
@@ -53,9 +54,9 @@ This overrides the common `types.ts` pattern because screaming architecture prio
 │       │       ├── index.ts          # Re-exports functions
 │       │       ├── ParseFrontmatter.ts   # parseFrontmatter
 │       │       ├── ExtractSections.ts    # extractSections
-│       │       , ExtractIssueId.ts      # extractIssueIdFromFilename
-│       │       , DeriveTitle.ts          # deriveTitleFromFolder
-│       │       └── ParseIssueFile.ts    # parseIssueFile (composed)
+│       │       ├── ExtractIssueId.ts     # extractIssueIdFromFilename
+│       │       ├── DeriveTitle.ts         # deriveTitleFromFolder
+│       │       └── ParseIssueFile.ts     # parseIssueFile (composed)
 │       ├── application/
 │       │   ├── ports/                # Port interfaces (Uncle Bob's Interface Adapters)
 │       │   │   ├── index.ts          # Re-exports ports
@@ -68,6 +69,43 @@ This overrides the common `types.ts` pattern because screaming architecture prio
 │       │   └── NodeFileAdapter.ts    # Node.js fs implementation
 │       └── infrastructure/           # External dependencies (frameworks, drivers)
 │           ├── RunGh.ts             # gh CLI wrapper
+│           └── NodeIdToNumericId.ts # Node ID converter
+├── docs/
+│   ├── plan.md
+│   └── adrs/
+│       └── ...
+└── index.ts                  # CLI entry point (thin, orchestrates layers)
+```
+.github/actions/sync-issues/sync-issues/
+├── src/
+│   └── features/gh-push/         # Feature module (screaming: "gh-push" feature)
+│       ├── domain/               # Entities only (no external dependencies)
+│       │   ├── types/
+│       │   │   ├── index.ts          # Re-exports all types
+│       │   │   ├── IssueFile.ts      # IssueFile, IssueFrontmatter
+│       │   │   ├── GitHubIssue.ts    # GitHubIssue
+│       │   │   ├── GitHubComment.ts  # GitHubComment
+│       │   │   ├── SyncResult.ts     # SyncResult
+│       │   │   └── SyncOptions.ts    # SyncOptions
+│       │   └── services/             # Pure functions (no ports here)
+│       │       ├── index.ts          # Re-exports functions
+│       │       ├── ParseFrontmatter.ts   # parseFrontmatter
+│       │       ├── ExtractSections.ts    # extractSections
+│       │       , ExtractIssueId.ts      # extractIssueIdFromFilename
+│       │       , DeriveTitle.ts          # deriveTitleFromFolder
+│       │       └── ParseIssueFile.ts    # parseIssueFile (composed)
+│       ├── application/
+│       │   ├── ports/                # Port interfaces (Uncle Bob's Interface Adapters)
+│       │   │   ├── index.ts          # Re-exports ports
+│       │   │   , IssueAdapterPort.ts   # GitHub issue port
+│       │   │   └── FileAdapterPort.ts    # File system port
+│       │   └── usecases/
+│       │       └── SyncIssueUseCase.ts   # SyncIssueUseCase
+│       , adapters/                 # Implementations of Application ports
+│       │   , GhCliAdapter.ts       # GitHub CLI implementation
+│       │   └── NodeFileAdapter.ts    # Node.js fs implementation
+│       └── infrastructure/           # External dependencies (frameworks, drivers)
+│           , RunGh.ts             # gh CLI wrapper
 │           └── NodeIdToNumericId.ts # Node ID converter
 ├── docs/
 │   ├── plan.md
@@ -119,10 +157,13 @@ This overrides the common `types.ts` pattern because screaming architecture prio
 
 ## Consequences
 
-- Positive: Testable - each layer can be mocked
-- Positive: Screaming architecture - file names reveal contents
-- Positive: One file per type maximizes discoverability and minimizes merge conflicts
-- Positive: Easy to spinoff as separate project
+### Positive
+- Testable - each layer can be mocked
+- Screaming architecture - file names reveal contents
+- One file per type maximizes discoverability and minimizes merge conflicts
+- Easy to spinoff as separate project
+
+### Negative
 - Need to maintain discipline about layer boundaries
 
 ## References

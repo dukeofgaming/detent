@@ -1,8 +1,9 @@
+---
+type: adr
+date: 2026-04-07
+status: accepted
+---
 # ADR-004: Idempotency Strategy
-
-## Status
-
-Accepted
 
 ## Context
 
@@ -32,8 +33,11 @@ Idempotency rules:
 
 ## Consequences
 
-- Positive: Safe to run multiple times
-- Positive: Comments stay in sync with markdown
+### Positive
+- Safe to run multiple times
+- Comments stay in sync with markdown
+
+### Negative
 - Need to write back comment IDs to frontmatter (future enhancement)
 
 ## References

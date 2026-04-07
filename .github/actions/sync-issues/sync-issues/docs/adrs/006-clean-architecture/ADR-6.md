@@ -1,8 +1,9 @@
+---
+type: adr
+date: 2026-04-07
+status: accepted
+---
 # ADR-6: Clean Architecture for sync-issues
-
-## Status
-
-Accepted
 
 ## Context
 
@@ -178,13 +179,16 @@ src/features/gh-push/           # One slice per feature
 
 ## Consequences
 
-- **Positive**: Clear dependency boundaries enforce architectural discipline
-- **Positive**: Testable - each layer can be mocked independently
-- **Positive**: Screaming architecture - file names immediately reveal contents
-- **Positive**: One file per type maximizes discoverability and minimizes merge conflicts
-- **Positive**: Easy to spinoff as separate project
-- **Negative**: More files than consolidated approaches
-- **Negative**: Requires discipline to maintain layer boundaries
+### Positive
+- Clear dependency boundaries enforce architectural discipline
+- Testable - each layer can be mocked independently
+- Screaming architecture - file names immediately reveal contents
+- One file per type maximizes discoverability and minimizes merge conflicts
+- Easy to spinoff as separate project
+
+### Negative
+- More files than consolidated approaches
+- Requires discipline to maintain layer boundaries
 
 ## References
 

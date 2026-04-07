@@ -1,8 +1,9 @@
+---
+type: adr
+date: 2026-04-07
+status: accepted
+---
 # ADR-001: Issue File Matching Strategy
-
-## Status
-
-Accepted
 
 ## Context
 
@@ -25,8 +26,11 @@ This ensures that:
 
 ## Consequences
 
-- Positive: Existing issues are updated correctly
-- Positive: Clear mapping between files and GH issues
+### Positive
+- Existing issues are updated correctly
+- Clear mapping between files and GH issues
+
+### Negative
 - Need to ensure filenames match GH issue numbers
 
 ## References
