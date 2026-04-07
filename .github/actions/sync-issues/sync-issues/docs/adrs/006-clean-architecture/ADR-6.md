@@ -92,20 +92,24 @@ Each TypeScript file contains exactly one type or class. File names match the ex
 
 ```
 .github/actions/sync-issues/sync-issues/
-├── tsconfig.base.json                 # Base Deno configuration (action level)
+├── tsconfig.base.json                 # Base configuration (action level)
+├── package.json                       # Node.js package with import maps
 └── src/features/
     ├── gh-push/
-    │   └── tsconfig.json              # Slice-level (extends base)
+    │   ├── tsconfig.json              # Slice-level (extends base)
+    │   └── domain/, application/, ...
     └── another-slice/
         └── tsconfig.json              # New slice copies same pattern
 ```
 
-**tsconfig.base.json** (Deno-recommended defaults):
+**tsconfig.base.json** (Node.js compatible):
 ```json
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "deno.ns"],
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "strict": true,
     "useUnknownInCatchVariables": true,
     "noImplicitOverride": true
@@ -136,13 +140,22 @@ Each TypeScript file contains exactly one type or class. File names match the ex
 
 2. **Same path rules for all slices**: All slices use the same layer aliases (`#domain/*`, `#application/*`, etc.). This makes the codebase consistent and predictable.
 
-3. **Cross-slice imports fail**: The `include` directive restricts each slice to its own files. Attempting to import from another slice (e.g., `import { X } from "other-slice/domain/..."`) fails at compile time. This enforces the vertical slice boundary.
+3. **Cross-slice imports fail**: The `include` directive restricts each slice to its own files. Attempting to import from another slice (e.g., `import { X } from "other-slice/domain/..."`) fails at compile time because it's not in the slice's `include`. This enforces the vertical slice boundary.
 
-4. **Path aliases are slice-relative**: Each slice's `baseUrl: "."` means paths resolve within that slice only. There is no way to escape the slice.
+4. **Path aliases are slice-relative**: Each slice's `baseUrl: "."` means `#domain/types` resolves to `domain/types/index.ts` within that slice only. There is no way to escape the slice.
 
-5. **Deno vs tsc**: The `lib: ["ES2022", "deno.ns"]` works with Deno runtime but not with tsc directly (tsc doesn't understand "deno.ns"). Use `deno check` or IDE with Deno LSP for type checking.
+5. **Node.js compatible**: Using `lib: ["ES2022"]` (not `deno.ns`) and `moduleResolution: "bundler"` makes it work with both tsc and Node.js.
 
-6. **Runtime uses relative paths**: Path aliases work for IDE autocomplete and `deno check`. At runtime, Deno requires explicit relative paths with `.ts` extensions (e.g., `../../domain/types/index.ts`).
+6. **Runtime requires package.json imports**: For Deno runtime, path aliases need to be defined in `package.json` `imports` field:
+```json
+{
+  "imports": {
+    "#domain/types": "./src/features/gh-push/domain/types/index.ts"
+  }
+}
+```
+
+7. **Relative imports need .ts extension**: Within a slice, relative imports must include `.ts` extension (e.g., `from "./ParseFrontmatter.ts"`).
 
 **Creating a new slice**:
 
@@ -154,7 +167,7 @@ mkdir -p src/features/new-slice/{domain,application,adapters,infrastructure}/{ty
 cp src/features/gh-push/tsconfig.json src/features/new-slice/tsconfig.json
 
 # 3. Update extends path in new-slice/tsconfig.json:
-# Change "../../tsconfig.base.json" to "../../../tsconfig.base.json"
+# Change "../../../tsconfig.base.json" to "../../../tsconfig.base.json"
 ```
 
 The new slice automatically inherits the same strict settings and path aliases.
