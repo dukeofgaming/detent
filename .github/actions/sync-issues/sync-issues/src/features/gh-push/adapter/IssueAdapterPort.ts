@@ -1,8 +1,8 @@
 /**
- * GitHub Issue Adapter Port - Interface for GitHub operations
+ * IssueAdapterPort - Interface for GitHub issue operations
  */
 
-import type { GitHubIssue, GitHubComment } from "../../domain/types/issue.ts";
+import type { GitHubIssue, GitHubComment } from "../../domain/types/index.ts";
 
 export interface IssueAdapterPort {
   findIssueByNumber(number: number): Promise<GitHubIssue | null>;
@@ -12,12 +12,4 @@ export interface IssueAdapterPort {
   getComments(issueNumber: number): Promise<GitHubComment[]>;
   createComment(issueNumber: number, body: string): Promise<GitHubComment>;
   updateComment(commentId: string, body: string): Promise<void>;
-  getCurrentRepo(): Promise<string>;
-}
-
-export interface FileAdapterPort {
-  readdir(path: string): string[];
-  stat(path: string): { isDirectory(): boolean; isFile(): boolean };
-  readFile(path: string): string;
-  writeFile(path: string, content: string): void;
 }

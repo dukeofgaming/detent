@@ -1,76 +1,63 @@
 #!/usr/bin/env deno run
 
 /**
- * Sync Issues CLI Entry Point
- * Wires together: Domain → Application → Adapter → Infrastructure
+ * Sync Issues - CLI Entry Point
+ * Uses clean architecture layers from src/features/gh-push/
  */
 
 import { parseArgs } from "node:util";
 
-import { SyncIssueUseCase } from "./src/features/gh-push/application/usecases/sync-issue.ts";
-import { GhCliAdapter } from "./src/features/gh-push/infrastructure/gh-cli/adapter.ts";
-import { NodeFileAdapter } from "./src/features/gh-push/infrastructure/gh-cli/file-adapter.ts";
-import { parseIssueFile } from "./src/features/gh-push/domain/services/parser.ts";
+import { parseIssueFile } from "./src/features/gh-push/domain/services/ParseIssueFile.ts";
+import type { IssueFile } from "./src/features/gh-push/domain/types/index.ts";
+import { SyncIssueUseCase } from "./src/features/gh-push/application/usecases/SyncIssueUseCase.ts";
+import { GhCliAdapter } from "./src/features/gh-push/infrastructure/gh-cli/GhCliAdapter.ts";
+import { NodeFileAdapter } from "./src/features/gh-push/infrastructure/gh-cli/NodeFileAdapter.ts";
 
-const ISSUES_DIR = "docs/issues";
+const ISSUES_DIR = Deno.cwd() + "/docs/issues";
 
-function findIssues(dir: string, fileAdapter: NodeFileAdapter) {
-  const issues: ReturnType<typeof parseIssueFile>[] = [];
+function findIssues(adapter: NodeFileAdapter): IssueFile[] {
+  const issues: IssueFile[] = [];
 
-  for (const entry of fileAdapter.readdir(dir)) {
-    const fullPath = `${dir}/${entry}`;
-    const statResult = fileAdapter.stat(fullPath);
+  function scan(dir: string): void {
+    for (const entry of adapter.readdir(dir)) {
+      const fullPath = `${dir}/${entry}`;
+      const statResult = adapter.stat(fullPath);
 
-    if (statResult.isDirectory()) {
-      issues.push(...findIssues(fullPath, fileAdapter));
-    } else if (entry.match(/^#?\d+.*\.md$/)) {
-      const content = fileAdapter.readFile(fullPath);
-      const parentFolder = dir.split("/").pop();
-      issues.push(parseIssueFile(fullPath, content, parentFolder));
+      if (statResult.isDirectory()) {
+        scan(fullPath);
+      } else if (entry.match(/^#?\d+.*\.md$/)) {
+        const content = adapter.readFile(fullPath);
+        const parentFolder = dir.split("/").pop();
+        issues.push(parseIssueFile(fullPath, content, parentFolder));
+      }
     }
   }
 
+  scan(ISSUES_DIR);
   return issues;
 }
 
-async function push(options: { dryRun: boolean; verbose: boolean }) {
-  const { dryRun, verbose } = options;
-  const fileAdapter = new NodeFileAdapter();
-  const issueAdapter = new GhCliAdapter();
-  const useCase = new SyncIssueUseCase(issueAdapter, fileAdapter);
-
+async function push(verbose: boolean, dryRun: boolean): Promise<void> {
   console.log("Scanning for issues in", ISSUES_DIR);
-  const issues = findIssues(ISSUES_DIR, fileAdapter);
-  console.log(`Found ${issues.length} issue(s)\n`);
 
-  const results = { created: 0, updated: 0, skipped: 0 };
+  const fileAdapter = new NodeFileAdapter();
+  const ghAdapter = new GhCliAdapter();
+  const syncUseCase = new SyncIssueUseCase(ghAdapter, fileAdapter);
+
+  const issues = findIssues(fileAdapter);
+  console.log(`Found ${issues.length} issue(s)\n`);
 
   for (const issue of issues) {
     try {
-      const result = await useCase.execute(issue, { dryRun, verbose });
-
-      if (result.action === "created") results.created++;
-      else if (result.action === "updated") results.updated++;
-      else results.skipped++;
-
-      console.log();
+      const result = await syncUseCase.execute(issue, { verbose, dryRun });
+      console.log(`Result: ${result.action} (#${result.issueNumber})`);
     } catch (error) {
-      console.error(
-        `Error syncing ${issue.title}: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
-      results.skipped++;
+      console.error(`Error syncing ${issue.title}: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }
-
-  console.log("\nSummary:");
-  console.log(`  Created: ${results.created}`);
-  console.log(`  Updated: ${results.updated}`);
-  console.log(`  Skipped: ${results.skipped}`);
-
-  return results;
 }
 
-function help() {
+function help(): void {
   console.log(`
 GitHub Issue Sync
 
@@ -99,10 +86,7 @@ const { positionals, values } = parseArgs({
 const [command = "help"] = positionals;
 
 if (command === "push") {
-  push({
-    dryRun: values["dry-run"],
-    verbose: values.verbose,
-  });
+  push(values.verbose, values["dry-run"]);
 } else if (command === "help") {
   help();
   Deno.exit(0);

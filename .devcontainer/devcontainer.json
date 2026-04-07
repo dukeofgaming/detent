@@ -24,7 +24,8 @@
         "fill-labs.dependi",
         "unifiedjs.vscode-mdx",
         "sst-dev.opencode",
-        "foam.foam-vscode"
+        "foam.foam-vscode",
+        "denoland.vscode-deno"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",

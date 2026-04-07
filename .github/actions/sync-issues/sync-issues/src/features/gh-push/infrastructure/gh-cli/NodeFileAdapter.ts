@@ -1,9 +1,9 @@
 /**
- * Node.js File Adapter - Concrete implementation using Node.js fs module
+ * NodeFileAdapter - Node.js file system adapter implementation
  */
 
 import { readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
-import type { FileAdapterPort } from "../../../adapter/ports.ts";
+import type { FileAdapterPort } from "../../../adapter/index.ts";
 
 export class NodeFileAdapter implements FileAdapterPort {
   readdir(path: string): string[] {
