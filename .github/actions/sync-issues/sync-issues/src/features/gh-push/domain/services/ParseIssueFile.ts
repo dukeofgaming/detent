@@ -2,7 +2,7 @@
  * ParseIssueFile - Parse an issue file into an IssueFile domain object
  */
 
-import type { IssueFile } from "../../types/index.ts";
+import type { IssueFile } from "#domain/types";
 import { parseFrontmatter } from "./ParseFrontmatter.ts";
 import { extractSections } from "./ExtractSections.ts";
 import { extractIssueIdFromFilename } from "./ExtractIssueId.ts";

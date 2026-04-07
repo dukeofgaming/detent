@@ -3,12 +3,12 @@
  * Implements the push subcommand for syncing issues to GitHub
  */
 
-import type { Command, CommandContext, CommandResult } from "../application/ports/index.ts";
-import type { IssueFile } from "../domain/types/index.ts";
-import { parseIssueFile } from "../domain/services/ParseIssueFile.ts";
-import { SyncIssueUseCase } from "../application/usecases/SyncIssueUseCase.ts";
-import { GhCliAdapter } from "../adapters/GhCliAdapter.ts";
-import { NodeFileAdapter } from "../adapters/NodeFileAdapter.ts";
+import type { Command, CommandContext, CommandResult } from "#application/ports";
+import type { IssueFile } from "#domain/types";
+import { parseIssueFile } from "#domain/services/ParseIssueFile";
+import { SyncIssueUseCase } from "#application/usecases/SyncIssueUseCase";
+import { GhCliAdapter } from "#adapters/GhCliAdapter";
+import { NodeFileAdapter } from "#adapters/NodeFileAdapter";
 
 const ISSUES_DIR = Deno.cwd() + "/docs/issues";
 

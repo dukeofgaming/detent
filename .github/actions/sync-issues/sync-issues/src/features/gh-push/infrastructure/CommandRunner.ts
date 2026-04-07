@@ -3,7 +3,7 @@
  * Orchestrates CLI command execution
  */
 
-import type { CommandContext, CommandResult } from "../application/ports/index.ts";
+import type { CommandContext, CommandResult } from "#application/ports";
 import { CliParser, type ParsedArgs } from "./CliParser.ts";
 import { CommandRegistry } from "./CommandRegistry.ts";
 import { HelpCommand } from "./HelpCommand.ts";

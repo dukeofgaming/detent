@@ -3,7 +3,7 @@
  * Displays help information for all commands
  */
 
-import type { Command, CommandContext, CommandResult } from "../application/ports/index.ts";
+import type { Command, CommandContext, CommandResult } from "#application/ports";
 import { CommandRegistry } from "./CommandRegistry.ts";
 
 export class HelpCommand implements Command {

@@ -3,7 +3,7 @@
  * Port interface in Application layer per Uncle Bob's Clean Architecture
  */
 
-import type { GitHubIssue, GitHubComment } from "../../../domain/types/index.ts";
+import type { GitHubIssue, GitHubComment } from "#domain/types";
 
 export interface IssueAdapterPort {
   findIssueByNumber(number: number): Promise<GitHubIssue | null>;

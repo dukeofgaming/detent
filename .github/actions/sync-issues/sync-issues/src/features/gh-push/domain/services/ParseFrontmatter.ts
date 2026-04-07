@@ -2,7 +2,7 @@
  * ParseFrontmatter - Parse YAML frontmatter from markdown content
  */
 
-import type { IssueFrontmatter } from "../../types/index.ts";
+import type { IssueFrontmatter } from "#domain/types";
 
 export function parseFrontmatter(content: string): IssueFrontmatter | null {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/);

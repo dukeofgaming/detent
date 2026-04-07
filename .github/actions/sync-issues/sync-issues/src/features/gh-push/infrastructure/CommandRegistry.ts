@@ -3,7 +3,7 @@
  * Manages registration and lookup of CLI commands
  */
 
-import type { Command } from "../application/ports/index.ts";
+import type { Command } from "#application/ports";
 
 export class CommandRegistry {
   private commands: Map<string, Command> = new Map();

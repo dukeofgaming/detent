@@ -4,7 +4,7 @@
  */
 
 import { parseArgs, type ParseArgsConfig } from "node:util";
-import type { CommandContext } from "../application/ports/index.ts";
+import type { CommandContext } from "#application/ports";
 
 export interface ParsedArgs {
   command: string;

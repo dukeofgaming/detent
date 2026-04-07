@@ -4,7 +4,7 @@
  */
 
 import { readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
-import type { FileAdapterPort } from "../../application/ports/index.ts";
+import type { FileAdapterPort } from "#application/ports";
 
 export class NodeFileAdapter implements FileAdapterPort {
   readdir(path: string): string[] {

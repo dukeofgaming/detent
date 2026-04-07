@@ -3,8 +3,8 @@
  * Orchestrates the syncing of an IssueFile to GitHub
  */
 
-import type { IssueFile, SyncResult, SyncOptions } from "../../../domain/types/index.ts";
-import type { IssueAdapterPort, FileAdapterPort } from "../../ports/index.ts";
+import type { IssueFile, SyncResult, SyncOptions } from "#domain/types";
+import type { IssueAdapterPort, FileAdapterPort } from "#application/ports";
 
 export class SyncIssueUseCase {
   constructor(
