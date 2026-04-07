@@ -36,12 +36,6 @@ runs:
       run: |
         set -o pipefail
         cd ${{ github.action_path }}/../..
-        OUTPUT=$(deno run --allow-all .github/actions/sync-issues/sync-issues/index.ts push ${{ inputs.verbose && '--verbose' || '' }} ${{ inputs.dry-run == 'true' && '--dry-run' || '' }} 2>&1)
-        EXIT_CODE=$?
-        echo "$OUTPUT"
-        echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
-        SUMMARY=$(echo "$OUTPUT" | tail -5)
-        echo "summary<<EOF" >> $GITHUB_OUTPUT
-        echo "$SUMMARY" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-        exit $EXIT_CODE
+        deno run --allow-all .github/actions/sync-issues/sync-issues/index.ts push --verbose ${{ inputs.dry-run == 'true' && '--dry-run' || '' }}
+        echo "exit-code=$?" >> $GITHUB_OUTPUT
+        echo "summary=Completed" >> $GITHUB_OUTPUT
