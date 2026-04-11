@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "#domain/*": ["domain/*"],
+      "#application/*": ["application/*"],
+      "#adapters/*": ["adapters/*"],
+      "#infrastructure/*": ["infrastructure/*"]
+    }
+  },
+  "include": ["domain/**/*.ts", "application/**/*.ts", "adapters/**/*.ts", "infrastructure/**/*.ts"]
+}

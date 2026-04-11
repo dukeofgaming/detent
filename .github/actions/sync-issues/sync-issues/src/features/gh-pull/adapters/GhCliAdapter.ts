@@ -1,12 +1,13 @@
 /**
- * GhCliAdapter - GitHub CLI adapter implementation
+ * GhCliAdapter - GitHub CLI adapter implementation (read-only)
  * Adapter that implements Application port
+ * Note: gh-pull slice NEVER modifies GitHub - this is read-only
+ * (Copied from gh-push - vertical slices do not share code)
  */
 
 import type { GitHubIssue, GitHubComment } from "#domain/types";
 import type { IssueAdapterPort, IssueMetadata, CommentMetadata } from "#application/ports";
 import { runGh } from "#infrastructure/RunGh";
-import { nodeIdToNumericId } from "#infrastructure/NodeIdToNumericId";
 
 export class GhCliAdapter implements IssueAdapterPort {
   async findIssueByNumber(number: number): Promise<GitHubIssue | null> {
@@ -37,21 +38,6 @@ export class GhCliAdapter implements IssueAdapterPort {
     }
   }
 
-  async createIssue(title: string, body: string, labels: string[]): Promise<GitHubIssue> {
-    const args = ["issue", "create", "--title", title, "--body", body];
-    for (const label of labels) args.push("--label", label);
-    const output = runGh(args);
-    const number = parseInt(output.split("/").pop() || "0", 10);
-    return { number, title, body, labels };
-  }
-
-  async updateIssue(issueNumber: number, title: string, body: string): Promise<void> {
-    const args = ["issue", "edit", String(issueNumber)];
-    if (title) args.push("--title", title);
-    if (body !== undefined) args.push("--body", body);
-    runGh(args);
-  }
-
   async getComments(issueNumber: number): Promise<GitHubComment[]> {
     try {
       const repo = runGh(["repo", "view", "--json", "owner,name", "-q", ".owner.login + \"/\" + .name"]);
@@ -61,19 +47,6 @@ export class GhCliAdapter implements IssueAdapterPort {
     } catch {
       return [];
     }
-  }
-
-  async createComment(issueNumber: number, body: string): Promise<GitHubComment> {
-    const output = runGh(["issue", "comment", String(issueNumber), "--body", body]);
-    const url = output.trim();
-    const id = nodeIdToNumericId(url.split("-").pop() || "");
-    return { id, body };
-  }
-
-  async updateComment(commentId: string, body: string): Promise<void> {
-    const repo = runGh(["repo", "view", "--json", "owner,name", "-q", ".owner.login + \"/\" + .name"]);
-    const numericId = nodeIdToNumericId(commentId);
-    runGh(["api", `repos/${repo}/issues/comments/${numericId}`, "-X", "PATCH", "--field", `body=${body}`]);
   }
 
   async getIssueMetadata(number: number): Promise<IssueMetadata | null> {

@@ -1,5 +1,6 @@
 /**
  * ParseIssueFile - Parse an issue file into an IssueFile domain object
+ * (Copied from gh-push - vertical slices do not share code)
  */
 
 import type { IssueFile } from "#domain/types";

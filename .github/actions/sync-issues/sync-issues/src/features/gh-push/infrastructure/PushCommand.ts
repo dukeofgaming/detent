@@ -37,9 +37,29 @@ export class PushCommand implements Command {
     console.log(`Found ${issues.length} issue(s)\n`);
 
     let hasErrors = false;
+    let hasBlockingChanges = false;
 
     for (const issue of issues) {
+      if (issue.issueId && issue.frontmatter?.issue?.lastSyncedAt) {
+        const upstream = await syncUseCase.checkForUpstreamChanges(issue);
+        if (upstream?.hasChanges) {
+          hasBlockingChanges = true;
+          console.error(`⚠️  Cannot push #${issue.issueId}: upstream has newer changes`);
+          console.error(`   Last synced: ${issue.frontmatter.issue.lastSyncedAt}`);
+          console.error(`   GitHub updated: ${upstream.issueUpdatedAt}`);
+          if (upstream.commentsChanged) {
+            console.error(`   Canonical comments modified`);
+          }
+          console.error(`   Run 'pull' to review changes first.\n`);
+          continue;
+        }
+      }
+
       try {
+        if (dryRun) {
+          console.log(`[DRY RUN] Would push: ${issue.title} (#${issue.issueId || "new"})`);
+          continue;
+        }
         const result = await syncUseCase.execute(issue, { verbose, dryRun });
         console.log(`Result: ${result.action} (#${result.issueNumber})`);
       } catch (error) {
@@ -50,9 +70,14 @@ export class PushCommand implements Command {
       }
     }
 
+    if (hasBlockingChanges) {
+      console.error(`Push blocked: ${issues.filter(i => i.issueId && i.frontmatter?.issue?.lastSyncedAt).length} issue(s) have upstream changes`);
+      console.error(`Run 'pull' to review, then push again.`);
+    }
+
     return {
-      success: !hasErrors,
-      exitCode: hasErrors ? 1 : 0,
+      success: !hasErrors && !hasBlockingChanges,
+      exitCode: hasBlockingChanges ? 1 : (hasErrors ? 1 : 0),
     };
   }
 

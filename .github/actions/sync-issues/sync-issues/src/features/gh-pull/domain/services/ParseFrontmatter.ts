@@ -1,5 +1,6 @@
 /**
  * ParseFrontmatter - Parse YAML frontmatter from markdown content
+ * (Copied from gh-push - vertical slices do not share code)
  */
 
 import type { IssueFrontmatter } from "#domain/types";

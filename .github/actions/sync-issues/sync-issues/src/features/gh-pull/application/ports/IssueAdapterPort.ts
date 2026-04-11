@@ -1,6 +1,7 @@
 /**
- * IssueAdapterPort - Interface for GitHub issue operations
- * Port interface in Application layer per Uncle Bob's Clean Architecture
+ * IssueAdapterPort - Port for GitHub issue operations (read-only)
+ * (Copied from gh-push - vertical slices do not share code)
+ * Note: This is a read-only version - gh-pull never modifies GitHub
  */
 
 import type { GitHubIssue, GitHubComment } from "#domain/types";
@@ -23,13 +24,9 @@ export interface CommentMetadata {
 export interface IssueAdapterPort {
   findIssueByNumber(number: number): Promise<GitHubIssue | null>;
   findIssueByTitle(title: string): Promise<GitHubIssue | null>;
-  createIssue(title: string, body: string, labels: string[]): Promise<GitHubIssue>;
-  updateIssue(issueNumber: number, title: string, body: string): Promise<void>;
   getComments(issueNumber: number): Promise<GitHubComment[]>;
-  createComment(issueNumber: number, body: string): Promise<GitHubComment>;
-  updateComment(commentId: string, body: string): Promise<void>;
   
-  // NEW: Metadata methods for upstream change detection
+  // NEW: Metadata methods for pull operations
   getIssueMetadata(number: number): Promise<IssueMetadata | null>;
   getCommentsMetadata(issueNumber: number): Promise<CommentMetadata[]>;
 }
