@@ -44,8 +44,8 @@ Follow these rules for journaling:
     ## {task} ({YYYY-MM-DD HH:mm})
 
     1. **{YYYY-MM-DD HH:mm}**: ... <!-- Describe the thought, decision, or code change here, make sure you reflect the users intentions, rationale, feedback, blockers and pivots -->
-        2. ... <!-- Add more points as needed sub steps -->
-
+        1. ... <!-- Add more points as needed sub steps -->
+    2. ...
     ```
 
 2. Always inquire if the user wants to add something to the journal after the following events during conversation:
