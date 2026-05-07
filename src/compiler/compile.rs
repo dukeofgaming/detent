@@ -3,8 +3,8 @@
 //! Converts a collection of MDX file contents into a BPMN Definitions (the IR).
 //! This is pure logic with no filesystem interaction.
 
-use crate::bpmn::{Definitions, Process};
-use crate::mdx::MdxFile;
+use crate::compiler::bpmn::{Definitions, Process};
+use crate::compiler::mdx::MdxFile;
 
 /// A single MDX file input for compilation
 #[derive(Debug, Clone)]
