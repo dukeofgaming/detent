@@ -64,6 +64,41 @@ impl<'a> Graph<'a> {
             .filter_map(|flow| self.nodes.get(flow.source_ref.as_str()))
     }
 
+    /// Returns all entry nodes (start events).
+    pub fn entry_nodes(&self) -> Vec<&FlowNode> {
+        self.process
+            .start_events
+            .iter()
+            .filter_map(|e| self.nodes.get(&e.id))
+            .collect()
+    }
+
+    /// Returns all exit nodes (end events).
+    pub fn exit_nodes(&self) -> Vec<&FlowNode> {
+        self.process
+            .end_events
+            .iter()
+            .filter_map(|e| self.nodes.get(&e.id))
+            .collect()
+    }
+
+    /// BFS traversal from `node_id`. Returns all reachable node IDs (including the start node).
+    pub fn reachable_from(&self, node_id: &str) -> Vec<String> {
+        let mut visited: HashSet<&str> = HashSet::new();
+        let mut queue: Vec<&str> = vec![node_id];
+
+        while let Some(current) = queue.pop() {
+            if !visited.insert(current) {
+                continue;
+            }
+            for succ in self.successors(current) {
+                queue.push(succ.id());
+            }
+        }
+
+        visited.into_iter().map(String::from).collect()
+    }
+
     pub fn validate(&self) -> Result<(), Vec<String>> {
         let mut errors = Vec::new();
 
@@ -105,6 +140,53 @@ impl<'a> Graph<'a> {
         for flow in &self.process.sequence_flows {
             if !seen_ids.insert(flow.id.clone()) {
                 errors.push(format!("Duplicate element ID '{}'", flow.id));
+            }
+        }
+
+        // — Reachability checks —
+
+        let reachable: HashSet<String> = self
+            .entry_nodes()
+            .iter()
+            .flat_map(|entry| self.reachable_from(entry.id()))
+            .collect();
+
+        for node in self.nodes.values() {
+            if !reachable.contains(node.id()) {
+                errors.push(format!(
+                    "Node '{}' is unreachable from any start event",
+                    node.id()
+                ));
+            }
+        }
+
+        // — Dead-end checks —
+
+        let can_reach_end: HashSet<String> = self
+            .exit_nodes()
+            .iter()
+            .flat_map(|exit| {
+                // Reverse BFS: find all nodes that can reach this exit
+                let mut visited: HashSet<&str> = HashSet::new();
+                let mut queue: Vec<&str> = vec![exit.id()];
+                while let Some(current) = queue.pop() {
+                    if !visited.insert(current) {
+                        continue;
+                    }
+                    for pred in self.predecessors(current) {
+                        queue.push(pred.id());
+                    }
+                }
+                visited.into_iter().map(String::from).collect::<Vec<_>>()
+            })
+            .collect();
+
+        for node in self.nodes.values() {
+            if !can_reach_end.contains(node.id()) {
+                errors.push(format!(
+                    "Node '{}' is a dead end (cannot reach any end event)",
+                    node.id()
+                ));
             }
         }
 
