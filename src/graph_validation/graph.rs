@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 
-use super::types::{FlowNode, Process, SequenceFlow};
+use crate::bpmn::types::{FlowNode, Process, SequenceFlow};
 
 /// A read-only graph view over a BPMN Process.
 ///

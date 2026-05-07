@@ -7,4 +7,5 @@
 
 pub mod bpmn;
 pub mod compiler;
+pub mod graph_validation;
 pub mod mdx;

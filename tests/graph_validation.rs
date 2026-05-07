@@ -1,6 +1,6 @@
-//! Tests for bpmn::graph - Graph operations on the BPMN IR
+//! Tests for graph_validation::graph - Graph operations on the Process IR
 
-use detent::bpmn::graph::Graph;
+use detent::graph_validation::graph::Graph;
 use detent::bpmn::{EndEvent, Process, SequenceFlow, StartEvent, Task};
 
 /// Helper: simple linear process: Start → Task → End

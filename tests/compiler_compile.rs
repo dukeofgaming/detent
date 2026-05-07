@@ -280,7 +280,7 @@ fn test_compile_with_hello_world_reference_files() {
     assert_eq!(process.tasks[0].name, Some("Hello World".to_string()));
 
     // Verify the graph is valid
-    use detent::bpmn::graph::Graph;
+    use detent::graph_validation::graph::Graph;
     let graph = Graph::new(process);
     assert!(
         graph.validate().is_ok(),

@@ -2,7 +2,6 @@
 //!
 //! This module provides types and utilities for working with BPMN 2.0 documents.
 
-pub mod graph;
 pub mod types;
 
 #[cfg(feature = "xsd-validation")]
