@@ -5,6 +5,7 @@
 
 use crate::compiler::bpmn::{Definitions, Process};
 use crate::compiler::mdx::MdxFile;
+use crate::graph_validation::{to_domain_process, Graph};
 
 /// A single MDX file input for compilation
 #[derive(Debug, Clone)]
@@ -28,6 +29,8 @@ pub enum CompileError {
     UnknownType { filename: String, bpmn_type: String },
     /// Failed to deserialize frontmatter into BPMN type
     DeserializationError { filename: String, message: String },
+    /// Graph-level validation failed (standard-neutral semantic errors)
+    InvalidGraph(Vec<String>),
 }
 
 impl std::fmt::Display for CompileError {
@@ -52,6 +55,9 @@ impl std::fmt::Display for CompileError {
                     "Failed to deserialize {} frontmatter: {}",
                     filename, message
                 )
+            }
+            CompileError::InvalidGraph(errors) => {
+                write!(f, "Graph validation failed:\n{}", errors.join("\n"))
             }
         }
     }
@@ -191,6 +197,13 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                 });
             }
         }
+    }
+
+    // Validate graph semantics before returning
+    let domain_process = to_domain_process(&process);
+    let graph = Graph::new(&domain_process);
+    if let Err(errors) = graph.validate() {
+        return Err(CompileError::InvalidGraph(errors));
     }
 
     let definitions = Definitions {

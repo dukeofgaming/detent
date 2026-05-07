@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::bpmn::{FlowNode, Process, SequenceFlow};
 
@@ -67,6 +67,18 @@ impl<'a> Graph<'a> {
     pub fn validate(&self) -> Result<(), Vec<String>> {
         let mut errors = Vec::new();
 
+        // — Structural invariants —
+
+        if self.process.start_events.is_empty() {
+            errors.push("Process has no start event".to_string());
+        }
+
+        if self.process.end_events.is_empty() {
+            errors.push("Process has no end event".to_string());
+        }
+
+        // — Dangling reference checks —
+
         for flow in &self.process.sequence_flows {
             if !self.nodes.contains_key(flow.source_ref.as_str()) {
                 errors.push(format!(
@@ -79,6 +91,20 @@ impl<'a> Graph<'a> {
                     "Sequence flow '{}' has dangling targetRef '{}'",
                     flow.id, flow.target_ref
                 ));
+            }
+        }
+
+        // — Duplicate ID checks —
+
+        let mut seen_ids: HashSet<String> = HashSet::new();
+        for id in self.process.flow_elements().nodes().map(|n| n.id().to_string()) {
+            if !seen_ids.insert(id.clone()) {
+                errors.push(format!("Duplicate element ID '{}'", id));
+            }
+        }
+        for flow in &self.process.sequence_flows {
+            if !seen_ids.insert(flow.id.clone()) {
+                errors.push(format!("Duplicate element ID '{}'", flow.id));
             }
         }
 

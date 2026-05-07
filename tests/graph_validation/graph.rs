@@ -177,3 +177,47 @@ fn test_validate_detects_dangling_target_ref() {
     let errors = graph.validate().unwrap_err();
     assert!(errors.iter().any(|e: &String| e.contains("ghost")));
 }
+
+#[test]
+fn test_validate_missing_start_event() {
+    let mut process = linear_process();
+    process.start_events.clear();
+
+    let graph = Graph::new(&process);
+    let errors = graph.validate().unwrap_err();
+    assert!(errors.iter().any(|e: &String| e.contains("start event")));
+}
+
+#[test]
+fn test_validate_missing_end_event() {
+    let mut process = linear_process();
+    process.end_events.clear();
+
+    let graph = Graph::new(&process);
+    let errors = graph.validate().unwrap_err();
+    assert!(errors.iter().any(|e: &String| e.contains("end event")));
+}
+
+#[test]
+fn test_validate_duplicate_node_ids() {
+    let mut process = linear_process();
+    // Give the task the same ID as the start event
+    process.tasks[0].id = "start_1".to_string();
+
+    let graph = Graph::new(&process);
+    let errors = graph.validate().unwrap_err();
+    assert!(errors.iter().any(|e: &String| e.contains("Duplicate")));
+    assert!(errors.iter().any(|e: &String| e.contains("start_1")));
+}
+
+#[test]
+fn test_validate_duplicate_flow_ids() {
+    let mut process = linear_process();
+    // Give flow_2 the same ID as flow_1
+    process.sequence_flows[1].id = "flow_1".to_string();
+
+    let graph = Graph::new(&process);
+    let errors = graph.validate().unwrap_err();
+    assert!(errors.iter().any(|e: &String| e.contains("Duplicate")));
+    assert!(errors.iter().any(|e: &String| e.contains("flow_1")));
+}
