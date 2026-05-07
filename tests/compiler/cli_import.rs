@@ -36,7 +36,7 @@ fn test_import_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Import a BPMN file"));
+        .stdout(predicate::str::contains("BPMN XML file"));
 }
 
 #[test]

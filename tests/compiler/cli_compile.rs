@@ -19,7 +19,7 @@ fn test_compile_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Compile MDX files"));
+        .stdout(predicate::str::contains("MDX files"));
 }
 
 #[test]

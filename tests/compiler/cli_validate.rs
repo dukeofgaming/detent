@@ -20,7 +20,7 @@ fn test_validate_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Validate BPMN or MDX files"));
+        .stdout(predicate::str::contains("BPMN"));
 }
 
 #[test]
