@@ -2,11 +2,13 @@
 //!
 //! This module provides types and utilities for working with BPMN 2.0 documents.
 
+pub mod to_domain;
 pub mod types;
 
 #[cfg(feature = "xsd-validation")]
 pub mod xsd_validator;
 
+pub use to_domain::to_domain_process;
 pub use types::*;
 
 #[cfg(feature = "xsd-validation")]

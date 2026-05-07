@@ -6,6 +6,11 @@
 
 - Never write production code without writing tests in TDD fashion.
 
+## Architecture Conventions
+
+- **Adapter→domain conversion functions** (e.g., `to_domain_process`) must live in the **adapter layer** (`src/compiler/<standard>/`), not in the domain layer (`lib/core/`) or its re-export shim (`src/graph_validation/`). The domain layer must not depend on adapter types.
+- Domain-layer modules under `src/graph_validation/` are thin re-export shims only — no adapter-importing logic.
+
 ### TDD
 
 - Follow TDD principles when writing code, meaning:

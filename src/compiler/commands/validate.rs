@@ -6,9 +6,9 @@ use std::process::ExitCode;
 
 #[cfg(feature = "xsd-validation")]
 use crate::compiler::bpmn::validate_bpmn_xsd;
-use crate::compiler::bpmn::{parse_bpmn, Validate};
+use crate::compiler::bpmn::{parse_bpmn, to_domain_process, Validate};
 use crate::compiler::mdx::MdxFile;
-use crate::graph_validation::{to_domain_process, Graph};
+use crate::graph_validation::Graph;
 
 /// Run the validate command
 pub fn run(files: Vec<PathBuf>) -> ExitCode {

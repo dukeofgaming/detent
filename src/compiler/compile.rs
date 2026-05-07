@@ -3,9 +3,9 @@
 //! Converts a collection of MDX file contents into a BPMN Definitions (the IR).
 //! This is pure logic with no filesystem interaction.
 
-use crate::compiler::bpmn::{Definitions, Process};
+use crate::compiler::bpmn::{to_domain_process, Definitions, Process};
 use crate::compiler::mdx::MdxFile;
-use crate::graph_validation::{to_domain_process, Graph};
+use crate::graph_validation::Graph;
 
 /// A single MDX file input for compilation
 #[derive(Debug, Clone)]
