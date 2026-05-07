@@ -1,7 +1,7 @@
 //! Tests for graph_validation::graph - Graph operations on the Process IR
 
 use detent::graph_validation::bpmn::{EndEvent, Process, SequenceFlow, StartEvent, Task};
-use detent::graph_validation::graph::Graph;
+use detent::graph_validation::Graph;
 
 /// Helper: simple linear process: Start → Task → End
 fn linear_process() -> Process {

@@ -1,0 +1,5 @@
+[package]
+name = "detent-core"
+version = "0.1.0"
+edition = "2021"
+description = "Pure domain types and graph operations for BPMN workflow engines — framework-free, independently reusable"
