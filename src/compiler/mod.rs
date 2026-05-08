@@ -11,3 +11,6 @@ pub mod commands;
 pub mod compile;
 pub mod import;
 pub mod mdx;
+
+#[cfg(test)]
+mod tests;

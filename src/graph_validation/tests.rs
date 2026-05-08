@@ -1,7 +1,5 @@
-//! Tests for graph_validation::graph - Graph operations on the Process IR
-
-use detent::graph_validation::bpmn::{EndEvent, Process, SequenceFlow, StartEvent, Task};
-use detent::graph_validation::Graph;
+use crate::graph_validation::bpmn::{EndEvent, Process, SequenceFlow, StartEvent, Task};
+use crate::graph_validation::Graph;
 
 /// Helper: simple linear process: Start → Task → End
 fn linear_process() -> Process {
@@ -159,7 +157,6 @@ fn test_validate_valid_process_succeeds() {
 #[test]
 fn test_validate_detects_dangling_source_ref() {
     let mut process = linear_process();
-    // Point flow_1's source to a nonexistent node
     process.sequence_flows[0].source_ref = "ghost".to_string();
 
     let graph = Graph::new(&process);
@@ -170,7 +167,6 @@ fn test_validate_detects_dangling_source_ref() {
 #[test]
 fn test_validate_detects_dangling_target_ref() {
     let mut process = linear_process();
-    // Point flow_2's target to a nonexistent node
     process.sequence_flows[1].target_ref = "ghost".to_string();
 
     let graph = Graph::new(&process);
@@ -201,7 +197,6 @@ fn test_validate_missing_end_event() {
 #[test]
 fn test_validate_duplicate_node_ids() {
     let mut process = linear_process();
-    // Give the task the same ID as the start event
     process.tasks[0].id = "start_1".to_string();
 
     let graph = Graph::new(&process);
@@ -213,7 +208,6 @@ fn test_validate_duplicate_node_ids() {
 #[test]
 fn test_validate_duplicate_flow_ids() {
     let mut process = linear_process();
-    // Give flow_2 the same ID as flow_1
     process.sequence_flows[1].id = "flow_1".to_string();
 
     let graph = Graph::new(&process);
@@ -290,7 +284,6 @@ fn test_validate_detects_unreachable_node() {
 
 #[test]
 fn test_validate_detects_dead_end_node() {
-    // A task that has incoming edges but no path to any end event
     let mut process = linear_process();
     process.sequence_flows[1].target_ref = "nowhere".to_string();
 

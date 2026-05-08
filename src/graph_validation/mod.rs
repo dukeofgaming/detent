@@ -14,3 +14,6 @@
 
 pub use detent_core::bpmn;
 pub use detent_core::process_graph::Graph;
+
+#[cfg(test)]
+mod tests;
