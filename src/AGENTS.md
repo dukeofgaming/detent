@@ -1,15 +1,14 @@
+## Architecture
+- `src/` contains only the CLI entry point (`main.rs`) and module declarations (`lib.rs`, `compiler/mod.rs`). No production logic files directly under `src/` — all implementation lives in sub-modules (`src/compiler/`, `src/graph_validation/`) or `lib/` workspace crates.
+- Domain-layer types and operations go in `lib/core/` (the `detent-core` workspace crate). Adapter-layer code goes in `src/compiler/<standard>/`. Re-export shims under `src/` must not import adapter types.
+
 ## Coding Mandates
 
 - Always run `cargo test` at the end of a complete logical code change, and make sure.
 
-- All tests go in `src/tests/`, not in `src/`
+- Integration tests go in `tests/` at the project root, not in `src/`.
 
 - Never write production code without writing tests in TDD fashion.
-
-## Architecture Conventions
-
-- **Adapter→domain conversion functions** (e.g., `to_domain_process`) must live in the **adapter layer** (`src/compiler/<standard>/`), not in the domain layer (`lib/core/`) or its re-export shim (`src/graph_validation/`). The domain layer must not depend on adapter types.
-- Domain-layer modules under `src/graph_validation/` are thin re-export shims only — no adapter-importing logic.
 
 ### TDD
 
