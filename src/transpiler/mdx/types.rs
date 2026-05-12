@@ -14,7 +14,7 @@ pub use mdx_file::{MdxFile, MdxParseError};
 pub use retry_config::RetryConfig;
 
 // Re-export BPMN types for frontmatter use
-pub use crate::compiler::bpmn::{
+pub use crate::transpiler::bpmn::{
     EndEvent, ExclusiveGateway, ParallelGateway, Process, ScriptTask, SequenceFlow, ServiceTask,
     StartEvent, Task,
 };

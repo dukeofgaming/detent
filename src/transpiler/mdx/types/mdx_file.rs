@@ -2,7 +2,7 @@
 
 use serde::de::DeserializeOwned;
 
-use crate::compiler::bpmn::{
+use crate::transpiler::bpmn::{
     EndEvent, ExclusiveGateway, ParallelGateway, Process, ScriptTask, SequenceFlow, ServiceTask,
     StartEvent, Task,
 };

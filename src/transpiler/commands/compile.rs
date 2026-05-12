@@ -1,15 +1,15 @@
-//! Compile command implementation - MDX to BPMN conversion
+//! Compile command implementation - MDX to BPMN transpilation
 //!
-//! Reads a directory of MDX files, compiles them into a BPMN Definitions (IR),
+//! Reads a directory of MDX files, transpiles them into a BPMN Definitions (IR),
 //! and serializes the result to BPMN XML. This is a thin CLI wrapper around
-//! compiler::compile.
+//! transpiler::compile.
 
 use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use crate::compiler::bpmn::serialize_bpmn;
-use crate::compiler::compile::{compile_to_definitions, MdxInput};
+use crate::transpiler::bpmn::serialize_bpmn;
+use crate::transpiler::compile::{compile_to_definitions, MdxInput};
 
 /// Run the compile command
 pub fn run(directory: PathBuf, output: Option<PathBuf>) -> ExitCode {

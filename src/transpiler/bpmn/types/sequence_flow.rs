@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{ConditionExpression, Documentation};
-use crate::compiler::bpmn::Validate;
+use crate::transpiler::bpmn::Validate;
 
 /// BPMN Sequence Flow (edge between nodes)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

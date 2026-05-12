@@ -1,4 +1,4 @@
-//! Tests for the compiler slice — co-located with the code they test.
+//! Tests for the transpiler slice — co-located with the code they test.
 //!
 //! These replace the former integration tests in `tests/compiler/`.
 //! They are compiled as part of the crate (`#[cfg(test)]`), giving access to
@@ -9,7 +9,7 @@
 // ============================================================
 
 mod bpmn_parsing {
-    use crate::compiler::bpmn::parse_bpmn;
+    use crate::transpiler::bpmn::parse_bpmn;
     use std::fs;
 
     const HELLO_WORLD_BPMN: &str = "tests/assets/processes/hello-world/hello-world.bpmn2";
@@ -41,7 +41,7 @@ mod bpmn_parsing {
 // ============================================================
 
 mod bpmn_types {
-    use crate::compiler::bpmn::{parse_bpmn, FlowNode};
+    use crate::transpiler::bpmn::{parse_bpmn, FlowNode};
     use std::fs;
 
     const HELLO_WORLD_BPMN: &str = "tests/assets/processes/hello-world/hello-world.bpmn2";
@@ -80,7 +80,7 @@ mod bpmn_types {
 
 #[cfg(feature = "xsd-validation")]
 mod bpmn_xsd_validation {
-    use crate::compiler::bpmn::validate_bpmn_xsd;
+    use crate::transpiler::bpmn::validate_bpmn_xsd;
 
     const HELLO_WORLD_BPMN: &str = include_str!("../../tests/assets/processes/hello-world/hello-world.bpmn");
     const HELLO_WORLD_BPMN2: &str = include_str!("../../tests/assets/processes/hello-world/hello-world.bpmn2");
@@ -349,7 +349,7 @@ mod cli_validate {
 // ============================================================
 
 mod compile {
-    use crate::compiler::compile::{compile_to_definitions, MdxInput};
+    use crate::transpiler::compile::{compile_to_definitions, MdxInput};
 
     fn simple_mdx_inputs() -> Vec<MdxInput> {
         vec![
@@ -402,7 +402,7 @@ mod compile {
 
     #[test]
     fn test_compile_roundtrip_with_import() {
-        use crate::compiler::import::import_to_mdx;
+        use crate::transpiler::import::import_to_mdx;
         let inputs = simple_mdx_inputs();
         let defs = compile_to_definitions(&inputs).unwrap();
         let outputs = import_to_mdx(&defs).unwrap();
@@ -432,8 +432,8 @@ mod compile {
 // ============================================================
 
 mod import {
-    use crate::compiler::bpmn::{Definitions, EndEvent, Process, SequenceFlow, StartEvent, Task};
-    use crate::compiler::import::import_to_mdx;
+    use crate::transpiler::bpmn::{Definitions, EndEvent, Process, SequenceFlow, StartEvent, Task};
+    use crate::transpiler::import::import_to_mdx;
 
     fn simple_definitions() -> Definitions {
         Definitions {
@@ -509,8 +509,8 @@ mod import {
 // ============================================================
 
 mod mdx_types {
-    use crate::compiler::bpmn::{SequenceFlow, StartEvent, Task};
-    use crate::compiler::mdx::MdxFile;
+    use crate::transpiler::bpmn::{SequenceFlow, StartEvent, Task};
+    use crate::transpiler::mdx::MdxFile;
     use std::fs;
 
     const MDX_START_EVENT: &str = "tests/assets/processes/hello-world/_1E892844-423C-464F-ADC4-22F1EC73851B.mdx";

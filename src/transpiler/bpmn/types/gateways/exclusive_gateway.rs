@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::compiler::bpmn::Documentation;
+use crate::transpiler::bpmn::Documentation;
 
 /// BPMN Exclusive Gateway (XOR)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

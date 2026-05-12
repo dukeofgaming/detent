@@ -3,7 +3,7 @@
 //! This crate provides:
 //! - BPMN 2.0 parsing and serialization
 //! - MDX-based workflow definitions
-//! - Bidirectional MDX ↔ BPMN conversion
+//! - Bidirectional MDX ↔ BPMN transpilation
 
-pub mod compiler;
+pub mod transpiler;
 pub mod graph_validation;

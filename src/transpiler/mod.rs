@@ -1,4 +1,4 @@
-//! Bidirectional compiler: MDX ↔ BPMN
+//! Bidirectional transpiler: MDX ↔ BPMN
 //!
 //! This module implements the shared intermediate representation (IR) architecture
 //! described in ADR-2. Both directions pass through the same BPMN types (the IR).

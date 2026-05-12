@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use detent::compiler::commands;
+use detent::transpiler::commands;
 
 #[derive(Parser)]
 #[command(name = "detent")]

@@ -2,8 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::compiler::bpmn::Documentation;
-use crate::compiler::bpmn::Validate;
+use crate::transpiler::bpmn::Documentation;
+use crate::transpiler::bpmn::Validate;
 
 /// BPMN Start Event
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

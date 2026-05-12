@@ -6,7 +6,7 @@ use super::{
     Documentation, EndEvent, ExclusiveGateway, FlowElements, ParallelGateway, ScriptTask,
     SequenceFlow, ServiceTask, StartEvent, Task,
 };
-use crate::compiler::bpmn::Validate;
+use crate::transpiler::bpmn::Validate;
 
 /// BPMN Process - container for flow elements
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

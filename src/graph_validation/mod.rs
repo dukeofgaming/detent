@@ -10,7 +10,7 @@
 //!
 //! Adapter→domain conversions (e.g., `to_domain_process`) belong in the
 //! **adapter layer**, not here. This module is a thin re-export shim.
-//! See [`crate::compiler::bpmn::to_domain`] for BPMN→domain conversion.
+//! See [`crate::transpiler::bpmn::to_domain`] for BPMN→domain conversion.
 
 pub use detent_core::bpmn;
 pub use detent_core::process_graph::Graph;

@@ -1,15 +1,15 @@
-//! Import command implementation - BPMN to MDX conversion
+//! Import command implementation - BPMN to MDX transpilation
 //!
-//! Reads a BPMN XML file, converts it to MDX files via compiler::import,
+//! Reads a BPMN XML file, converts it to MDX files via transpiler::import,
 //! and writes them to the output directory. This is a thin CLI wrapper
-//! around compiler::import.
+//! around transpiler::import.
 
 use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use crate::compiler::bpmn::parse_bpmn;
-use crate::compiler::import::import_to_mdx;
+use crate::transpiler::bpmn::parse_bpmn;
+use crate::transpiler::import::import_to_mdx;
 
 /// Run the import command
 pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
@@ -40,7 +40,7 @@ pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
         return ExitCode::FAILURE;
     }
 
-    // Delegate to compiler::import (pure logic)
+    // Delegate to transpiler::import (pure logic)
     let outputs = match import_to_mdx(&definitions) {
         Ok(outputs) => outputs,
         Err(e) => {
