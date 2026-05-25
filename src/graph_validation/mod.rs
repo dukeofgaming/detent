@@ -3,8 +3,7 @@
 //! Provides graph-level validation that is standard-neutral (BPMN, SWS, etc.).
 //! Graph invariants belong in the Domain layer per ADR-7.
 //!
-//! This module re-exports from the `detent-core` crate, which holds the
-//! framework-agnostic domain types and graph operations.
+//! This module re-exports from the graph_validation feature slice.
 //!
 //! # Architecture
 //!
@@ -12,8 +11,5 @@
 //! **adapter layer**, not here. This module is a thin re-export shim.
 //! See [`crate::transpiler::bpmn::to_domain`] for BPMN→domain conversion.
 
-pub use detent_core::bpmn;
-pub use detent_core::process_graph::Graph;
-
-#[cfg(test)]
-mod tests;
+pub use crate::features::graph_validation::domain::bpmn;
+pub use crate::features::graph_validation::domain::graph::Graph;

@@ -401,6 +401,20 @@ mod compile {
     }
 
     #[test]
+    fn test_compile_allows_invalid_graphs_in_feature_3_scope() {
+        let inputs = vec![
+            MdxInput { filename: "start_1.mdx".to_string(), content: "---\ntype: bpmn:startEvent\nid: start_1\noutgoing:\n- flow_1\n---\n".to_string() },
+            MdxInput { filename: "flow_1.mdx".to_string(), content: "---\ntype: bpmn:sequenceFlow\nid: flow_1\nsourceRef: start_1\ntargetRef: ghost_task\n---\n".to_string() },
+        ];
+
+        let defs = compile_to_definitions(&inputs).expect("feature #3 transpilation should not enforce graph semantics");
+        let process = defs.process.as_ref().unwrap();
+        assert_eq!(process.start_events.len(), 1);
+        assert_eq!(process.sequence_flows.len(), 1);
+        assert_eq!(process.sequence_flows[0].target_ref, "ghost_task");
+    }
+
+    #[test]
     fn test_compile_roundtrip_with_import() {
         use crate::transpiler::import::import_to_mdx;
         let inputs = simple_mdx_inputs();

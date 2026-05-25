@@ -1,5 +1,7 @@
-use crate::graph_validation::bpmn::{EndEvent, Process, SequenceFlow, StartEvent, Task};
-use crate::graph_validation::Graph;
+use crate::features::graph_validation::domain::bpmn::{
+    EndEvent, Process, SequenceFlow, StartEvent, Task,
+};
+use crate::features::graph_validation::domain::graph::Graph;
 
 /// Helper: simple linear process: Start → Task → End
 fn linear_process() -> Process {
@@ -53,8 +55,6 @@ fn linear_process() -> Process {
     }
 }
 
-// --- find_node ---
-
 #[test]
 fn test_find_node_returns_existing_node() {
     let process = linear_process();
@@ -72,8 +72,6 @@ fn test_find_node_returns_none_for_missing_id() {
 
     assert!(graph.find_node("nonexistent").is_none());
 }
-
-// --- successors ---
 
 #[test]
 fn test_successors_of_start_event() {
@@ -113,8 +111,6 @@ fn test_successors_of_nonexistent_node_is_empty() {
     assert!(succs.is_empty());
 }
 
-// --- predecessors ---
-
 #[test]
 fn test_predecessors_of_end_event() {
     let process = linear_process();
@@ -143,8 +139,6 @@ fn test_predecessors_of_start_event_is_empty() {
     let preds: Vec<_> = graph.predecessors("start_1").collect();
     assert!(preds.is_empty());
 }
-
-// --- validate ---
 
 #[test]
 fn test_validate_valid_process_succeeds() {
@@ -216,9 +210,6 @@ fn test_validate_duplicate_flow_ids() {
     assert!(errors.iter().any(|e: &String| e.contains("flow_1")));
 }
 
-// --- Phase 4 helpers: reachable_from, entry_nodes, exit_nodes ---
-
-/// Helper: linear process with an orphan task (no connections)
 fn process_with_orphan() -> Process {
     let mut p = linear_process();
     p.tasks.push(Task {

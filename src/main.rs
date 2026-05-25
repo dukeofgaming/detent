@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use detent::transpiler::commands;
+use detent::features::{convert_bpmn_to_mdx, graph_validation};
 
 #[derive(Parser)]
 #[command(name = "detent")]
@@ -89,11 +89,11 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Validate { files } => commands::validate::run(files),
+        Commands::Validate { files } => graph_validation::infrastructure::cli::validate::run(files),
         Commands::Import {
             bpmn_file,
             output_directory,
-        } => commands::import::run(bpmn_file, output_directory),
-        Commands::Compile { directory, output } => commands::compile::run(directory, output),
+        } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
+        Commands::Compile { directory, output } => graph_validation::infrastructure::cli::compile::run(directory, output),
     }
 }

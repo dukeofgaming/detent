@@ -6,9 +6,8 @@ use std::process::ExitCode;
 
 #[cfg(feature = "xsd-validation")]
 use crate::transpiler::bpmn::validate_bpmn_xsd;
-use crate::transpiler::bpmn::{parse_bpmn, to_domain_process, Validate};
+use crate::transpiler::bpmn::{parse_bpmn, Validate};
 use crate::transpiler::mdx::MdxFile;
-use crate::graph_validation::Graph;
 
 /// Run the validate command
 pub fn run(files: Vec<PathBuf>) -> ExitCode {
@@ -59,15 +58,6 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
 
     // Step 3: Semantic validation checks
     defs.validate_for_bpmn()?;
-
-    // Step 4: Graph-level semantic validation (standard-neutral)
-    if let Some(process) = &defs.process {
-        let domain_process = to_domain_process(process);
-        let graph = Graph::new(&domain_process);
-        if let Err(errors) = graph.validate() {
-            return Err(format!("Graph validation failed:\n{}", errors.join("\n")));
-        }
-    }
 
     Ok(())
 }
