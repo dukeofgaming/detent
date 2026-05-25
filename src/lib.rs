@@ -5,6 +5,6 @@
 //! - MDX-based workflow definitions
 //! - Bidirectional MDX ↔ BPMN transpilation
 
-pub mod transpiler;
-pub mod graph_validation;
 pub mod features;
+pub mod graph_validation;
+pub mod transpiler;

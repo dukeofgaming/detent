@@ -101,9 +101,8 @@ detent compile flows/onboarding -o build/process.bpmn
 
 | Path | Layer | Description |
 |------|-------|-------------|
-| `lib/core/` | Domain | Standard-neutral types and graph operations |
-| `src/compiler/bpmn/` | Adapter | BPMN parse/serialize/types + XSD validation |
-| `src/compiler/mdx/` | Adapter | MDX frontmatter types |
-| `src/compiler/commands/` | Application | CLI command implementations |
-| `src/graph_validation/` | Domain (re-export) | Thin shim to `detent-core` |
-| `tests/` | Integration | Test suites for compiler and graph validation |
+| `src/features/convert_bpmn_to_mdx/` | Vertical slice (#3) | BPMN/MDX transpilation domain, adapters, use cases, tests |
+| `src/features/graph_validation/` | Vertical slice (#4) | Graph-validation domain, adapters, use cases, CLI composition, tests |
+| `src/transpiler/` | Compatibility | Historical API shims for transpiler paths |
+| `src/graph_validation/` | Compatibility | Historical API shim for graph-validation paths |
+| `tests/` | Fixtures | Asset fixtures only |

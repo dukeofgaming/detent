@@ -1,16 +1,13 @@
-//! Bidirectional transpiler: MDX ↔ BPMN
+//! Compatibility shim for the historical `transpiler` module path.
 //!
-//! This module implements the shared intermediate representation (IR) architecture
-//! described in ADR-2. Both directions pass through the same BPMN types (the IR).
+//! The real feature ownership now lives under [`crate::features`].
+//! In this branch, the standalone behavior comes from the
+//! `convert_bpmn_to_mdx` slice (`#3`).
 //!
-//! - `import`: BPMN XML → IR → MDX files
-//! - `compile`: MDX files → IR → BPMN XML
+//! This module remains only to preserve existing paths while the refactor settles.
 
 pub mod bpmn;
 pub mod commands;
 pub mod compile;
 pub mod import;
 pub mod mdx;
-
-#[cfg(test)]
-mod tests;

@@ -195,7 +195,6 @@ version = "0.1.0"
 dependencies = [
  "assert_cmd",
  "clap",
- "detent-core",
  "libxml",
  "predicates",
  "quick-xml",
@@ -206,10 +205,6 @@ dependencies = [
  "serde_yaml",
  "tempfile",
 ]
-
-[[package]]
-name = "detent-core"
-version = "0.1.0"
 
 [[package]]
 name = "difflib"
