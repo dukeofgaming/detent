@@ -1,14 +1,28 @@
 //! Tests for the convert_bpmn_to_mdx feature slice.
 
+use std::path::PathBuf;
+
+const HELLO_WORLD_ASSET_DIR: &str = "src/features/convert_bpmn_to_mdx/tests/assets/hello_world";
+
+fn hello_world_asset_path(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join(HELLO_WORLD_ASSET_DIR)
+        .join(name)
+}
+
+fn hello_world_asset_dir() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(HELLO_WORLD_ASSET_DIR)
+}
+
 mod bpmn_parsing {
     use crate::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
+    use crate::features::convert_bpmn_to_mdx::tests::hello_world_asset_path;
     use std::fs;
-
-    const HELLO_WORLD_BPMN: &str = "tests/assets/processes/hello-world/hello-world.bpmn2";
 
     #[test]
     fn test_parse_hello_world_bpmn() {
-        let xml = fs::read_to_string(HELLO_WORLD_BPMN).expect("Failed to read hello-world.bpmn2");
+        let xml = fs::read_to_string(hello_world_asset_path("hello-world.bpmn2"))
+            .expect("Failed to read hello-world.bpmn2");
         let defs = parse_bpmn(&xml).expect("Failed to parse hello-world.bpmn2");
         assert_eq!(defs.id, "_sogPkOUBED6gTICEHR0M4w");
         let process = defs.process.expect("Expected a process");
@@ -39,13 +53,13 @@ mod bpmn_parsing {
 
 mod bpmn_types {
     use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, FlowNode};
+    use crate::features::convert_bpmn_to_mdx::tests::hello_world_asset_path;
     use std::fs;
-
-    const HELLO_WORLD_BPMN: &str = "tests/assets/processes/hello-world/hello-world.bpmn2";
 
     #[test]
     fn test_flow_node_id() {
-        let xml = fs::read_to_string(HELLO_WORLD_BPMN).expect("Failed to read BPMN");
+        let xml = fs::read_to_string(hello_world_asset_path("hello-world.bpmn2"))
+            .expect("Failed to read BPMN");
         let defs = parse_bpmn(&xml).expect("Failed to parse BPMN");
         let process = defs.process.expect("Expected process");
         let start = FlowNode::StartEvent(process.start_events[0].clone());
@@ -61,7 +75,8 @@ mod bpmn_types {
 
     #[test]
     fn test_flow_node_from_sequence_flow() {
-        let xml = fs::read_to_string(HELLO_WORLD_BPMN).expect("Failed to read BPMN");
+        let xml = fs::read_to_string(hello_world_asset_path("hello-world.bpmn2"))
+            .expect("Failed to read BPMN");
         let defs = parse_bpmn(&xml).expect("Failed to parse BPMN");
         let process = defs.process.expect("Expected process");
         let flow = &process.sequence_flows[0];
@@ -75,10 +90,8 @@ mod bpmn_types {
 mod bpmn_xsd_validation {
     use crate::features::convert_bpmn_to_mdx::adapters::bpmn::validate_bpmn_xsd;
 
-    const HELLO_WORLD_BPMN: &str =
-        include_str!("../../../tests/assets/processes/hello-world/hello-world.bpmn");
-    const HELLO_WORLD_BPMN2: &str =
-        include_str!("../../../tests/assets/processes/hello-world/hello-world.bpmn2");
+    const HELLO_WORLD_BPMN: &str = include_str!("assets/hello_world/hello-world.bpmn");
+    const HELLO_WORLD_BPMN2: &str = include_str!("assets/hello_world/hello-world.bpmn2");
 
     fn hello_world_fixtures() -> [(&'static str, &'static str); 2] {
         [
@@ -131,6 +144,8 @@ mod cli_compile {
     use std::fs;
     use std::path::Path;
 
+    use crate::features::convert_bpmn_to_mdx::tests::hello_world_asset_dir;
+
     #[allow(deprecated)]
     fn detent() -> Command {
         Command::cargo_bin("detent").expect("Failed to find detent binary")
@@ -167,7 +182,7 @@ mod cli_compile {
         let output_file = temp_dir.path().join("output.bpmn");
         detent()
             .arg("compile")
-            .arg("tests/assets/processes/hello-world")
+            .arg(hello_world_asset_dir())
             .arg("--output")
             .arg(&output_file)
             .assert()
@@ -184,7 +199,7 @@ mod cli_compile {
         let output_file = temp_dir.path().join("output.bpmn");
         detent()
             .arg("compile")
-            .arg("tests/assets/processes/hello-world")
+            .arg(hello_world_asset_dir())
             .arg("--output")
             .arg(&output_file)
             .assert()
@@ -199,7 +214,7 @@ mod cli_compile {
     fn test_compile_writes_to_stdout_by_default() {
         detent()
             .arg("compile")
-            .arg("tests/assets/processes/hello-world")
+            .arg(hello_world_asset_dir())
             .assert()
             .success()
             .stdout(predicate::str::contains("definitions"))
@@ -212,7 +227,7 @@ mod cli_compile {
         let output_file = temp_dir.path().join("output.bpmn");
         detent()
             .arg("compile")
-            .arg("tests/assets/processes/hello-world")
+            .arg(hello_world_asset_dir())
             .arg("--output")
             .arg(&output_file)
             .assert()
@@ -262,12 +277,13 @@ mod cli_import {
     use std::fs;
     use std::path::Path;
 
+    use crate::features::convert_bpmn_to_mdx::tests::{hello_world_asset_dir, hello_world_asset_path};
+
     #[allow(deprecated)]
     fn detent() -> Command {
         Command::cargo_bin("detent").expect("Failed to find detent binary")
     }
 
-    const REFERENCE_DIR: &str = "tests/assets/processes/hello-world";
     const EXPECTED_MDX_FILES: &[&str] = &[
         "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx",
         "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx",
@@ -302,7 +318,7 @@ mod cli_import {
         let output_dir = temp_dir.path();
         detent()
             .arg("import")
-            .arg("tests/assets/processes/hello-world/hello-world.bpmn2")
+            .arg(hello_world_asset_path("hello-world.bpmn2"))
             .arg("--output-directory")
             .arg(output_dir)
             .assert()
@@ -322,7 +338,7 @@ mod cli_import {
         let output_dir = temp_dir.path();
         detent()
             .arg("import")
-            .arg("tests/assets/processes/hello-world/hello-world.bpmn2")
+            .arg(hello_world_asset_path("hello-world.bpmn2"))
             .arg("--output-directory")
             .arg(output_dir)
             .assert()
@@ -330,8 +346,9 @@ mod cli_import {
         for file_name in EXPECTED_MDX_FILES {
             let generated =
                 fs::read_to_string(output_dir.join(file_name)).expect("Failed to read generated");
-            let reference = fs::read_to_string(Path::new(REFERENCE_DIR).join(file_name))
-                .expect("Failed to read reference");
+            let reference =
+                fs::read_to_string(Path::new(&hello_world_asset_dir()).join(file_name))
+                    .expect("Failed to read reference");
             let gen_fm = extract_frontmatter(&generated).unwrap();
             let ref_fm = extract_frontmatter(&reference).unwrap();
             let gen_yaml: serde_yaml::Value = serde_yaml::from_str(&gen_fm).expect("Invalid YAML");
@@ -361,6 +378,8 @@ mod cli_validate {
     use predicates::prelude::*;
     use std::fs;
 
+    use crate::features::convert_bpmn_to_mdx::tests::hello_world_asset_path;
+
     #[allow(deprecated)]
     fn detent() -> Command {
         Command::cargo_bin("detent").expect("Failed to find detent binary")
@@ -380,7 +399,7 @@ mod cli_validate {
     fn test_validate_bpmn_file() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/hello-world.bpmn2")
+            .arg(hello_world_asset_path("hello-world.bpmn2"))
             .assert()
             .success()
             .stdout(predicate::str::contains("✓"));
@@ -390,7 +409,7 @@ mod cli_validate {
     fn test_validate_mdx_start_event() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/_1E892844-423C-464F-ADC4-22F1EC73851B.mdx")
+            .arg(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"))
             .assert()
             .success()
             .stdout(predicate::str::contains("✓"));
@@ -400,7 +419,7 @@ mod cli_validate {
     fn test_validate_mdx_task() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")
+            .arg(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx"))
             .assert()
             .success()
             .stdout(predicate::str::contains("✓"));
@@ -410,7 +429,7 @@ mod cli_validate {
     fn test_validate_mdx_end_event() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx")
+            .arg(hello_world_asset_path("_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx"))
             .assert()
             .success()
             .stdout(predicate::str::contains("✓"));
@@ -420,7 +439,7 @@ mod cli_validate {
     fn test_validate_mdx_sequence_flow() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/_4083739B-66F0-4B92-A348-A37DF3B29083.mdx")
+            .arg(hello_world_asset_path("_4083739B-66F0-4B92-A348-A37DF3B29083.mdx"))
             .assert()
             .success()
             .stdout(predicate::str::contains("✓"));
@@ -430,8 +449,8 @@ mod cli_validate {
     fn test_validate_multiple_files() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/hello-world.bpmn2")
-            .arg("tests/assets/processes/hello-world/_1E892844-423C-464F-ADC4-22F1EC73851B.mdx")
+            .arg(hello_world_asset_path("hello-world.bpmn2"))
+            .arg(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"))
             .assert()
             .success()
             .stdout(predicate::str::contains("✓").count(2));
@@ -451,7 +470,7 @@ mod cli_validate {
     fn test_validate_unknown_extension() {
         detent()
             .arg("validate")
-            .arg("tests/assets/processes/hello-world/_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")
+            .arg(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx"))
             .arg("Cargo.toml")
             .assert()
             .failure()
@@ -470,7 +489,7 @@ mod cli_validate {
 
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let invalid_bpmn = temp_dir.path().join("invalid-graph.bpmn2");
-        let fixture = fs::read_to_string("tests/assets/processes/hello-world/hello-world.bpmn2")
+        let fixture = fs::read_to_string(hello_world_asset_path("hello-world.bpmn2"))
             .expect("Failed to read fixture");
         let mutated = fixture.replace(
             "targetRef=\"_808AA40C-EAA1-40C4-A2DC-27000FBF1866\"",
@@ -484,6 +503,7 @@ mod cli_validate {
 }
 
 mod compile {
+    use crate::features::convert_bpmn_to_mdx::tests::hello_world_asset_path;
     use crate::features::convert_bpmn_to_mdx::use_cases::compile::{compile_to_definitions, MdxInput};
 
     fn simple_mdx_inputs() -> Vec<MdxInput> {
@@ -569,11 +589,11 @@ mod compile {
     #[test]
     fn test_compile_with_hello_world_reference_files() {
         let inputs = vec![
-            MdxInput { filename: "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx".to_string(), content: std::fs::read_to_string("tests/assets/processes/hello-world/_1E892844-423C-464F-ADC4-22F1EC73851B.mdx").unwrap() },
-            MdxInput { filename: "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx".to_string(), content: std::fs::read_to_string("tests/assets/processes/hello-world/_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx").unwrap() },
-            MdxInput { filename: "_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx".to_string(), content: std::fs::read_to_string("tests/assets/processes/hello-world/_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx").unwrap() },
-            MdxInput { filename: "_4083739B-66F0-4B92-A348-A37DF3B29083.mdx".to_string(), content: std::fs::read_to_string("tests/assets/processes/hello-world/_4083739B-66F0-4B92-A348-A37DF3B29083.mdx").unwrap() },
-            MdxInput { filename: "_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx".to_string(), content: std::fs::read_to_string("tests/assets/processes/hello-world/_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx").unwrap() },
+            MdxInput { filename: "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx".to_string(), content: std::fs::read_to_string(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx")).unwrap() },
+            MdxInput { filename: "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx".to_string(), content: std::fs::read_to_string(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")).unwrap() },
+            MdxInput { filename: "_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx".to_string(), content: std::fs::read_to_string(hello_world_asset_path("_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx")).unwrap() },
+            MdxInput { filename: "_4083739B-66F0-4B92-A348-A37DF3B29083.mdx".to_string(), content: std::fs::read_to_string(hello_world_asset_path("_4083739B-66F0-4B92-A348-A37DF3B29083.mdx")).unwrap() },
+            MdxInput { filename: "_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx".to_string(), content: std::fs::read_to_string(hello_world_asset_path("_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx")).unwrap() },
         ];
         let defs = compile_to_definitions(&inputs).unwrap();
         let process = defs.process.as_ref().unwrap();
@@ -694,22 +714,13 @@ mod import {
 mod mdx_types {
     use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{SequenceFlow, StartEvent, Task};
     use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
+    use crate::features::convert_bpmn_to_mdx::tests::hello_world_asset_path;
     use std::fs;
-
-    const MDX_START_EVENT: &str =
-        "tests/assets/processes/hello-world/_1E892844-423C-464F-ADC4-22F1EC73851B.mdx";
-    const MDX_END_EVENT: &str =
-        "tests/assets/processes/hello-world/_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx";
-    const MDX_TASK: &str =
-        "tests/assets/processes/hello-world/_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx";
-    const MDX_SEQUENCE_FLOW_1: &str =
-        "tests/assets/processes/hello-world/_4083739B-66F0-4B92-A348-A37DF3B29083.mdx";
-    const MDX_SEQUENCE_FLOW_2: &str =
-        "tests/assets/processes/hello-world/_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx";
 
     #[test]
     fn test_parse_mdx_file() {
-        let content = fs::read_to_string(MDX_START_EVENT).expect("Failed to read MDX");
+        let content = fs::read_to_string(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"))
+            .expect("Failed to read MDX");
         let mdx = MdxFile::parse(&content).expect("Failed to parse MDX");
         assert!(mdx.frontmatter.contains("id: _1E892844-423C-464F-ADC4-22F1EC73851B"));
         assert!(mdx.body.contains("Start Event"));
@@ -717,21 +728,30 @@ mod mdx_types {
 
     #[test]
     fn test_parse_start_event() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_START_EVENT).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx")).unwrap(),
+        )
+        .unwrap();
         let event = mdx.parse_start_event().unwrap();
         assert_eq!(event.id, "_1E892844-423C-464F-ADC4-22F1EC73851B");
     }
 
     #[test]
     fn test_parse_end_event() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_END_EVENT).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx")).unwrap(),
+        )
+        .unwrap();
         let event = mdx.parse_end_event().unwrap();
         assert_eq!(event.id, "_D3F6E97D-7783-492C-98CE-57EC815D304C");
     }
 
     #[test]
     fn test_parse_task() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_TASK).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")).unwrap(),
+        )
+        .unwrap();
         let task = mdx.parse_task().unwrap();
         assert_eq!(task.id, "_808AA40C-EAA1-40C4-A2DC-27000FBF1866");
         assert_eq!(task.name, Some("Hello World".to_string()));
@@ -739,7 +759,10 @@ mod mdx_types {
 
     #[test]
     fn test_parse_task_with_documentation() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_TASK).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")).unwrap(),
+        )
+        .unwrap();
         let task = mdx.parse_task().unwrap();
         assert!(task.documentation.is_some());
         assert_eq!(task.documentation.unwrap().text, "T");
@@ -747,7 +770,10 @@ mod mdx_types {
 
     #[test]
     fn test_parse_sequence_flow_start_to_task() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_SEQUENCE_FLOW_1).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_4083739B-66F0-4B92-A348-A37DF3B29083.mdx")).unwrap(),
+        )
+        .unwrap();
         let flow = mdx.parse_sequence_flow().unwrap();
         assert_eq!(flow.source_ref, "_1E892844-423C-464F-ADC4-22F1EC73851B");
         assert_eq!(flow.target_ref, "_808AA40C-EAA1-40C4-A2DC-27000FBF1866");
@@ -755,7 +781,10 @@ mod mdx_types {
 
     #[test]
     fn test_parse_sequence_flow_task_to_end() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_SEQUENCE_FLOW_2).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx")).unwrap(),
+        )
+        .unwrap();
         let flow = mdx.parse_sequence_flow().unwrap();
         assert_eq!(flow.source_ref, "_808AA40C-EAA1-40C4-A2DC-27000FBF1866");
         assert_eq!(flow.target_ref, "_D3F6E97D-7783-492C-98CE-57EC815D304C");
@@ -763,7 +792,10 @@ mod mdx_types {
 
     #[test]
     fn test_roundtrip_start_event() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_START_EVENT).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx")).unwrap(),
+        )
+        .unwrap();
         let event = mdx.parse_start_event().unwrap();
         let yaml = serde_yaml::to_string(&event).unwrap();
         let parsed: StartEvent = serde_yaml::from_str(&yaml).unwrap();
@@ -772,7 +804,10 @@ mod mdx_types {
 
     #[test]
     fn test_roundtrip_task() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_TASK).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx")).unwrap(),
+        )
+        .unwrap();
         let task = mdx.parse_task().unwrap();
         let yaml = serde_yaml::to_string(&task).unwrap();
         let parsed: Task = serde_yaml::from_str(&yaml).unwrap();
@@ -781,7 +816,10 @@ mod mdx_types {
 
     #[test]
     fn test_roundtrip_sequence_flow() {
-        let mdx = MdxFile::parse(&fs::read_to_string(MDX_SEQUENCE_FLOW_1).unwrap()).unwrap();
+        let mdx = MdxFile::parse(
+            &fs::read_to_string(hello_world_asset_path("_4083739B-66F0-4B92-A348-A37DF3B29083.mdx")).unwrap(),
+        )
+        .unwrap();
         let flow = mdx.parse_sequence_flow().unwrap();
         let yaml = serde_yaml::to_string(&flow).unwrap();
         let parsed: SequenceFlow = serde_yaml::from_str(&yaml).unwrap();
@@ -791,14 +829,16 @@ mod mdx_types {
     #[test]
     fn test_all_mdx_files_parseable() {
         for path in [
-            MDX_START_EVENT,
-            MDX_END_EVENT,
-            MDX_TASK,
-            MDX_SEQUENCE_FLOW_1,
-            MDX_SEQUENCE_FLOW_2,
+            hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"),
+            hello_world_asset_path("_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx"),
+            hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx"),
+            hello_world_asset_path("_4083739B-66F0-4B92-A348-A37DF3B29083.mdx"),
+            hello_world_asset_path("_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx"),
         ] {
-            let content = fs::read_to_string(path).expect(&format!("Failed to read {}", path));
-            let mdx = MdxFile::parse(&content).expect(&format!("Failed to parse {}", path));
+            let content = fs::read_to_string(&path)
+                .unwrap_or_else(|_| panic!("Failed to read {}", path.display()));
+            let mdx = MdxFile::parse(&content)
+                .unwrap_or_else(|_| panic!("Failed to parse {}", path.display()));
             assert!(mdx.frontmatter.contains("type:"));
             assert!(mdx.frontmatter.contains("id:"));
         }

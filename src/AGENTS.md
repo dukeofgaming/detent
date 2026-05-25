@@ -11,7 +11,7 @@ Before any edit, verify against ALL active ADRs. Proposed/superseded ADRs are in
 | **ADR-5** | accepted | One type per file; file names match type names (`start_event.rs` → `StartEvent`) |
 | **ADR-6** | accepted | Use `folder.rs` instead of `folder/mod.rs` for module definitions (exception: `src/` itself uses `mod.rs` because no direct `.rs` files live under `src/`) |
 | **ADR-7** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` |
-| **ADR-8** | accepted | Tests co-located in `{module}/tests.rs` with `#[cfg(test)]`; no test harness files in `tests/` |
+| **ADR-8** | accepted | Each feature owns `tests/` and `tests/assets/` as a slice-local fractal; no project-root test harness files |
 
 ## Architecture
 
