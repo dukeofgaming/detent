@@ -97,9 +97,9 @@ Major projects have migrated:
 
 Module declarations directly under `src/` use `mod.rs` rather than `folder.rs`.
 This is because `src/` must contain no direct `.rs` files except `main.rs` and
-`lib.rs`. Therefore `src/compiler/mod.rs` and `src/graph_validation/mod.rs`
-keep the `mod.rs` form. All deeper modules follow the `folder.rs` convention
-(e.g., `src/compiler/commands.rs`, `lib/core/src/bpmn.rs`).
+`lib.rs`. Feature implementation lives under `src/features/`, and deeper
+modules there follow the `folder.rs` convention (for example,
+`src/features/convert_bpmn_to_mdx/use_cases.rs`).
 
 ## References
 

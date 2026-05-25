@@ -15,7 +15,7 @@ Before any edit, verify against ALL active ADRs. Proposed/superseded ADRs are in
 
 ## Architecture
 
-- `src/` is for the CLI entry point (`main.rs`) and thin module declarations (`lib.rs`). No `.rs` files directly under `src/` except `main.rs` and `lib.rs` — all implementation lives in sub-modules (`src/transpiler/`, `src/graph_validation/`) or `lib/` workspace crates. Module declarations under `src/` use `mod.rs` (`src/transpiler/mod.rs`, `src/graph_validation/mod.rs`).
+- `src/` contains only the CLI entry point (`main.rs`), crate root (`lib.rs`), and `features/`. No other implementation should live directly under `src/`.
 - Feature-layer code lives under `src/features/<feature>/` using up to four layer folders/files: domain, use_cases, adapters, infrastructure. Compatibility shims under `src/` must not become the primary implementation home.
 
 ## Documentation

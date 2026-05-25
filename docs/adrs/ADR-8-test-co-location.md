@@ -19,10 +19,10 @@ implementation they tested, and the `#[path]` pattern added boilerplate.
 
 Co-locate tests in `{module}/tests.rs` files with `#[cfg(test)]` gating:
 
-- `src/compiler/tests.rs` — all compiler slice tests (BPMN parsing, CLI,
-  compile/import logic, MDX round-trip)
-- `src/graph_validation/tests.rs` — all graph validation tests (Graph
-  operations, semantic checks, reachability)
+- `src/features/convert_bpmn_to_mdx/tests.rs` — all `#3` slice tests
+  (BPMN parsing, CLI, compile/import logic, MDX round-trip)
+- `src/features/graph_validation/tests.rs` — all `#4` slice tests
+  (Graph operations, semantic checks, reachability)
 
 Each `{module}/mod.rs` declares the test module with:
 

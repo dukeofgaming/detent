@@ -29,7 +29,6 @@ Validate BPMN (`.bpmn`, `.bpmn2`) or MDX (`.mdx`) files.
 1. Parse file (XML for BPMN, YAML frontmatter for MDX)
 2. XSD schema validation (BPMN only, when `xsd-validation` feature is enabled)
 3. Structural validation (element IDs, required fields)
-4. Graph semantic validation (start/end event presence, dangling references, duplicate IDs)
 
 **Exit codes:** `0` all files valid, `1` any file invalid.
 
@@ -66,7 +65,7 @@ detent import build/onboarding.bpmn -o flows/onboarding
 
 Compile a directory of MDX files into BPMN XML.
 
-Reads all `.mdx` files from the directory, parses their frontmatter according to the `type:` field (e.g. `bpmn:startEvent`, `bpmn:task`, `bpmn:sequenceFlow`), and assembles a BPMN `Definitions` document. Runs graph validation before emitting output.
+Reads all `.mdx` files from the directory, parses their frontmatter according to the `type:` field (e.g. `bpmn:startEvent`, `bpmn:task`, `bpmn:sequenceFlow`), and assembles a BPMN `Definitions` document.
 
 **Arguments:**
 | Argument | Description |
@@ -94,7 +93,7 @@ detent compile flows/onboarding -o build/process.bpmn
        ▼                          ▼
    parse + XSD +             parse YAML +
    structural +              structural +
-   graph semantic            graph semantic
+   structural                structural
 ```
 
 ## Project layout
@@ -102,7 +101,5 @@ detent compile flows/onboarding -o build/process.bpmn
 | Path | Layer | Description |
 |------|-------|-------------|
 | `src/features/convert_bpmn_to_mdx/` | Vertical slice (#3) | BPMN/MDX transpilation domain, adapters, use cases, tests |
-| `src/features/graph_validation/` | Vertical slice (#4) | Graph-validation domain, adapters, use cases, CLI composition, tests |
-| `src/transpiler/` | Compatibility | Historical API shims for transpiler paths |
-| `src/graph_validation/` | Compatibility | Historical API shim for graph-validation paths |
+| `src/features/graph_validation/` | Vertical slice (#4) | Additive graph-validation slice, isolated from #3 |
 | `tests/` | Fixtures | Asset fixtures only |

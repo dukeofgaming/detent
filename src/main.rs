@@ -14,8 +14,8 @@ use detent::features::convert_bpmn_to_mdx;
     \n\
     Workflows are authored as a folder of MDX files (one per flow element),\n\
     compiled deterministically to BPMN XML, and can be imported back to MDX.\n\
-    Both formats run through a 4-stage validation pipeline:\n\
-    parse → schema → structural → graph semantic."
+    Both formats run through a 3-stage validation pipeline:\n\
+    parse → schema → structural."
 )]
 #[command(version)]
 struct Cli {
@@ -33,8 +33,6 @@ enum Commands {
         1. Parse — XML for BPMN, YAML frontmatter for MDX\n\
         2. XSD schema validation — BPMN only (requires xsd-validation feature)\n\
         3. Structural validation — element IDs, required fields\n\
-        4. Graph semantic validation — start/end event presence, dangling\n\
-           references, duplicate IDs\n\
         \n\
         All files must pass for the command to succeed."
     )]
@@ -70,9 +68,7 @@ enum Commands {
         frontmatter by type field (e.g. bpmn:startEvent, bpmn:task,\n\
         bpmn:sequenceFlow), and assembles a BPMN 2.0 Definitions document.\n\
         \n\
-        Runs graph validation before emitting the result. Errors include\n\
-        missing start/end events, dangling sequence flow references,\n\
-        and duplicate element IDs."
+        Emits BPMN XML after structural frontmatter parsing and assembly."
     )]
     Compile {
         /// Directory containing .mdx files to compile
