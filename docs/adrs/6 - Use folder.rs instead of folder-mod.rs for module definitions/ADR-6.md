@@ -93,6 +93,14 @@ Major projects have migrated:
 - Git history shows file moves (use `git log --follow` to trace)
 - Contributors familiar only with legacy style may need brief onboarding
 
+## Exception: `src/` Root Modules
+
+Module declarations directly under `src/` use `mod.rs` rather than `folder.rs`.
+This is because `src/` must contain no direct `.rs` files except `main.rs` and
+`lib.rs`. Therefore `src/compiler/mod.rs` and `src/graph_validation/mod.rs`
+keep the `mod.rs` form. All deeper modules follow the `folder.rs` convention
+(e.g., `src/compiler/commands.rs`, `lib/core/src/bpmn.rs`).
+
 ## References
 
 1. [The Rust Reference: Module Source Filenames](https://doc.rust-lang.org/reference/items/modules.html#module-source-filenames)
