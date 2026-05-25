@@ -2,8 +2,8 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::serialize_bpmn;
 use crate::features::convert_bpmn_to_mdx::use_cases::compile::{compile_to_definitions, MdxInput};
-use crate::transpiler::bpmn::serialize_bpmn;
 
 pub fn run(directory: PathBuf, output: Option<PathBuf>) -> ExitCode {
     let entries = match fs::read_dir(&directory) {

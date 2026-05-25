@@ -1,7 +1,6 @@
 use crate::features::graph_validation::adapters::bpmn::to_domain_process;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, Definitions, Process};
 use crate::features::graph_validation::domain::graph::Graph;
-
-use crate::transpiler::bpmn::{parse_bpmn, Definitions, Process};
 
 pub fn validate_bpmn_process(process: &Process) -> Result<(), Vec<String>> {
     let domain_process = to_domain_process(process);

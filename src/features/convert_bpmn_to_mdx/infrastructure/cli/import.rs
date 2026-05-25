@@ -2,8 +2,8 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 use crate::features::convert_bpmn_to_mdx::use_cases::import::import_to_mdx;
-use crate::transpiler::bpmn::parse_bpmn;
 
 pub fn run(bpmn_file: PathBuf, output_directory: PathBuf) -> ExitCode {
     let xml = match fs::read_to_string(&bpmn_file) {

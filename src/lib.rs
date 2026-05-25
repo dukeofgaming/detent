@@ -6,5 +6,3 @@
 //! - Bidirectional MDX ↔ BPMN transpilation
 
 pub mod features;
-pub mod graph_validation;
-pub mod transpiler;

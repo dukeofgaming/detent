@@ -6,7 +6,7 @@
 use regex::Regex;
 use serde::Serialize;
 
-use crate::transpiler::bpmn::Definitions;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Definitions;
 
 /// A single MDX file output from the import process
 #[derive(Debug, Clone)]

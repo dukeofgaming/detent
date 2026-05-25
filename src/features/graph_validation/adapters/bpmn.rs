@@ -1,5 +1,5 @@
 use crate::features::graph_validation::domain::bpmn as domain_bpmn;
-use crate::transpiler::bpmn::Process;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Process;
 
 pub fn to_domain_process(p: &Process) -> domain_bpmn::Process {
     domain_bpmn::Process {

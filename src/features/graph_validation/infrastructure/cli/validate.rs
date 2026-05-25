@@ -2,11 +2,11 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
 #[cfg(feature = "xsd-validation")]
-use crate::transpiler::bpmn::validate_bpmn_xsd;
-use crate::transpiler::bpmn::{parse_bpmn, Validate};
-use crate::transpiler::mdx::MdxFile;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::validate_bpmn_xsd;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, Validate};
+use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
+use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
 
 pub fn run(files: Vec<PathBuf>) -> ExitCode {
     let mut has_errors = false;
