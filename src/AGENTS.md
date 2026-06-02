@@ -11,7 +11,9 @@ Before any edit, verify against ALL active ADRs. Proposed/superseded ADRs are in
 | **ADR-5** | accepted | One type per file; file names match type names (`start_event.rs` → `StartEvent`) |
 | **ADR-6** | accepted | Use `folder.rs` instead of `folder/mod.rs` for module definitions (exception: `src/` itself uses `mod.rs` because no direct `.rs` files live under `src/`) |
 | **ADR-7** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` |
-| **ADR-8** | accepted | Each feature owns `tests/` and `tests/assets/` as a slice-local fractal; no project-root test harness files |
+| **ADR-8** | superseded (by ADR-9) | Slice-local test ownership retained, but compilation model replaced |
+| **ADR-9** | superseded (by ADR-10) | Explicit Cargo test targets solved lib coupling, but required TOML updates |
+| **ADR-10** | accepted | Slice tests stay under `src/features/<feature>/tests/` and are discovered through stable root `tests/` harness files, not lib modules or per-slice TOML entries |
 
 ## Architecture
 
@@ -22,7 +24,11 @@ Before any edit, verify against ALL active ADRs. Proposed/superseded ADRs are in
 
 - Always run `cargo test` at the end of a complete logical code change, and make sure.
 
-- Integration tests go in `tests/` at the project root, not in `src/`.
+- Slice-level integration tests live under `src/features/<feature>/tests/` and
+  are discovered through stable root harness files in `tests/`.
+
+- Do not wire slice tests into library code with `#[cfg(test)] mod tests;`
+  unless a test must exercise private internals and there is no better seam.
 
 - Never write production code without writing tests in TDD fashion.
 
