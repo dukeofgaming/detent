@@ -1,9 +1,8 @@
-use crate::features::graph_validation::domain::bpmn::{
+use detent::features::graph_validation::domain::bpmn::{
     EndEvent, Process, SequenceFlow, StartEvent, Task,
 };
-use crate::features::graph_validation::domain::graph::Graph;
+use detent::features::graph_validation::domain::graph::Graph;
 
-/// Helper: simple linear process: Start → Task → End
 fn linear_process() -> Process {
     Process {
         id: "process_1".to_string(),
