@@ -14,6 +14,13 @@ fn hello_world_asset_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(HELLO_WORLD_ASSET_DIR)
 }
 
+macro_rules! detent {
+    () => {{
+        #[allow(deprecated)]
+        assert_cmd::Command::cargo_bin("detent").expect("Failed to find detent binary")
+    }};
+}
+
 mod bpmn_parsing {
     use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
     use std::fs;
@@ -141,21 +148,15 @@ mod bpmn_xsd_validation {
 }
 
 mod cli_compile {
-    use assert_cmd::Command;
     use predicates::prelude::*;
     use std::fs;
     use std::path::Path;
 
     use super::hello_world_asset_dir;
 
-    #[allow(deprecated)]
-    fn detent() -> Command {
-        Command::cargo_bin("detent").expect("Failed to find detent binary")
-    }
-
     #[test]
     fn test_compile_help() {
-        detent()
+        detent!()
             .arg("compile")
             .arg("--help")
             .assert()
@@ -165,12 +166,12 @@ mod cli_compile {
 
     #[test]
     fn test_compile_requires_directory() {
-        detent().arg("compile").assert().failure();
+        detent!().arg("compile").assert().failure();
     }
 
     #[test]
     fn test_compile_missing_directory() {
-        detent()
+        detent!()
             .arg("compile")
             .arg("nonexistent-dir")
             .assert()
@@ -182,7 +183,7 @@ mod cli_compile {
     fn test_compile_produces_bpmn_xml_file() {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let output_file = temp_dir.path().join("output.bpmn");
-        detent()
+        detent!()
             .arg("compile")
             .arg(hello_world_asset_dir())
             .arg("--output")
@@ -199,7 +200,7 @@ mod cli_compile {
     fn test_compile_output_contains_all_elements() {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let output_file = temp_dir.path().join("output.bpmn");
-        detent()
+        detent!()
             .arg("compile")
             .arg(hello_world_asset_dir())
             .arg("--output")
@@ -214,7 +215,7 @@ mod cli_compile {
 
     #[test]
     fn test_compile_writes_to_stdout_by_default() {
-        detent()
+        detent!()
             .arg("compile")
             .arg(hello_world_asset_dir())
             .assert()
@@ -227,7 +228,7 @@ mod cli_compile {
     fn test_compile_ignores_non_mdx_files() {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let output_file = temp_dir.path().join("output.bpmn");
-        detent()
+        detent!()
             .arg("compile")
             .arg(hello_world_asset_dir())
             .arg("--output")
@@ -274,17 +275,11 @@ mod cli_compile {
 }
 
 mod cli_import {
-    use assert_cmd::Command;
     use predicates::prelude::*;
     use std::fs;
     use std::path::Path;
 
     use super::{hello_world_asset_dir, hello_world_asset_path};
-
-    #[allow(deprecated)]
-    fn detent() -> Command {
-        Command::cargo_bin("detent").expect("Failed to find detent binary")
-    }
 
     const EXPECTED_MDX_FILES: &[&str] = &[
         "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx",
@@ -306,7 +301,7 @@ mod cli_import {
 
     #[test]
     fn test_import_help() {
-        detent()
+        detent!()
             .arg("import")
             .arg("--help")
             .assert()
@@ -318,7 +313,7 @@ mod cli_import {
     fn test_import_generates_all_expected_files() {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let output_dir = temp_dir.path();
-        detent()
+        detent!()
             .arg("import")
             .arg(hello_world_asset_path("hello-world.bpmn2"))
             .arg("--output-directory")
@@ -338,7 +333,7 @@ mod cli_import {
     fn test_import_frontmatter_matches_reference() {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let output_dir = temp_dir.path();
-        detent()
+        detent!()
             .arg("import")
             .arg(hello_world_asset_path("hello-world.bpmn2"))
             .arg("--output-directory")
@@ -361,7 +356,7 @@ mod cli_import {
 
     #[test]
     fn test_import_missing_bpmn_file() {
-        detent()
+        detent!()
             .arg("import")
             .arg("nonexistent.bpmn")
             .assert()
@@ -371,25 +366,19 @@ mod cli_import {
 
     #[test]
     fn test_import_requires_bpmn_file() {
-        detent().arg("import").assert().failure();
+        detent!().arg("import").assert().failure();
     }
 }
 
 mod cli_validate {
-    use assert_cmd::Command;
     use predicates::prelude::*;
     use std::fs;
 
     use super::hello_world_asset_path;
 
-    #[allow(deprecated)]
-    fn detent() -> Command {
-        Command::cargo_bin("detent").expect("Failed to find detent binary")
-    }
-
     #[test]
     fn test_validate_help() {
-        detent()
+        detent!()
             .arg("validate")
             .arg("--help")
             .assert()
@@ -399,7 +388,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_bpmn_file() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("hello-world.bpmn2"))
             .assert()
@@ -409,7 +398,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_mdx_start_event() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"))
             .assert()
@@ -419,7 +408,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_mdx_task() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx"))
             .assert()
@@ -429,7 +418,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_mdx_end_event() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx"))
             .assert()
@@ -439,7 +428,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_mdx_sequence_flow() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("_4083739B-66F0-4B92-A348-A37DF3B29083.mdx"))
             .assert()
@@ -449,7 +438,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_multiple_files() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("hello-world.bpmn2"))
             .arg(hello_world_asset_path("_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"))
@@ -460,7 +449,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_missing_file() {
-        detent()
+        detent!()
             .arg("validate")
             .arg("nonexistent.bpmn")
             .assert()
@@ -470,7 +459,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_unknown_extension() {
-        detent()
+        detent!()
             .arg("validate")
             .arg(hello_world_asset_path("_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx"))
             .arg("Cargo.toml")
@@ -481,7 +470,7 @@ mod cli_validate {
 
     #[test]
     fn test_validate_requires_files() {
-        detent().arg("validate").assert().failure();
+        detent!().arg("validate").assert().failure();
     }
 
     #[test]
