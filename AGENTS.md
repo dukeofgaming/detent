@@ -9,7 +9,7 @@ Before any edit, verify against ALL active ADRs. Proposed/superseded ADRs are in
 | **ADR-3** | accepted | Dependencies must work in WASM targets; prefer serde, quick-xml, clap |
 | **ADR-4** | accepted | Handcrafted BPMN types (not XSD codegen); types in feature slices under `src/features/` |
 | **ADR-5** | accepted | One type per file; file names match type names (`start_event.rs` → `StartEvent`) |
-| **ADR-6** | accepted | Use `folder.rs` instead of `folder/mod.rs` for module definitions (exception: `src/` itself uses `mod.rs` because no direct `.rs` files live under `src/`) |
+| **ADR-6** | accepted | Use `folder.rs` by default; feature roots use `src/features/<feature>/mod.rs` so each slice stays self-contained |
 | **ADR-7** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` |
 | **ADR-8** | superseded (by ADR-9) | Slice-local test ownership retained, but compilation model replaced |
 | **ADR-9** | superseded (by ADR-10) | Explicit Cargo test targets solved lib coupling, but required TOML updates |

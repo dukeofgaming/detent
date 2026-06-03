@@ -3,7 +3,7 @@ type: adr
 date: 2026-01-21
 status: accepted
 ---
-# ADR-6: Use `folder.rs` Instead of `folder/mod.rs` for Module Definitions
+# ADR-6: Use `folder.rs` by default for module definitions
 
 ## Context
 
@@ -21,7 +21,11 @@ Our codebase currently uses `mod.rs` files throughout:
 
 ## Decision
 
-**Adopt the modern `folder.rs` style for all module definitions.**
+**Adopt the modern `folder.rs` style by default for module definitions.**
+
+Feature roots under `src/features/<feature>/` are an explicit exception: each
+feature root uses `mod.rs` so the feature slice remains physically
+self-contained in one directory.
 
 Example transformation:
 ```
@@ -93,13 +97,22 @@ Major projects have migrated:
 - Git history shows file moves (use `git log --follow` to trace)
 - Contributors familiar only with legacy style may need brief onboarding
 
-## Exception: `src/` Root Modules
+## Exceptions
+
+### `src/` Root Modules
 
 Module declarations directly under `src/` use `mod.rs` rather than `folder.rs`.
 This is because `src/` must contain no direct `.rs` files except `main.rs` and
-`lib.rs`. Feature implementation lives under `src/features/`, and deeper
-modules there follow the `folder.rs` convention (for example,
-`src/features/convert_bpmn_to_mdx/use_cases.rs`).
+`lib.rs`.
+
+### Feature Roots
+
+Feature roots use `src/features/<feature>/mod.rs` rather than
+`src/features/<feature>.rs`. This keeps each vertical slice self-contained as a
+single directory that can own implementation, tests, and assets together.
+
+Deeper modules inside a feature still follow the `folder.rs` convention (for
+example, `src/features/convert_bpmn_to_mdx/use_cases.rs`).
 
 ## References
 
