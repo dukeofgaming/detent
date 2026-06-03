@@ -1,12 +1,9 @@
+---
+type: adr
+date: 2026-06-01
+status: superseded
+---
 # ADR-9: Use explicit slice integration test targets
-
-## Status
-
-Superseded by ADR-10
-
-## Date
-
-2026-06-01
 
 ## Context
 
@@ -86,3 +83,4 @@ path = "src/features/convert_bpmn_to_mdx/tests/integration.rs"
 
 - ADR-8: Organize tests as slice-local fractals
 - Supersedes ADR-8 for how slice tests are compiled and registered
+- Superseded by ADR-10

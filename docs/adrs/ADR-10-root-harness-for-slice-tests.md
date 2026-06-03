@@ -1,12 +1,9 @@
+---
+type: adr
+date: 2026-06-01
+status: accepted
+---
 # ADR-10: Use a stable root harness for slice-owned integration tests
-
-## Status
-
-Accepted
-
-## Date
-
-2026-06-01
 
 ## Context
 
