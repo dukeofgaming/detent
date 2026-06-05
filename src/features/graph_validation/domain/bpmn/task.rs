@@ -6,13 +6,3 @@ pub struct Task {
     pub outgoing: Vec<String>,
     pub documentation: Option<String>,
 }
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct ServiceTask {
-    pub id: String,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct ScriptTask {
-    pub id: String,
-}
