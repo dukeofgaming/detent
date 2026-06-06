@@ -42,3 +42,19 @@ fn then_process_doc(world: &mut ConvertWorld) {
         "This is a hello world activity"
     );
 }
+
+#[then("the definitions were exported by \"jBPM Process Modeler\" version \"2.0\"")]
+fn then_definitions_exporter(world: &mut ConvertWorld) {
+    let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
+    assert_eq!(defs.exporter, Some("jBPM Process Modeler".to_string()));
+    assert_eq!(defs.exporter_version, Some("2.0".to_string()));
+}
+
+#[then("the definitions target namespace is \"http://www.omg.org/bpmn20\"")]
+fn then_definitions_target_namespace(world: &mut ConvertWorld) {
+    let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
+    assert_eq!(
+        defs.target_namespace,
+        Some("http://www.omg.org/bpmn20".to_string())
+    );
+}

@@ -67,6 +67,8 @@ Feature: Convert BPMN to MDX
     And the process name is "hello-world"
     And the process is executable and public
     And the process documentation is "This is a hello world activity"
+    And the definitions were exported by "jBPM Process Modeler" version "2.0"
+    And the definitions target namespace is "http://www.omg.org/bpmn20"
 
   Scenario: Hello-world MDX compiles
     Given the hello-world MDX fixtures
@@ -77,3 +79,13 @@ Feature: Convert BPMN to MDX
     Given a minimal MDX input set with start, task, end, and two flows
     When I compile the MDX inputs to definitions
     Then importing the compiled definitions produces 5 MDX outputs
+
+  Scenario: Service task, script task, and gateway compile
+    Given an MDX input set with a service task, a script task, and an exclusive gateway
+    When I compile the MDX inputs to definitions
+    Then the process has 1 service task, 1 script task, and 1 exclusive gateway
+
+  Scenario: Condition expression survives import
+    Given in-memory definitions whose sequence flow carries a condition expression
+    When I import the parsed definitions to MDX
+    Then the flow_1 MDX output contains the condition "amount > 100"

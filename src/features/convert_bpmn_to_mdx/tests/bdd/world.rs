@@ -32,6 +32,10 @@ mod hello_world_bpmn_metadata;
 mod hello_world_mdx_compiles;
 #[path = "scenarios/mdx_compiles_and_imports_back.rs"]
 mod mdx_compiles_and_imports_back;
+#[path = "scenarios/full_process_with_gateways_compiles.rs"]
+mod full_process_with_gateways_compiles;
+#[path = "scenarios/condition_expression_survives_import.rs"]
+mod condition_expression_survives_import;
 
 const HELLO_WORLD_ASSET_DIR: &str = "src/features/convert_bpmn_to_mdx/tests/assets/hello_world";
 
