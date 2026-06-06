@@ -11,6 +11,7 @@ fn main() -> io::Result<()> {
     println!("cargo:rerun-if-changed={}", features_dir.display());
 
     let mut integration_modules = Vec::new();
+    let mut unit_modules = Vec::new();
     let mut cucumber_modules = Vec::new();
     for entry in fs::read_dir(&features_dir)? {
         let entry = entry?;
@@ -25,6 +26,12 @@ fn main() -> io::Result<()> {
             integration_modules.push((feature_name.clone(), integration_test));
         }
 
+        let unit_test = entry.path().join("tests/unit/mod.rs");
+        if unit_test.exists() {
+            println!("cargo:rerun-if-changed={}", unit_test.display());
+            unit_modules.push((feature_name.clone(), unit_test));
+        }
+
         let cucumber_test = entry.path().join("tests/bdd/world.rs");
         if cucumber_test.exists() {
             println!("cargo:rerun-if-changed={}", cucumber_test.display());
@@ -33,6 +40,7 @@ fn main() -> io::Result<()> {
     }
 
     integration_modules.sort_by(|left, right| left.0.cmp(&right.0));
+    unit_modules.sort_by(|left, right| left.0.cmp(&right.0));
     cucumber_modules.sort_by(|left, right| left.0.cmp(&right.0));
 
     let mut integration_src = String::new();
@@ -40,6 +48,13 @@ fn main() -> io::Result<()> {
         integration_src.push_str(&format!(
             "#[path = {:?}]\nmod {};\n\n",
             normalize_path(integration_test),
+            feature_name
+        ));
+    }
+    for (feature_name, unit_test) in &unit_modules {
+        integration_src.push_str(&format!(
+            "#[path = {:?}]\nmod {}_unit;\n\n",
+            normalize_path(unit_test),
             feature_name
         ));
     }

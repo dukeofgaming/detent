@@ -27,5 +27,4 @@ mod cli_compile;
 mod cli_import;
 mod cli_validate;
 mod compile;
-mod import;
 mod mdx_types;
