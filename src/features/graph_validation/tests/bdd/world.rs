@@ -4,6 +4,8 @@ use std::collections::HashMap;
 
 #[path = "../fixtures/linear_process.rs"]
 mod fixtures;
+#[path = "../fixtures/branching_process.rs"]
+mod branching_fixture;
 mod steps;
 
 #[path = "scenarios/well_formed_process_passes.rs"]
@@ -26,7 +28,10 @@ mod duplicate_flow_id_rejected;
 mod dead_end_detected;
 #[path = "scenarios/process_flow_analysis.rs"]
 mod process_flow_analysis;
+#[path = "scenarios/branching_process_validated.rs"]
+mod branching_process_validated;
 
+use branching_fixture::branching_process;
 use fixtures::{linear_process, linear_process_with_retargeted_exit};
 
 /// Owned snapshot of the flow analysis computed by the
@@ -47,6 +52,15 @@ pub struct GraphValidationWorld {
     analysis: Option<FlowAnalysis>,
     errors: Option<Vec<String>>,
     succeeded: bool,
+}
+
+/// Borrow the cached flow analysis, panicking with a helpful message when the
+/// "When I analyze the process flow" step has not run yet.
+fn analysis_of(world: &GraphValidationWorld) -> &FlowAnalysis {
+    world
+        .analysis
+        .as_ref()
+        .expect("process flow not analyzed; missing a 'When I analyze the process flow' step")
 }
 
 pub async fn run() -> bool {

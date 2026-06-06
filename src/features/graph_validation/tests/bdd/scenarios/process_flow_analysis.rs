@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cucumber::{then, when};
 use detent::features::graph_validation::domain::graph::Graph;
 
-use super::{FlowAnalysis, GraphValidationWorld};
+use super::{analysis_of, FlowAnalysis, GraphValidationWorld};
 
 #[when("I analyze the process flow")]
 fn when_analyze(world: &mut GraphValidationWorld) {
@@ -52,10 +52,7 @@ fn when_analyze(world: &mut GraphValidationWorld) {
 }
 
 fn analysis(world: &GraphValidationWorld) -> &FlowAnalysis {
-    world
-        .analysis
-        .as_ref()
-        .expect("process flow not analyzed; missing a 'When I analyze the process flow' step")
+    analysis_of(world)
 }
 
 #[then(regex = r"^(\S+) flows to (\S+)$")]

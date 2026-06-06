@@ -71,3 +71,17 @@ Feature: Graph Validation
     Given a linear process with an orphan "orphan_1"
     When I analyze the process flow
     Then orphan_1 can only reach itself
+
+  Scenario: Branching process passes validation
+    Given a branching process with an exclusive gateway
+    When I validate the process graph
+    Then validation succeeds
+
+  Scenario: Branch and merge connectivity
+    Given a branching process with an exclusive gateway
+    When I analyze the process flow
+    Then gateway_1 branches to task_a and task_b
+    And end_1 merges task_a and task_b
+    And start_1 can reach task_a
+    And start_1 can reach task_b
+    And start_1 can reach end_1
