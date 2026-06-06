@@ -1,7 +1,7 @@
 ---
 type: adr
 date: 2026-01-20
-status: accepted
+status: superseded
 ---
 # ADR-5: Screaming Architecture with One Type Per File
 
@@ -102,3 +102,7 @@ convenience methods remain as thin wrappers for discoverability.
 
 - Robert C. Martin, "Screaming Architecture" (Clean Architecture, Chapter 21)
 - Rust API Guidelines: Module organization
+
+## Related
+
+- Superseded by [[ADR-11]](../11%20-%20Screaming%20architecture%20for%20directories%20and%20files/ADR-11.md): Screaming Architecture for Directories and Files
