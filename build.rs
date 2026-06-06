@@ -10,7 +10,8 @@ fn main() -> io::Result<()> {
 
     println!("cargo:rerun-if-changed={}", features_dir.display());
 
-    let mut modules = Vec::new();
+    let mut integration_modules = Vec::new();
+    let mut cucumber_modules = Vec::new();
     for entry in fs::read_dir(&features_dir)? {
         let entry = entry?;
         if !entry.file_type()?.is_dir() {
@@ -21,22 +22,46 @@ fn main() -> io::Result<()> {
         let integration_test = entry.path().join("tests/integration.rs");
         if integration_test.exists() {
             println!("cargo:rerun-if-changed={}", integration_test.display());
-            modules.push((feature_name, integration_test));
+            integration_modules.push((feature_name.clone(), integration_test));
+        }
+
+        let cucumber_test = entry.path().join("tests/cucumber.rs");
+        if cucumber_test.exists() {
+            println!("cargo:rerun-if-changed={}", cucumber_test.display());
+            cucumber_modules.push((feature_name, cucumber_test));
         }
     }
 
-    modules.sort_by(|left, right| left.0.cmp(&right.0));
+    integration_modules.sort_by(|left, right| left.0.cmp(&right.0));
+    cucumber_modules.sort_by(|left, right| left.0.cmp(&right.0));
 
-    let mut generated = String::new();
-    for (feature_name, integration_test) in modules {
-        generated.push_str(&format!(
+    let mut integration_src = String::new();
+    for (feature_name, integration_test) in &integration_modules {
+        integration_src.push_str(&format!(
             "#[path = {:?}]\nmod {};\n\n",
-            normalize_path(&integration_test),
+            normalize_path(integration_test),
             feature_name
         ));
     }
+    fs::write(out_dir.join("feature_slices.rs"), integration_src)?;
 
-    fs::write(out_dir.join("feature_slices.rs"), generated)
+    let mut cucumber_src = String::new();
+    for (feature_name, cucumber_test) in &cucumber_modules {
+        cucumber_src.push_str(&format!(
+            "#[path = {:?}]\nmod {}_cucumber;\n\n",
+            normalize_path(cucumber_test),
+            feature_name
+        ));
+    }
+    for (feature_name, _) in &cucumber_modules {
+        cucumber_src.push_str(&format!(
+            "#[test]\nfn {feature}_cucumber_scenarios() {{\n    let runtime = tokio::runtime::Builder::new_current_thread()\n        .enable_all()\n        .build()\n        .expect(\"failed to build tokio runtime\");\n    let failed = runtime.block_on({feature}_cucumber::run());\n    assert!(!failed, \"{feature} cucumber scenarios failed\");\n}}\n\n",
+            feature = feature_name
+        ));
+    }
+    fs::write(out_dir.join("feature_slices_cucumber.rs"), cucumber_src)?;
+
+    Ok(())
 }
 
 fn normalize_path(path: &Path) -> String {
