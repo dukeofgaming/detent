@@ -1,9 +1,10 @@
 ---
 type: adr
+title: ADR-12 - BDD test layout
 date: 2026-06-06
 status: accepted
+supersedes:
 ---
-# ADR-12: BDD test layout
 
 ## Context
 
@@ -42,7 +43,13 @@ bdd/
 └── (scenarios/ files may embed scenario-local #[when] and #[then] too)
 ```
 
-### Key decisions in this branch
+### Options
+
+1. **Flat `steps.rs` + flat scenario files**: Simple but grows without bound
+2. **BDD test layout with `scenarios/`, `steps/{given,when,then,and}.rs`**: Structured, screams intent — chosen
+3. **Gherkin-only: no scenario `.rs` files**: All Cucumber, no Rust per scenario — inflexible
+
+### Rationale
 
 1. **`world.rs` instead of `mod.rs`.** The cucumber entrypoint is named
    `world.rs` because it contains the `World` struct. A bare `mod.rs` would not
@@ -61,7 +68,15 @@ bdd/
 4. **Scenario-local steps stay in the scenario file.** When a step definition
    is used by exactly one scenario group, it lives alongside that group in
    `scenarios/<group>.rs`. This avoids polluting the shared step namespace and
-   keeps the step close to the scenario that needs it.
+   keeps the step close to the scenario that needs it. For example, consider a
+   scenario that validates BPMN metadata: the "When I parse the BPMN to
+   definitions" step is used nowhere else. Placing it in the shared `when.rs`
+   would force every developer to scan that file and understand the parse
+   machinery, even when working on unrelated scenarios. Keeping it in
+   `scenarios/hello_world_bpmn_metadata.rs` makes the dependency explicit:
+   the scenario file owns its steps. When a step definition is copied to a
+   second scenario file, it graduates to the shared `steps/` directory and is
+   deduplicated.
 
 5. **One `slice.feature` per slice.** The Gherkin feature file is named
    `slice.feature` because it describes the behaviour of the owning slice.
@@ -83,49 +98,17 @@ bdd/
    looks for `src/features/*/tests/bdd/world.rs` instead of `bdd/mod.rs`,
    matching the file rename.
 
-### Rationale for scenario-local steps
-
-Consider a scenario that validates BPMN metadata: the "When I parse the BPMN to
-definitions" step is used nowhere else. Placing it in the shared `when.rs`
-would force every developer to scan that file and understand the parse
-machinery, even when working on unrelated scenarios. Keeping it in
-`scenarios/hello_world_bpmn_metadata.rs` makes the dependency explicit:
-the scenario file owns its steps.
-
-When a step definition is copied to a second scenario file, it graduates to the
-shared `steps/` directory and is deduplicated.
-
 ## Consequences
 
 ### Positive
-- **Step separation.** Shared vs. scenario-local steps are distinguished by
-  directory, requiring no naming convention or documentation.
-- **File growth stays bounded.** No file grows past ~70 lines because each
-  concerns a specific scenario or a single step keyword.
-- **Onboarding.** A new contributor can find the relevant scenario or step
-  definition by looking at the directory tree, not by grepping.
-- **Screaming architecture.** Every directory name in the BDD tree reveals
-  its purpose: `scenarios/` = scenario files, `steps/` = step defs,
-  `world.rs` = Cucumber World.
+
+1. **Step separation.** Shared vs. scenario-local steps are distinguished by directory, requiring no naming convention or documentation.
+2. **File growth stays bounded.** No file grows past ~70 lines because each concerns a specific scenario or a single step keyword.
+3. **Onboarding.** A new contributor can find the relevant scenario or step definition by looking at the directory tree, not by grepping.
+4. **Screaming architecture.** Every directory name in the BDD tree reveals its purpose: `scenarios/` = scenario files, `steps/` = step defs, `world.rs` = Cucumber World.
 
 ### Negative
-- **More files.** The layout produces a deeper tree than a flat `steps.rs` +
-  flat scenario approach.
-- **Path resolution.** Steps inside `steps/when.rs` use
-  `use super::super::ConvertWorld` to reach the world struct, which is slightly
-  less ergonomic than `use super::ConvertWorld` from a flat `steps.rs`.
-- **Unbalanced `and.rs`.** Currently the `and.rs` files are empty; they serve
-  as placeholders for when shared "And" continuation steps emerge.
 
-### Mitigations
-- IDE navigation eliminates the cost of deeper nesting.
-- The `super::super` path is confined to the import at line 1 of each step
-  file and never repeated.
-- Empty `and.rs` files compile cleanly and cost nothing as placeholders.
-
-## Related
-
-- [[ADR-10]]: Use a stable root harness for slice-owned tests
-- [[ADR-11]]: Screaming Architecture for Directories and Files
-- [[ADR-4]]: Handcrafted BPMN types (not XSD codegen)
-- Cucumber-rs crate documentation
+1. **More files.** The layout produces a deeper tree than a flat `steps.rs` + flat scenario approach. Mitigation: IDE navigation eliminates the cost of deeper nesting.
+2. **Path resolution.** Steps inside `steps/when.rs` use `use super::super::ConvertWorld` to reach the world struct, which is slightly less ergonomic than `use super::ConvertWorld` from a flat `steps.rs`. Mitigation: the `super::super` path is confined to the import at line 1 of each step file and never repeated.
+3. **Unbalanced `and.rs`.** Currently the `and.rs` files are empty; they serve as placeholders for when shared "And" continuation steps emerge. Mitigation: empty `and.rs` files compile cleanly and cost nothing as placeholders.

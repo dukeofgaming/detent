@@ -1,9 +1,10 @@
 ---
 type: adr
+title: ADR-9 - Use explicit slice integration test targets
 date: 2026-06-01
-status: superseded
+status: accepted
+supersedes: 8
 ---
-# ADR-9: Use explicit slice integration test targets
 
 ## Context
 
@@ -30,6 +31,8 @@ We still want the ownership and locality introduced by [[ADR-8]]:
 - project-root harness files should remain unnecessary for slice-specific tests
 
 What needs to change is how those slice tests are compiled and discovered.
+This ADR superseded [[ADR-8]] for how slice tests are compiled and registered,
+and has been superseded by [[ADR-10]].
 
 ## Decision
 
@@ -37,25 +40,27 @@ Keep slice tests under `src/features/<feature>/tests/`, but register them as
 explicit integration test targets in `Cargo.toml` instead of wiring them into
 library modules with `#[cfg(test)] mod tests;`.
 
+### Options
+
+1. **Keep `#[cfg(test)]` wiring** (from ADR-8): Simple but forced bin tests into lib target
+2. **Explicit `[[test]]` targets in Cargo.toml**: Clean separation but requires per-slice TOML entries — chosen
+3. **Root `tests/` harness per slice**: Stable discovery but requires root boilerplate
+
+### Rationale
+
+Slice integration test roots live under `src/features/<feature>/tests/` and
+slice-owned fixtures under `src/features/<feature>/tests/assets/`. Slice tests
+are registered as explicit `[[test]]` targets in `Cargo.toml` rather than wired
+into library modules with `#[cfg(test)] mod tests;`. The project root
+`tests/assets/` may remain for truly cross-slice or whole-project fixtures, but
+slice-specific fixtures should not live at the project root.
+
 Examples:
 
 - `src/features/convert_bpmn_to_mdx/tests/integration.rs`
 - `src/features/convert_bpmn_to_mdx/tests/assets/`
 - `src/features/graph_validation/tests/integration.rs`
 - `src/features/graph_validation/tests/assets/`
-
-Rules:
-
-- slice integration test roots live under `src/features/<feature>/tests/`
-- slice-owned fixtures live under `src/features/<feature>/tests/assets/`
-- slice tests are registered as explicit `[[test]]` targets in `Cargo.toml`
-- slice tests should not be wired into library modules with
-  `#[cfg(test)] mod tests;`
-- the project root `tests/assets/` may remain for truly cross-slice or
-  whole-project fixtures
-- slice-specific fixtures should not live at the project root
-
-Example registration:
 
 ```toml
 [[test]]
@@ -65,22 +70,16 @@ path = "src/features/convert_bpmn_to_mdx/tests/integration.rs"
 
 ## Consequences
 
-**Positive:**
-- Tests remain owned by the feature slice they exercise
-- No project-root `#[path]` harness boilerplate is needed
-- `cargo test --lib` remains limited to actual library tests
-- CLI-oriented slice tests can use binary integration patterns without being
-  forced into the library test target
-- Each slice still owns both its test code and its fixture assets
+### Positive
 
-**Negative:**
-- `Cargo.toml` must explicitly list nonstandard slice test targets
-- Tests exercise the public slice surface instead of private internals unless a
-  narrower seam is added
-- There is a small amount of extra target registration maintenance
+1. Tests remain owned by the feature slice they exercise
+2. No project-root `#[path]` harness boilerplate is needed
+3. `cargo test --lib` remains limited to actual library tests
+4. CLI-oriented slice tests can use binary integration patterns without being forced into the library test target
+5. Each slice still owns both its test code and its fixture assets
 
-## Related
+### Negative
 
-- [[ADR-8]]: Organize tests as slice-local fractals
-- Supersedes [[ADR-8]] for how slice tests are compiled and registered
-- Superseded by [[ADR-10]]
+1. `Cargo.toml` must explicitly list nonstandard slice test targets
+2. Tests exercise the public slice surface instead of private internals unless a narrower seam is added
+3. There is a small amount of extra target registration maintenance

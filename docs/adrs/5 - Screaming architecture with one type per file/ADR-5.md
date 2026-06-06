@@ -1,17 +1,18 @@
 ---
 type: adr
+title: ADR-5 - Screaming Architecture with One Type Per File
 date: 2026-01-20
-status: superseded
+status: accepted
+supersedes:
 ---
-# ADR-5: Screaming Architecture with One Type Per File
 
 ## Context
 
-Our BPMN types module (`src/bpmn/types/`) initially grouped related types 
+Our BPMN types module (`src/bpmn/types/`) initially grouped related types
 into single files:
 
 - `events.rs` contained `StartEvent`, `EndEvent`
-- `tasks.rs` contained `Task`, `ServiceTask`, `ScriptTask`  
+- `tasks.rs` contained `Task`, `ServiceTask`, `ScriptTask`
 - `gateways.rs` contained `ExclusiveGateway`, `ParallelGateway`
 
 While this reduced file count, it created several issues:
@@ -20,6 +21,8 @@ While this reduced file count, it created several issues:
 2. **Merge conflicts**: Multiple developers modifying related types collide
 3. **Cognitive load**: Files grow as types accumulate behaviors
 4. **Import ambiguity**: `use types::tasks` doesn't reveal what's inside
+
+This ADR has been superseded by [[ADR-11]].
 
 ## Decision
 
@@ -45,30 +48,27 @@ src/bpmn/types/
 └── mod.rs              # unchanged public API
 ```
 
-## Rationale
+### Options
 
-### 1. File names "scream" their contents
-The pattern `exclusive_gateway.rs` contains `ExclusiveGateway` is self-evident.
-No need to open files to find types.
+1. **Single file per category** (e.g., `events.rs`, `tasks.rs`): Fewer files but harder to discover
+2. **One type per file** (screaming architecture): Self-documenting, isolates changes — chosen
+3. **Flat file with all types**: Single `types.rs` — does not scale
 
-### 2. Stable public API
-Parent `mod.rs` re-exports all types, so external imports remain unchanged:
+### Rationale
+
+**1. File names "scream" their contents.** The pattern `exclusive_gateway.rs` contains `ExclusiveGateway` is self-evident. No need to open files to find types.
+
+**2. Stable public API.** Parent `mod.rs` re-exports all types, so external imports remain unchanged:
+
 ```rust
 use crate::bpmn::types::{StartEvent, EndEvent};
 ```
 
-### 3. Scales with BPMN coverage
-As we add more BPMN elements (boundaryEvent, userTask, subProcess), each gets
-its own file without bloating existing ones.
+**3. Scales with BPMN coverage.** As we add more BPMN elements (boundaryEvent, userTask, subProcess), each gets its own file without bloating existing ones.
 
-### 4. Isolated change sets
-Modifying `ScriptTask` only touches `script_task.rs`, reducing merge conflicts
-and making code review clearer.
+**4. Isolated change sets.** Modifying `ScriptTask` only touches `script_task.rs`, reducing merge conflicts and making code review clearer.
 
-## Metaprogramming Complement
-
-Alongside this structural change, we added a generic parsing method to reduce
-repetitive boilerplate:
+**Metaprogramming Complement.** Alongside this structural change, we added a generic parsing method to reduce repetitive boilerplate:
 
 ```rust
 impl MdxFile {
@@ -78,31 +78,20 @@ impl MdxFile {
 }
 ```
 
-This allows callers to write `mdx.parse_as::<StartEvent>()` instead of needing
-a dedicated `parse_start_event()` method for each type. The type-specific 
-convenience methods remain as thin wrappers for discoverability.
+This allows callers to write `mdx.parse_as::<StartEvent>()` instead of needing a dedicated `parse_start_event()` method for each type. The type-specific convenience methods remain as thin wrappers for discoverability.
+
+This pattern follows Robert C. Martin's "Screaming Architecture" (Clean Architecture, Chapter 21) and Rust API Guidelines on module organization.
 
 ## Consequences
 
 ### Positive
-- **Clarity**: Architecture structure mirrors domain concepts
-- **Maintainability**: Changes isolated to single-purpose files
-- **Extensibility**: Adding types requires no modification to existing files
-- **IDE navigation**: "Go to file" directly locates types
 
-### Negative  
-- **More files**: ~15 files vs ~6 files initially
-- **More imports in mod.rs**: Each folder needs re-exports
+1. **Clarity**: Architecture structure mirrors domain concepts
+2. **Maintainability**: Changes isolated to single-purpose files
+3. **Extensibility**: Adding types requires no modification to existing files
+4. **IDE navigation**: "Go to file" directly locates types
 
-### Mitigations
-- IDE file navigation makes file count irrelevant
-- mod.rs boilerplate is minimal (2 lines per type)
+### Negative
 
-## References
-
-- Robert C. Martin, "Screaming Architecture" (Clean Architecture, Chapter 21)
-- Rust API Guidelines: Module organization
-
-## Related
-
-- Superseded by [[ADR-11]]: Screaming Architecture for Directories and Files
+1. **More files**: ~15 files vs ~6 files initially. Mitigated by IDE file navigation making file count irrelevant.
+2. **More imports in mod.rs**: Each folder needs re-exports. Mitigated by mod.rs boilerplate being minimal (2 lines per type).

@@ -1,9 +1,10 @@
 ---
 type: adr
+title: ADR-11 - Screaming architecture for directories and files
 date: 2026-06-06
 status: accepted
+supersedes: 5
 ---
-# ADR-11: Screaming architecture for directories and files
 
 ## Context
 
@@ -28,43 +29,49 @@ developers scan, guess, or open files just to orient themselves.
 
 ## Decision
 
-**Adopt screaming architecture across the entire project**, not just in type
+Adopt screaming architecture across the entire project, not just in type
 definitions. Every file and every directory must express its single, primary
 concern in its name.
 
-### Rules
+### Options
 
-1. **One physical concern per file.** A file should contain exactly one logical
-   concept. Exceptions: thin re-export modules (`mod.rs`), trivial helper
-   closures shared only within a single parent.
+1. **Type-only screaming architecture** (from ADR-5): Only types get one-file-per-concept — insufficient
+2. **Full screaming architecture**: Every file and directory screams its concern — chosen
+3. **Conventional Rust layout**: Flat `tests/`, generic names like `utils/` — scales poorly
 
-2. **One type per file** (carried forward from [[ADR-5]]). A file named
-   `start_event.rs` defines `StartEvent` and nothing else. A file named
-   `task.rs` defines `Task` and nothing else.
+### Rationale
 
-3. **Directories name domain slices, not technical roles.** A directory
-   `exclusive_gateways/` screams "this is about exclusive gateways", while
-   `events/` screams "this is about events". Avoid `types/`, `utils/`,
-   `helpers/`, `common/`, `shared/`.
+**One physical concern per file.** A file should contain exactly one logical
+concept. Exceptions: thin re-export modules (`mod.rs`), trivial helper
+closures shared only within a single parent.
 
-4. **Test directories scream strategy.** `bdd/` screams "these are BDD/Cucumber
-   tests", `unit/` screams "these are pure unit tests", `integration/` screams
-   "these test multi-component interactions." A single `tests/` with flat files
-   would not reveal which approach each file follows.
+**One type per file** (carried forward from [[ADR-5]]). A file named
+`start_event.rs` defines `StartEvent` and nothing else. A file named
+`task.rs` defines `Task` and nothing else.
 
-5. **Step definition files scream step type.** A file `given.rs` screams "I
-   contain Given step definitions", `when.rs` screams "I contain When step
-   definitions", etc.
+**Directories name domain slices, not technical roles.** A directory
+`exclusive_gateways/` screams "this is about exclusive gateways", while
+`events/` screams "this is about events". Avoid `types/`, `utils/`,
+`helpers/`, `common/`, `shared/`.
 
-6. **Fixture directories scream scenario.** A directory
-   `tests/assets/hello_world/` screams "these fixtures belong to the
-   hello-world scenario".
+**Test directories scream strategy.** `bdd/` screams "these are BDD/Cucumber
+tests", `unit/` screams "these are pure unit tests", `integration/` screams
+"these test multi-component interactions." A single `tests/` with flat files
+would not reveal which approach each file follows.
 
-7. **Build entrypoints scream purpose.** `build.rs` screams "I am a Cargo build
-   script", `tests/feature_slices.rs` screams "I discover feature-slice tests",
-   `tests/feature_slices_cucumber.rs` screams "I discover BDD test worlds".
+**Step definition files scream step type.** A file `given.rs` screams "I
+contain Given step definitions", `when.rs` screams "I contain When step
+definitions", etc.
 
-### Counter-examples to avoid
+**Fixture directories scream scenario.** A directory
+`tests/assets/hello_world/` screams "these fixtures belong to the
+hello-world scenario".
+
+**Build entrypoints scream purpose.** `build.rs` screams "I am a Cargo build
+script", `tests/feature_slices.rs` screams "I discover feature-slice tests",
+`tests/feature_slices_cucumber.rs` screams "I discover BDD test worlds".
+
+Counter-examples to avoid:
 
 | Avoid | Screams | Replace with |
 |-------|---------|--------------|
@@ -72,11 +79,7 @@ concern in its name.
 | `tests/tests.rs` | nothing specific | `tests/bdd/`, `tests/unit/`, `tests/integration/` |
 | `bpmn/types/mod.rs` | "here be types" | BPMN domain folders (`events/`, `tasks/`) |
 
-## Rationale
-
-### Discoverability without opening files
-
-A developer navigating the test tree sees:
+**Discoverability without opening files.** A developer navigating the test tree sees:
 
 ```
 tests/
@@ -96,45 +99,28 @@ tests/
 Every name conveys intent. A new contributor can guess the purpose of each
 file without opening it.
 
-### Contrast with conventional Rust layout
+**Contrast with conventional Rust layout.** The standard Rust test convention
+places a single `tests/` directory at root with flat `*.rs` files. That layout
+does not scale to a multi-slice project: slices blur together, and there is no
+way to distinguish BDD from unit from integration tests at the filesystem
+level.
 
-The standard Rust test convention places a single `tests/` directory at root
-with flat `*.rs` files. That layout does not scale to a multi-slice project:
-slices blur together, and there is no way to distinguish BDD from unit from
-integration tests at the filesystem level.
-
-### Consistent with Clean Architecture folders
-
-Feature slices already use layer folders: `domain/`, `use_cases/`,
-`adapters/`, `infrastructure/`. Each folder name screams which Clean
-Architecture layer it holds. The test structure mirrors this precision.
+**Consistent with Clean Architecture folders.** Feature slices already use
+layer folders: `domain/`, `use_cases/`, `adapters/`, `infrastructure/`. Each
+folder name screams which Clean Architecture layer it holds. The test structure
+mirrors this precision.
 
 ## Consequences
 
 ### Positive
-- **Glanceability.** File browsability becomes a reliable substitute for
-  deep understanding.
-- **Searchability.** `rg "Given" --glob "given.rs"` finds step definitions
-  instantly.
-- **Self-documenting.** The directory tree doubles as architecture
-  documentation.
-- **Onboarding.** New contributors navigate by intuition rather than
-  tribal knowledge.
+
+1. **Glanceability.** File browsability becomes a reliable substitute for deep understanding.
+2. **Searchability.** `rg "Given" --glob "given.rs"` finds step definitions instantly.
+3. **Self-documenting.** The directory tree doubles as architecture documentation.
+4. **Onboarding.** New contributors navigate by intuition rather than tribal knowledge.
 
 ### Negative
-- **More files.** Refactoring `steps.rs` into `steps/given.rs`,
-  `steps/when.rs`, etc. increased file count.
-- **Deeper nesting.** `skipping/space/bar/` in editors and diff tools can be
-  cumbersome.
 
-### Mitigations
-- IDE file navigation and fuzzy-finder (`Ctrl-P`, `Cmd-P`) make file count
-  irrelevant.
-- Modern editors collapse directory trees or provide flat-file search.
-- `mod.rs` files remain thin (2–4 lines) and never accumulate logic.
-
-## Related
-
-- Supersedes [[ADR-5]]: Screaming Architecture with One Type Per File
-- Referenced by [[ADR-12]]: BDD Test Layout
-- Robert C. Martin, "Screaming Architecture" (Clean Architecture, Chapter 21)
+1. **More files.** Refactoring `steps.rs` into `steps/given.rs`, `steps/when.rs`, etc. increased file count. Mitigation: IDE file navigation and fuzzy-finder (`Ctrl-P`, `Cmd-P`) make file count irrelevant.
+2. **Deeper nesting.** `skipping/space/bar/` in editors and diff tools can be cumbersome. Mitigation: modern editors collapse directory trees or provide flat-file search.
+3. Thinner `mod.rs` files (2–4 lines) never accumulate logic, keeping navigation overhead low.

@@ -1,12 +1,10 @@
-# ADR-8: Organize tests as slice-local fractals
-
-## Status
-
-Accepted
-
-## Date
-
-2026-05-07
+---
+type: adr
+title: ADR-8 - Organize tests as slice-local fractals
+date: 2026-05-07
+status: accepted
+supersedes:
+---
 
 ## Context
 
@@ -27,6 +25,11 @@ much for feature slices:
 For a feature-sliced codebase, each vertical slice should look like a smaller
 version of the project: test code in `tests/`, fixtures in `tests/assets/`, and
 ownership kept inside the slice.
+
+This ADR superseded the previous project-root `tests/compiler.rs` and
+`tests/graph_validation.rs` harness layout, as well as the intermediate
+single-file `{module}/tests.rs` convention. It has been superseded by
+[[ADR-9]].
 
 ## Decision
 
@@ -56,25 +59,33 @@ mod tests;
 
 where Rust resolves `mod tests;` to `tests/mod.rs`.
 
+### Options
+
+1. **Project-root `tests/` directory**: Standard Cargo discovery but separates tests from code
+2. **Slice-local `tests/` subtree with `#[cfg(test)]` wiring**: Co-located but compiled as lib — chosen
+3. **Single `{module}/tests.rs` per module**: Flattened, no room for fixtures
+
+### Rationale
+
+This approach co-locates tests with the code they exercise, eliminates
+project-root `#[path]` harness boilerplate, and lets each slice own both its
+test code and its fixture assets. The test layout mirrors the project's
+top-level `tests/assets/` pattern, private module internals remain accessible
+via `crate::`, and test suites can grow by splitting into focused files under
+`tests/`. This complements [[ADR-7]]'s domain-layer graph validation strategy.
+
 ## Consequences
 
-**Positive:**
-- Tests sit next to the code they exercise
-- No project-root `#[path]` harness boilerplate needed
-- Each slice owns both its test code and its fixture assets
-- The test layout mirrors the project's top-level `tests/assets/` pattern
-- Private module internals remain accessible via `crate::`
-- Test suites can grow by splitting into focused files under `tests/`
+### Positive
 
-**Negative:**
-- Test code is compiled as part of the crate (but `#[cfg(test)]` strips it from
-  release builds)
-- More files and folders per slice, which adds some navigation overhead for
-  very small features
+1. Tests sit next to the code they exercise
+2. No project-root `#[path]` harness boilerplate needed
+3. Each slice owns both its test code and its fixture assets
+4. The test layout mirrors the project's top-level `tests/assets/` pattern
+5. Private module internals remain accessible via `crate::`
+6. Test suites can grow by splitting into focused files under `tests/`
 
-## Related
+### Negative
 
-- [[ADR-7]]: Domain-layer graph validation
-- Supersedes the previous project-root `tests/compiler.rs` and
-  `tests/graph_validation.rs` harness layout
-- Supersedes the intermediate single-file `{module}/tests.rs` convention
+1. Test code is compiled as part of the crate (but `#[cfg(test)]` strips it from release builds)
+2. More files and folders per slice, which adds some navigation overhead for very small features

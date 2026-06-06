@@ -2,26 +2,40 @@
 
 All new ADRs must use the same base structure as the established ADR files.
 
-Start every ADR with YAML frontmatter:
-
 ```markdown
 ---
 type: adr
+title: ADR-N - {title}
 date: YYYY-MM-DD
-status: proposed|accepted|superseded
+status: draft|proposed|accepted
+supersedes: 
 ---
-# ADR-N: Title
+
+## Context
+<!-- Describe the problem or decision context here. -->
+
+## Decision
+<!-- Describe the decision made here. -->
+
+### Options
+<!-- List the considered options here. -->
+
+### Rationale
+<!-- Describe the rationale for the decision here. -->
+
+## Consequences
+<!-- Describe the consequences of the decision here. -->
+
+### Positive
+
+1. ...
+
+### Negative
+
+1. ...
 ```
 
-Use these sections by default:
-
-- `## Context`
-- `## Decision`
-- `## Rationale` when the reasoning is not obvious from Context and Decision
-- `## Consequences`
-- `## Related` when the ADR supersedes, is superseded by, or depends on another ADR
-
-Rules:
+## Rules
 
 - Keep `status` in the frontmatter instead of adding separate `## Status` or `## Date` sections.
 - Use lowercase status values in frontmatter.

@@ -1,9 +1,10 @@
 ---
 type: adr
+title: ADR-10 - Use a stable root harness for slice-owned integration tests
 date: 2026-06-01
 status: accepted
+supersedes: 9
 ---
-# ADR-10: Use a stable root harness for slice-owned integration tests
 
 ## Context
 
@@ -40,40 +41,34 @@ Example:
 include!(concat!(env!("OUT_DIR"), "/feature_slices.rs"));
 ```
 
-Rules:
+### Options
 
-- slice-owned tests live under `src/features/<feature>/tests/`
-- slice-owned fixtures live under `src/features/<feature>/tests/assets/`
-- root `tests/*.rs` files act only as stable harness entrypoints for Cargo
-- `build.rs` discovers `src/features/*/tests/integration.rs` and generates the
-  corresponding harness modules
-- do not add per-slice `[[test]]` entries to `Cargo.toml` just to discover
-  slice tests
-- do not wire slice integration tests into library modules with
-  `#[cfg(test)] mod tests;`
+1. **Per-slice `[[test]]` in Cargo.toml** (from ADR-9): Clean but maintenance burden
+2. **Root harness with `build.rs` generation**: Stable entrypoint, no per-slice TOML — chosen
+3. **Return to `#[cfg(test)]` wiring**: Simpler but conflates lib/bin test targets
+
+### Rationale
+
+Slice-owned tests live under `src/features/<feature>/tests/` and slice-owned
+fixtures under `src/features/<feature>/tests/assets/`. Root `tests/*.rs` files
+act only as stable harness entrypoints for Cargo, while `build.rs` discovers
+`src/features/*/tests/integration.rs` and generates the corresponding harness
+modules. This avoids adding per-slice `[[test]]` entries to `Cargo.toml` just
+to discover slice tests, and slice integration tests are not wired into library
+modules with `#[cfg(test)] mod tests;`.
 
 ## Consequences
 
-**Positive:**
-- Slice tests remain co-located with their owning feature
-- `cargo test --lib` stays limited to actual library tests
-- Adding new tests inside an existing slice test file does not require
-  `Cargo.toml` changes
-- Adding a new feature slice test root only requires creating
-  `src/features/<feature>/tests/integration.rs`
-- Cargo still discovers the tests through the conventional root `tests/`
-  mechanism
+### Positive
 
-**Negative:**
-- A small root harness file and build script still exist, even though the real
-  tests live in the slice
-- Build-script generation is slightly less direct than explicit `mod`
-  declarations
-- Included test modules primarily exercise public slice seams rather than
-  private internals
+1. Slice tests remain co-located with their owning feature
+2. `cargo test --lib` stays limited to actual library tests
+3. Adding new tests inside an existing slice test file does not require `Cargo.toml` changes
+4. Adding a new feature slice test root only requires creating `src/features/<feature>/tests/integration.rs`
+5. Cargo still discovers the tests through the conventional root `tests/` mechanism
 
-## Related
+### Negative
 
-- [[ADR-8]]: Organize tests as slice-local fractals
-- [[ADR-9]]: Use explicit slice integration test targets
-- Supersedes [[ADR-9]] for test discovery and registration
+1. A small root harness file and build script still exist, even though the real tests live in the slice
+2. Build-script generation is slightly less direct than explicit `mod` declarations
+3. Included test modules primarily exercise public slice seams rather than private internals

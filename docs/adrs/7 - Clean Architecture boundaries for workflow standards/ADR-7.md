@@ -1,9 +1,10 @@
 ---
 type: adr
+title: ADR-7 - Clean Architecture Boundaries for Workflow Standards
 date: 2026-04-01
 status: proposed
+supersedes:
 ---
-# ADR-7: Clean Architecture Boundaries for Workflow Standards
 
 ## Context
 
@@ -29,6 +30,8 @@ We now need an explicit architectural boundary so that:
 2. Future standards such as SWS can be added without rewriting execution semantics
 3. Code that belongs to validation of formal schemas is separated from code that belongs to workflow semantics and execution
 
+This ADR establishes the target architectural boundary. Follow-up decisions should define: the exact standard-neutral workflow IR; whether BPMN and future standards normalize into one IR or a small family of IRs; the minimal application ports needed for execution and validation; and how to package native and WASM schema validators behind the same port.
+
 ## Decision
 
 Adopt Clean Architecture boundaries with four conceptual layers:
@@ -42,7 +45,24 @@ The core design rule is:
 
 **The execution model and workflow semantics live in a standard-neutral core. Standard-specific parsing, schema validation, and serialization live at the edges.**
 
-### Architectural Boundary
+As detent grows beyond BPMN-only support, the codebase should move toward the following split:
+
+- **Domain**: workflow IR, graph invariants, execution state machine, retry and routing policies
+- **Application**: compile/import/validate/step/status/log use cases, ports for schema validation, persistence, telemetry, locks, service invocation
+- **Adapters**: BPMN parser/serializer/normalizer, MDX parser/serializer/normalizer, future SWS parser/serializer/normalizer, CLI input/output translation
+- **Infrastructure**: libxml-based XSD validator, file-backed run state store, lock implementation, host runtime bridges
+
+### Options
+
+1. **BPMN-first architecture**: BPMN types and XML concerns permeate the codebase — tighter coupling
+2. **Clean Architecture with standard-neutral core**: Enforces boundaries via layers — chosen
+3. **Plugin-based architecture**: Dynamic loading of standard adapters — overengineered for MVP
+
+### Rationale
+
+This architecture is grounded in Robert C. Martin's *Clean Architecture*, Eric Evans' *Domain-Driven Design*, and Vaughn Vernon's *Implementing Domain-Driven Design*. It builds on established ADRs: [[ADR-2]] (bidirectional compiler architecture), [[ADR-4]] (handcrafted BPMN types), [[ADR-5]] (screaming architecture), and [[ADR-6]] (`folder.rs` module style).
+
+**Architectural Boundary:**
 
 ```text
                 ┌──────────────────────────────┐
@@ -69,126 +89,36 @@ The core design rule is:
                 └──────────────────────────────┘
 ```
 
-## Layer Responsibilities
+**Layer Responsibilities:**
 
-### Domain
+*Domain.* The Domain layer contains the business model of a workflow engine independent of BPMN, XSD, XML, CLI, filesystem, or host SDKs. It owns: standard-neutral workflow IR; domain concepts such as nodes, edges, run state, retry policy, conditions, error routing; invariants and semantic validation rules; deterministic execution ordering rules; execution state transitions. It must not depend on: `clap`, `libxml`, filesystem APIs, XML/YAML parsing libraries except where unavoidable at leaf conversion points outside the core, BPMN-specific schema types.
 
-The Domain layer contains the business model of a workflow engine independent of BPMN, XSD, XML, CLI, filesystem, or host SDKs.
+*Application.* The Application layer orchestrates use cases. It owns: compile MDX to workflow artifact; import BPMN to MDX; validate input artifacts; advance one execution step; produce status/log views; coordinate ports for persistence, locking, telemetry, and service invocation. It does not own: BPMN XML parsing details, libxml schema loading details, filesystem details, CLI printing.
 
-It owns:
+*Adapter.* The Adapter layer translates external representations into the domain/application model and back. Examples: BPMN XML adapter, MDX frontmatter/body adapter, future SWS adapter, CLI request/response adapter, WASM/JS adapter. This is where format-specific validation belongs before normalization into the domain IR.
 
-1. Standard-neutral workflow IR
-2. Domain concepts such as nodes, edges, run state, retry policy, conditions, error routing
-3. Invariants and semantic validation rules
-4. Deterministic execution ordering rules
-5. Execution state transitions
+*Infrastructure.* The Infrastructure layer implements technical capabilities required by the application ports. Examples: `libxml`-based XSD validator, filesystem state store, atomic write + fsync + rename implementation, locking implementation, clock, random jitter, hashing, telemetry sinks, host SDK bridges for Node/Python/WASM.
 
-It must not depend on:
+**Module Organization.** These layers are architectural boundaries, not a requirement to abandon screaming architecture. This ADR does not override [[ADR-5]] or [[ADR-6]]. We should preserve discoverability while enforcing dependency direction. That means either of the following can be valid: top-level layer modules such as `domain/`, `application/`, `adapters/`, `infrastructure/`; or capability-first modules with internal layer boundaries where appropriate.
 
-1. `clap`
-2. `libxml`
-3. filesystem APIs
-4. XML/YAML parsing libraries except where unavoidable at leaf conversion points outside the core
-5. BPMN-specific schema types
+The important rule is dependency direction:
 
-### Application
+1. Domain depends on nothing outward
+2. Application depends on Domain
+3. Adapters depend on Application and Domain contracts
+4. Infrastructure depends on Application ports and technical libraries
 
-The Application layer orchestrates use cases.
+If these two goals conflict, dependency direction is more important than folder aesthetics.
 
-It owns:
+**Rust-Specific Guidance.** The Rust-native version of these patterns should prefer: newtypes over primitive strings in the core; enums over inheritance hierarchies; traits for ports, not for everything; free functions for stateless domain services; generic parameters where static dispatch is useful; `dyn Trait` only where runtime variability is needed; `Result<T, E>` with domain/application-specific error enums instead of exception-style control flow; module boundaries and visibility rules instead of deep object graphs.
 
-1. Compile MDX to workflow artifact
-2. Import BPMN to MDX
-3. Validate input artifacts
-4. Advance one execution step
-5. Produce status/log views
-6. Coordinate ports for persistence, locking, telemetry, and service invocation
+Avoid translating OO pattern names too literally. For example: do not create Java-style service classes for every action; do not model every concept as a trait if an enum or plain struct is clearer; do not let infrastructure crates define core types.
 
-It does not own:
+**Design Patterns by Layer.** Rust is not classically object-oriented, but the same design ideas still apply through enums, traits, modules, newtypes, and free functions. The goal is not to force GoF vocabulary everywhere, but to choose patterns that solve the actual architectural problem in a Rust-native way.
 
-1. BPMN XML parsing details
-2. libxml schema loading details
-3. filesystem details
-4. CLI printing
+*Domain Patterns:*
 
-### Adapter
-
-The Adapter layer translates external representations into the domain/application model and back.
-
-Examples:
-
-1. BPMN XML adapter
-2. MDX frontmatter/body adapter
-3. Future SWS adapter
-4. CLI request/response adapter
-5. WASM/JS adapter
-
-This is where format-specific validation belongs before normalization into the domain IR.
-
-### Infrastructure
-
-The Infrastructure layer implements technical capabilities required by the application ports.
-
-Examples:
-
-1. `libxml`-based XSD validator
-2. Filesystem state store
-3. Atomic write + fsync + rename implementation
-4. Locking implementation
-5. Clock, random jitter, hashing
-6. Telemetry sinks
-7. Host SDK bridges for Node/Python/WASM
-
-## Consequences
-
-### What Full BPMN XSD Validation Helps Delete
-
-Full schema validation is still useful, but it only removes code in the outer layers.
-
-It can replace:
-
-1. XML shape checks
-2. Required-attribute checks already expressible in the XSD
-3. Some defensive parsing branches caused by permissive XML deserialization
-
-It does **not** replace:
-
-1. Domain graph invariants
-2. Deterministic execution rules
-3. Import/export rules for MDX round-trip behavior
-4. Engine state transition rules
-5. Cross-node semantic constraints defined by the spec
-
-So the correct split is:
-
-1. Schema validation per standard in Adapter/Infrastructure
-2. Semantic workflow validation in Domain/Application
-
-### Multi-Standard Support
-
-This architecture allows future standards to plug in as new adapters without changing the core engine model.
-
-For example:
-
-1. BPMN may use XSD + XML parsing
-2. SWS may use another schema or DSL definition system
-3. Another future standard may use JSON Schema, Protobuf, or a grammar-based parser
-
-The core requirement is that each standard adapter can normalize its source representation into the same domain IR, or into a compatible family of IRs if the standards diverge materially.
-
-## Design Patterns by Layer
-
-Rust is not classically object-oriented, but the same design ideas still apply through enums, traits, modules, newtypes, and free functions.
-
-The goal is not to force GoF vocabulary everywhere. The goal is to choose patterns that solve the actual architectural problem in a Rust-native way.
-
-### Domain Patterns
-
-#### 1. Value Object
-
-Use for IDs, names, digests, expressions, and other validated primitives.
-
-Rust form:
+1. *Value Object.* Use for IDs, names, digests, expressions, and other validated primitives. Prevents invalid strings from spreading through the core; makes cross-standard normalization safer.
 
 ```rust
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -206,16 +136,7 @@ impl TryFrom<String> for NodeId {
 }
 ```
 
-Why it fits:
-
-1. Prevents invalid strings from spreading through the core
-2. Makes cross-standard normalization safer
-
-#### 2. Entity / Aggregate
-
-Use for concepts with identity and invariants, such as `Workflow`, `Run`, `NodeState`.
-
-Rust form:
+2. *Entity / Aggregate.* Use for concepts with identity and invariants, such as `Workflow`, `Run`, `NodeState`. Keeps invariants near the model; avoids scattering workflow rules across adapters.
 
 ```rust
 pub struct Workflow {
@@ -234,22 +155,7 @@ impl Workflow {
 }
 ```
 
-Why it fits:
-
-1. Keeps invariants near the model
-2. Avoids scattering workflow rules across adapters
-
-#### 3. Domain Service
-
-Use when logic does not naturally belong to a single entity.
-
-Examples:
-
-1. Topological ordering
-2. Runnable node selection
-3. Condition evaluation planning
-
-Rust form:
+3. *Domain Service.* Use when logic does not naturally belong to a single entity. Examples: topological ordering, runnable node selection, condition evaluation planning. Free functions in a module are often cleaner than forcing methods; keeps entities smaller and preserves explicit dependencies.
 
 ```rust
 pub fn next_runnable_node(
@@ -261,16 +167,7 @@ pub fn next_runnable_node(
 }
 ```
 
-Why it fits:
-
-1. Free functions in a module are often cleaner than forcing methods
-2. Keeps entities smaller and preserves explicit dependencies
-
-#### 4. Specification / Policy
-
-Use for composable domain rules.
-
-Rust form:
+4. *Specification / Policy.* Use for composable domain rules. Makes semantic validation modular; lets the engine apply the same rules regardless of source standard.
 
 ```rust
 pub trait WorkflowRule {
@@ -283,16 +180,7 @@ pub struct GatewayInvariantRule;
 
 Or, more simply, a collection of free functions if dynamic composition is unnecessary.
 
-Why it fits:
-
-1. Makes semantic validation modular
-2. Lets the engine apply the same rules regardless of source standard
-
-#### 5. State Machine
-
-Execution is explicitly stateful and deterministic per the spec.
-
-Rust form:
+5. *State Machine.* Execution is explicitly stateful and deterministic per the spec. Encodes legal transitions directly in types and pattern matches; matches Rust's strengths better than mutable OO state objects.
 
 ```rust
 pub enum NodeExecutionStatus {
@@ -314,26 +202,9 @@ impl NodeExecutionStatus {
 }
 ```
 
-Why it fits:
+*Application Patterns:*
 
-1. Encodes legal transitions directly in types and pattern matches
-2. Matches Rust's strengths better than mutable OO state objects
-
-### Application Patterns
-
-#### 1. Use Case / Application Service
-
-Each user-visible action should be represented as an explicit application use case.
-
-Examples:
-
-1. `CompileWorkflow`
-2. `ImportWorkflow`
-3. `ValidateWorkflow`
-4. `StepRun`
-5. `GetRunStatus`
-
-Rust form:
+1. *Use Case / Application Service.* Each user-visible action should be represented as an explicit application use case. Examples: `CompileWorkflow`, `ImportWorkflow`, `ValidateWorkflow`, `StepRun`, `GetRunStatus`. Makes orchestration explicit; keeps CLI handlers thin; provides a stable place to compose multiple adapters and infrastructure services.
 
 ```rust
 pub struct ValidateWorkflow<P, S> {
@@ -355,17 +226,7 @@ where
 }
 ```
 
-Why it fits:
-
-1. Makes orchestration explicit
-2. Keeps CLI handlers thin
-3. Provides a stable place to compose multiple adapters and infrastructure services
-
-#### 2. Port and Adapter
-
-Application depends on traits that describe what it needs, not on concrete IO implementations.
-
-Rust form:
+2. *Port and Adapter.* Application depends on traits that describe what it needs, not on concrete IO implementations. Keeps the application layer testable; makes native, WASM, and future backends swappable.
 
 ```rust
 pub trait SchemaValidator {
@@ -378,16 +239,7 @@ pub trait RunStateStore {
 }
 ```
 
-Why it fits:
-
-1. Keeps the application layer testable
-2. Makes native, WASM, and future backends swappable
-
-#### 3. Command / Query Separation
-
-Use separate request types for mutating and read-only use cases.
-
-Rust form:
+3. *Command / Query Separation.* Use separate request types for mutating and read-only use cases. Avoids monolithic service APIs; maps cleanly to CLI commands and future host SDK APIs.
 
 ```rust
 pub struct StepRunCommand {
@@ -400,16 +252,7 @@ pub struct GetRunStatusQuery {
 }
 ```
 
-Why it fits:
-
-1. Avoids monolithic service APIs
-2. Maps cleanly to CLI commands and future host SDK APIs
-
-#### 4. Pipeline
-
-Validation and compilation naturally form explicit stages.
-
-Rust form:
+4. *Pipeline.* Validation and compilation naturally form explicit stages. Keeps the sequence of responsibilities visible; makes it obvious which step is standard-specific vs core-semantic.
 
 ```rust
 pub fn validate_bpmn(input: &WorkflowSource) -> Result<ValidationReport, AppError> {
@@ -420,18 +263,9 @@ pub fn validate_bpmn(input: &WorkflowSource) -> Result<ValidationReport, AppErro
 }
 ```
 
-Why it fits:
+*Adapter Patterns:*
 
-1. Keeps the sequence of responsibilities visible
-2. Makes it obvious which step is standard-specific vs core-semantic
-
-### Adapter Patterns
-
-#### 1. Translator / Mapper
-
-Translate from BPMN XML types, MDX frontmatter, or future SWS structures into the domain IR.
-
-Rust form:
+1. *Translator / Mapper.* Translate from BPMN XML types, MDX frontmatter, or future SWS structures into the domain IR. Prevents BPMN-specific details from leaking into the domain; supports multiple source standards cleanly.
 
 ```rust
 pub trait IntoWorkflow {
@@ -439,34 +273,11 @@ pub trait IntoWorkflow {
 }
 ```
 
-Examples:
+Examples: BPMN `Definitions` to `Workflow`; MDX folder to `Workflow`; `Workflow` to BPMN XML definitions.
 
-1. BPMN `Definitions` to `Workflow`
-2. MDX folder to `Workflow`
-3. `Workflow` to BPMN XML definitions
+2. *Anti-Corruption Layer.* Each external standard should be isolated behind its own translation boundary. For BPMN, this means: parse and validate BPMN according to BPMN rules; normalize into detent's workflow IR; never let raw BPMN XML structures become the engine's core model. This becomes even more important when adding SWS or another workflow notation.
 
-Why it fits:
-
-1. Prevents BPMN-specific details from leaking into the domain
-2. Supports multiple source standards cleanly
-
-#### 2. Anti-Corruption Layer
-
-Each external standard should be isolated behind its own translation boundary.
-
-For BPMN, this means:
-
-1. Parse and validate BPMN according to BPMN rules
-2. Normalize into detent's workflow IR
-3. Never let raw BPMN XML structures become the engine's core model
-
-This becomes even more important when adding SWS or another workflow notation.
-
-#### 3. Presenter / Formatter
-
-CLI output and future API output formatting belong here, not in use-case orchestration.
-
-Rust form:
+3. *Presenter / Formatter.* CLI output and future API output formatting belong here, not in use-case orchestration.
 
 ```rust
 pub fn render_validation_result(report: &ValidationReport) -> String {
@@ -475,13 +286,9 @@ pub fn render_validation_result(report: &ValidationReport) -> String {
 }
 ```
 
-### Infrastructure Patterns
+*Infrastructure Patterns:*
 
-#### 1. Repository Implementation
-
-The trait lives at the application boundary; the concrete implementation lives in infrastructure.
-
-Rust form:
+1. *Repository Implementation.* The trait lives at the application boundary; the concrete implementation lives in infrastructure.
 
 ```rust
 pub struct FileRunStateStore {
@@ -501,17 +308,7 @@ impl RunStateStore for FileRunStateStore {
 }
 ```
 
-#### 2. Gateway / Client Wrapper
-
-Use for libraries and host integrations with awkward APIs.
-
-Examples:
-
-1. `libxml` validator wrapper
-2. Node/Python host invocation wrapper
-3. WASM interop wrapper
-
-Rust form:
+2. *Gateway / Client Wrapper.* Use for libraries and host integrations with awkward APIs. Examples: `libxml` validator wrapper, Node/Python host invocation wrapper, WASM interop wrapper. Contains third-party API quirks; prevents library-specific types from leaking upward.
 
 ```rust
 pub struct LibxmlSchemaValidator;
@@ -524,26 +321,9 @@ impl SchemaValidator for LibxmlSchemaValidator {
 }
 ```
 
-Why it fits:
+3. *Strategy via Trait Implementations.* Rust does Strategy naturally through traits and concrete implementations. Examples: native XSD validator vs WASM XSD validator; filesystem lock vs no-op lock in tests; real clock vs test clock.
 
-1. Contains third-party API quirks
-2. Prevents library-specific types from leaking upward
-
-#### 3. Strategy via Trait Implementations
-
-Rust does Strategy naturally through traits and concrete implementations.
-
-Examples:
-
-1. Native XSD validator vs WASM XSD validator
-2. Filesystem lock vs no-op lock in tests
-3. Real clock vs test clock
-
-#### 4. Builder for Technical Configuration
-
-Use builders when constructing infrastructure services with many configuration options.
-
-Rust form:
+4. *Builder for Technical Configuration.* Use builders when constructing infrastructure services with many configuration options. This is appropriate in infrastructure wiring, but should not be the primary modeling tool for the domain.
 
 ```rust
 pub struct EngineServicesBuilder {
@@ -551,89 +331,21 @@ pub struct EngineServicesBuilder {
 }
 ```
 
-This is appropriate in infrastructure wiring, but should not be the primary modeling tool for the domain.
+## Consequences
 
-## Rust-Specific Guidance
+### Positive
 
-The Rust-native version of these patterns should prefer:
+1. Standard-neutral core allows future workflow standards (SWS, etc.) without engine rewrites
+2. Format-specific validation and parsing are properly isolated at the edges
+3. Application layer becomes testable through port/adapters
+4. Domain invariants and execution rules remain in one place regardless of source format
+5. Each layer's dependencies point inward, preventing circular coupling
+6. This architecture allows future standards to plug in as new adapters without changing the core engine model. BPMN may use XSD + XML parsing; SWS may use another schema or DSL definition system; another future standard may use JSON Schema, Protobuf, or a grammar-based parser. The core requirement is that each standard adapter can normalize its source representation into the same domain IR, or into a compatible family of IRs if the standards diverge materially.
+7. Full BPMN XSD schema validation is still useful but only removes code in the outer layers: XML shape checks, required-attribute checks already expressible in the XSD, and some defensive parsing branches caused by permissive XML deserialization. The correct split is schema validation per standard in Adapter/Infrastructure, and semantic workflow validation in Domain/Application.
 
-1. Newtypes over primitive strings in the core
-2. Enums over inheritance hierarchies
-3. Traits for ports, not for everything
-4. Free functions for stateless domain services
-5. Generic parameters where static dispatch is useful
-6. `dyn Trait` only where runtime variability is needed
-7. `Result<T, E>` with domain/application-specific error enums instead of exception-style control flow
-8. Module boundaries and visibility rules instead of deep object graphs
+### Negative
 
-Avoid translating OO pattern names too literally.
-
-For example:
-
-1. Do not create Java-style service classes for every action
-2. Do not model every concept as a trait if an enum or plain struct is clearer
-3. Do not let infrastructure crates define core types
-
-## Module Organization
-
-These layers are **architectural boundaries**, not a requirement to abandon screaming architecture.
-
-This ADR does **not** override [[ADR-5]] or [[ADR-6]].
-
-We should preserve discoverability while enforcing dependency direction. That means either of the following can be valid:
-
-1. Top-level layer modules such as `domain/`, `application/`, `adapters/`, `infrastructure/`
-2. Capability-first modules with internal layer boundaries where appropriate
-
-The important rule is dependency direction:
-
-1. Domain depends on nothing outward
-2. Application depends on Domain
-3. Adapters depend on Application and Domain contracts
-4. Infrastructure depends on Application ports and technical libraries
-
-If these two goals conflict, dependency direction is more important than folder aesthetics.
-
-## Initial Refactoring Direction
-
-As detent grows beyond BPMN-only support, move toward the following split:
-
-1. Domain
-   - workflow IR
-   - graph invariants
-   - execution state machine
-   - retry and routing policies
-2. Application
-   - compile/import/validate/step/status/log use cases
-   - ports for schema validation, persistence, telemetry, locks, service invocation
-3. Adapters
-   - BPMN parser/serializer/normalizer
-   - MDX parser/serializer/normalizer
-   - future SWS parser/serializer/normalizer
-   - CLI input/output translation
-4. Infrastructure
-   - libxml-based XSD validator
-   - file-backed run state store
-   - lock implementation
-   - host runtime bridges
-
-## Status and Follow-Up
-
-This ADR establishes the target architectural boundary.
-
-Follow-up decisions should define:
-
-1. The exact standard-neutral workflow IR
-2. Whether BPMN and future standards normalize into one IR or a small family of IRs
-3. The minimal application ports needed for execution and validation
-4. How to package native and WASM schema validators behind the same port
-
-## References
-
-1. Robert C. Martin, *Clean Architecture*
-2. Eric Evans, *Domain-Driven Design*
-3. Vaughn Vernon, *Implementing Domain-Driven Design*
-4. [[ADR-2]]: Bidirectional Compiler Architecture
-5. [[ADR-4]]: Handcrafted BPMN Types Instead of XSD Codegen
-6. [[ADR-5]]: Screaming Architecture with One Type Per File
-7. [[ADR-6]]: Use `folder.rs` Instead of `folder/mod.rs` for Module Definitions
+1. More files and modules than a monolithic approach
+2. Requires discipline to prevent domain from importing adapter/infrastructure crates
+3. Initial refactoring from BPMN-first codebase to layered architecture is non-trivial
+4. Schema validation does not replace: domain graph invariants, deterministic execution rules, import/export rules for MDX round-trip behavior, engine state transition rules, or cross-node semantic constraints defined by the spec
