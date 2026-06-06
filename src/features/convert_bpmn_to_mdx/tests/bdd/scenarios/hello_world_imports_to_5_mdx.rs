@@ -1,14 +1,6 @@
-use cucumber::{given, then, when};
-use std::fs;
+use cucumber::{then, when};
 
 use super::ConvertWorld;
-
-#[given("the hello-world BPMN fixture")]
-fn given_hello_world(world: &mut ConvertWorld) {
-    let xml = fs::read_to_string(super::hello_world_asset_path("hello-world.bpmn2"))
-        .expect("Failed to read hello-world.bpmn2");
-    world.bpmn_xml = Some(xml);
-}
 
 #[when("I import it to MDX")]
 fn when_import(world: &mut ConvertWorld) {
