@@ -3,15 +3,24 @@ use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 use detent::features::convert_bpmn_to_mdx::use_cases::import::MdxOutput;
 use std::path::PathBuf;
 
-mod dangling_flow_tolerated;
-mod empty_input_rejected;
-mod hello_world_imports_to_5_mdx;
-mod import_rejects_no_process;
-mod minimal_mdx_compiles_to_process;
-mod missing_frontmatter_rejected;
-mod missing_type_rejected;
 mod steps;
+
+#[path = "scenarios/hello_world_imports_to_5_mdx.rs"]
+mod hello_world_imports_to_5_mdx;
+#[path = "scenarios/minimal_mdx_compiles_to_process.rs"]
+mod minimal_mdx_compiles_to_process;
+#[path = "scenarios/empty_input_rejected.rs"]
+mod empty_input_rejected;
+#[path = "scenarios/missing_type_rejected.rs"]
+mod missing_type_rejected;
+#[path = "scenarios/dangling_flow_tolerated.rs"]
+mod dangling_flow_tolerated;
+#[path = "scenarios/missing_frontmatter_rejected.rs"]
+mod missing_frontmatter_rejected;
+#[path = "scenarios/unknown_type_rejected.rs"]
 mod unknown_type_rejected;
+#[path = "scenarios/import_rejects_no_process.rs"]
+mod import_rejects_no_process;
 
 const HELLO_WORLD_ASSET_DIR: &str = "src/features/convert_bpmn_to_mdx/tests/assets/hello_world";
 
