@@ -19,13 +19,13 @@ fn main() -> io::Result<()> {
         }
 
         let feature_name = entry.file_name().to_string_lossy().into_owned();
-        let integration_test = entry.path().join("tests/integration.rs");
+        let integration_test = entry.path().join("tests/integration/mod.rs");
         if integration_test.exists() {
             println!("cargo:rerun-if-changed={}", integration_test.display());
             integration_modules.push((feature_name.clone(), integration_test));
         }
 
-        let cucumber_test = entry.path().join("tests/cucumber.rs");
+        let cucumber_test = entry.path().join("tests/bdd/mod.rs");
         if cucumber_test.exists() {
             println!("cargo:rerun-if-changed={}", cucumber_test.display());
             cucumber_modules.push((feature_name, cucumber_test));

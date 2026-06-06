@@ -1,0 +1,44 @@
+use cucumber::{given, then, when};
+use std::fs;
+
+use super::ConvertWorld;
+
+#[given("the hello-world BPMN fixture")]
+fn given_hello_world(world: &mut ConvertWorld) {
+    let xml = fs::read_to_string(super::hello_world_asset_path("hello-world.bpmn2"))
+        .expect("Failed to read hello-world.bpmn2");
+    world.bpmn_xml = Some(xml);
+}
+
+#[when("I import it to MDX")]
+fn when_import(world: &mut ConvertWorld) {
+    let xml = world.bpmn_xml.as_ref().expect("bpmn_xml must be set");
+    let defs = detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn(xml)
+        .expect("parse_bpmn failed");
+    let outputs = detent::features::convert_bpmn_to_mdx::use_cases::import::import_to_mdx(&defs)
+        .expect("import_to_mdx failed");
+    world.import_outputs = Some(outputs);
+}
+
+#[then(regex = r"^(\d+) MDX outputs are produced$")]
+fn then_n_outputs(world: &mut ConvertWorld, n: usize) {
+    let outputs = world.import_outputs.as_ref().expect("expected import outputs");
+    assert_eq!(outputs.len(), n);
+}
+
+#[then("each output contains a frontmatter block")]
+fn then_all_have_frontmatter(world: &mut ConvertWorld) {
+    let outputs = world.import_outputs.as_ref().expect("expected import outputs");
+    for output in outputs {
+        assert!(
+            output.content.starts_with("---\n"),
+            "{} missing opening ---",
+            output.filename
+        );
+        assert!(
+            output.content.contains("\n---\n"),
+            "{} missing closing ---",
+            output.filename
+        );
+    }
+}
