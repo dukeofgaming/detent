@@ -2,19 +2,11 @@ use cucumber::when;
 
 use super::super::ConvertWorld;
 
+// A single compile step backs both the success-path phrasing
+// ("I compile...") and the failure-path phrasing ("I attempt to compile...").
 #[when("I compile the MDX inputs to definitions")]
-fn when_compile(world: &mut ConvertWorld) {
-    let defs = detent::features::convert_bpmn_to_mdx::use_cases::compile::compile_to_definitions(
-        &world.mdx_inputs,
-    );
-    match defs {
-        Ok(defs) => world.compile_result = Some(defs),
-        Err(_) => world.compile_failed = true,
-    }
-}
-
 #[when("I attempt to compile the MDX inputs to definitions")]
-fn when_attempt_compile(world: &mut ConvertWorld) {
+fn when_compile(world: &mut ConvertWorld) {
     let defs = detent::features::convert_bpmn_to_mdx::use_cases::compile::compile_to_definitions(
         &world.mdx_inputs,
     );

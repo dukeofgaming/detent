@@ -101,7 +101,7 @@ fn test_validate_requires_files() {
 }
 
 #[test]
-fn test_validate_allows_graph_invalid_bpmn_in_feature_3_scope() {
+fn test_validate_tolerates_dangling_flow_target() {
     use std::process::ExitCode;
 
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");

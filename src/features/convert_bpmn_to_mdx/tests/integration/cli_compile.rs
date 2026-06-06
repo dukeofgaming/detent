@@ -88,7 +88,7 @@ fn test_compile_ignores_non_mdx_files() {
 }
 
 #[test]
-fn test_compile_allows_graph_invalid_workflow_in_feature_3_scope() {
+fn test_compile_tolerates_dangling_flow_target() {
     use std::process::ExitCode;
 
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");

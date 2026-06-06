@@ -1,5 +1,6 @@
 use cucumber::{writer, StatsWriter as _, World, WriterExt as _};
 use detent::features::graph_validation::domain::bpmn::Process;
+use std::collections::HashMap;
 
 #[path = "../fixtures/linear_process.rs"]
 mod fixtures;
@@ -26,11 +27,24 @@ mod dead_end_detected;
 #[path = "scenarios/process_flow_analysis.rs"]
 mod process_flow_analysis;
 
-use fixtures::linear_process;
+use fixtures::{linear_process, linear_process_with_retargeted_exit};
+
+/// Owned snapshot of the flow analysis computed by the
+/// "When I analyze the process flow" step, so that `Then` steps read cached
+/// results instead of rebuilding a borrowed `Graph` on each assertion.
+#[derive(Debug, Default)]
+pub struct FlowAnalysis {
+    pub successors: HashMap<String, Vec<String>>,
+    pub predecessors: HashMap<String, Vec<String>>,
+    pub entry_nodes: Vec<String>,
+    pub exit_nodes: Vec<String>,
+    pub reachable: HashMap<String, Vec<String>>,
+}
 
 #[derive(Debug, Default, World)]
 pub struct GraphValidationWorld {
     process: Option<Process>,
+    analysis: Option<FlowAnalysis>,
     errors: Option<Vec<String>>,
     succeeded: bool,
 }

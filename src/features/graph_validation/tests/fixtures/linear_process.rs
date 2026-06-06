@@ -52,3 +52,17 @@ pub fn linear_process() -> Process {
         ],
     }
 }
+
+/// A linear process whose final flow has been retargeted to `new_target`,
+/// detaching `end_1`. Depending on the assertion, this surfaces either a
+/// dangling target (the new target does not exist) or a dead end (`task_1`
+/// can no longer reach any end event).
+///
+/// `allow(dead_code)`: this fixture file is shared via `#[path]` by both the
+/// BDD and unit test harnesses; this helper is only consumed by the BDD one.
+#[allow(dead_code)]
+pub fn linear_process_with_retargeted_exit(new_target: String) -> Process {
+    let mut process = linear_process();
+    process.sequence_flows[1].target_ref = new_target;
+    process
+}

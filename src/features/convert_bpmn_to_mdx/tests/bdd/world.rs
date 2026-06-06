@@ -30,6 +30,8 @@ mod frontmatter_has_no_xml_artifacts;
 mod hello_world_bpmn_metadata;
 #[path = "scenarios/hello_world_mdx_compiles.rs"]
 mod hello_world_mdx_compiles;
+#[path = "scenarios/mdx_compiles_and_imports_back.rs"]
+mod mdx_compiles_and_imports_back;
 
 const HELLO_WORLD_ASSET_DIR: &str = "src/features/convert_bpmn_to_mdx/tests/assets/hello_world";
 
