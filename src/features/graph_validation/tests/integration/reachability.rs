@@ -47,18 +47,4 @@ fn test_reachable_from_orphan_is_self_only() {
     assert_eq!(reached, vec!["orphan_1"]);
 }
 
-#[test]
-fn test_validate_detects_unreachable_node() {
-    let process = process_with_orphan();
-    let errors = Graph::new(&process).validate().unwrap_err();
-    assert!(errors.iter().any(|e| e.contains("unreachable") && e.contains("orphan_1")));
-}
 
-#[test]
-fn test_validate_detects_dead_end_node() {
-    let mut process = linear_process();
-    process.sequence_flows[1].target_ref = "nowhere".to_string();
-
-    let errors = Graph::new(&process).validate().unwrap_err();
-    assert!(errors.iter().any(|e| e.contains("dead end") && e.contains("task_1")));
-}

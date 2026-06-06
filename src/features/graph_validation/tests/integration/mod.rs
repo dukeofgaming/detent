@@ -7,7 +7,6 @@ use fixtures::linear_process;
 
 mod graph_operations;
 mod reachability;
-mod validation;
 
 fn process_with_orphan() -> Process {
     let mut p = linear_process();

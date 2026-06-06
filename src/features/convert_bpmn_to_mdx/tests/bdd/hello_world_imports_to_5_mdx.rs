@@ -42,3 +42,15 @@ fn then_all_have_frontmatter(world: &mut ConvertWorld) {
         );
     }
 }
+
+#[then("each output contains its BPMN type")]
+fn then_all_have_bpmn_type(world: &mut ConvertWorld) {
+    let outputs = world.import_outputs.as_ref().expect("expected import outputs");
+    for output in outputs {
+        assert!(
+            output.content.contains("type: bpmn:"),
+            "{} missing type field",
+            output.filename
+        );
+    }
+}

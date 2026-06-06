@@ -6,9 +6,12 @@ use std::path::PathBuf;
 mod dangling_flow_tolerated;
 mod empty_input_rejected;
 mod hello_world_imports_to_5_mdx;
+mod import_rejects_no_process;
 mod minimal_mdx_compiles_to_process;
+mod missing_frontmatter_rejected;
 mod missing_type_rejected;
 mod steps;
+mod unknown_type_rejected;
 
 const HELLO_WORLD_ASSET_DIR: &str = "src/features/convert_bpmn_to_mdx/tests/assets/hello_world";
 
@@ -24,6 +27,7 @@ pub struct ConvertWorld {
     pub mdx_inputs: Vec<MdxInput>,
     pub compile_result: Option<detent::features::convert_bpmn_to_mdx::adapters::bpmn::Definitions>,
     pub compile_failed: bool,
+    pub import_failed: bool,
     pub import_outputs: Option<Vec<MdxOutput>>,
 }
 

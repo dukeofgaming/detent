@@ -32,3 +32,18 @@ Feature: Graph Validation
     Given a linear process with an orphan "orphan_1"
     When I validate the process graph
     Then validation fails reporting "orphan_1"
+
+  Scenario: Dangling source reported
+    Given a linear process with a dangling source "ghost"
+    When I validate the process graph
+    Then validation fails reporting "ghost"
+
+  Scenario: Duplicate flow id rejected
+    Given a linear process with a duplicate flow id "flow_1"
+    When I validate the process graph
+    Then validation fails reporting "Duplicate"
+
+  Scenario: Dead end detected
+    Given a linear process with a dead end "nowhere"
+    When I validate the process graph
+    Then validation fails reporting "dead end"

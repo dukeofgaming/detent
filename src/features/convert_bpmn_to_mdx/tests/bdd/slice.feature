@@ -8,6 +8,7 @@ Feature: Convert BPMN to MDX
     When I import it to MDX
     Then 5 MDX outputs are produced
     And each output contains a frontmatter block
+    And each output contains its BPMN type
 
   Scenario: Minimal MDX compiles to process
     Given a minimal MDX input set with start, task, end, and two flows
@@ -29,3 +30,23 @@ Feature: Convert BPMN to MDX
     When I compile the MDX inputs to definitions
     Then compilation succeeds
     And the resulting process contains the dangling target id
+
+  Scenario: Missing frontmatter rejected
+    Given an MDX input with no frontmatter
+    When I attempt to compile the MDX inputs to definitions
+    Then compilation fails
+
+  Scenario: Unknown type rejected
+    Given an MDX input with unknown element type
+    When I attempt to compile the MDX inputs to definitions
+    Then compilation fails
+
+  Scenario: Import rejects no process
+    Given a BPMN definition with no process
+    When I attempt to import the BPMN to MDX
+    Then import fails
+
+  Scenario: MDX compiles and imports back
+    Given a minimal MDX input set with start, task, end, and two flows
+    When I compile the MDX inputs to definitions
+    Then importing the compiled definitions produces 5 MDX outputs

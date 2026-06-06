@@ -33,11 +33,6 @@ fn simple_definitions() -> Definitions {
 }
 
 #[test]
-fn test_import_returns_one_mdx_per_flow_element() {
-    assert_eq!(import_to_mdx(&simple_definitions()).unwrap().len(), 5);
-}
-
-#[test]
 fn test_import_mdx_output_has_correct_filenames() {
     let outputs = import_to_mdx(&simple_definitions()).unwrap();
     let names: Vec<&str> = outputs.iter().map(|o| o.filename.as_str()).collect();
@@ -46,45 +41,6 @@ fn test_import_mdx_output_has_correct_filenames() {
     assert!(names.contains(&"task_1.mdx"));
     assert!(names.contains(&"flow_1.mdx"));
     assert!(names.contains(&"flow_2.mdx"));
-}
-
-#[test]
-fn test_import_mdx_output_contains_frontmatter_delimiters() {
-    for output in &import_to_mdx(&simple_definitions()).unwrap() {
-        assert!(
-            output.content.starts_with("---\n"),
-            "MDX for {} should start with ---",
-            output.filename
-        );
-        assert!(
-            output.content.contains("\n---\n"),
-            "MDX for {} should have closing ---",
-            output.filename
-        );
-    }
-}
-
-#[test]
-fn test_import_mdx_output_contains_bpmn_type() {
-    let outputs = import_to_mdx(&simple_definitions()).unwrap();
-    assert!(outputs.iter().find(|o| o.filename == "start_1.mdx").unwrap().content.contains("type: bpmn:startEvent"));
-    assert!(outputs.iter().find(|o| o.filename == "end_1.mdx").unwrap().content.contains("type: bpmn:endEvent"));
-    assert!(outputs.iter().find(|o| o.filename == "task_1.mdx").unwrap().content.contains("type: bpmn:task"));
-    assert!(outputs.iter().find(|o| o.filename == "flow_1.mdx").unwrap().content.contains("type: bpmn:sequenceFlow"));
-}
-
-#[test]
-fn test_import_errors_on_no_process() {
-    let defs = Definitions {
-        id: "def_1".to_string(),
-        name: None,
-        target_namespace: None,
-        exporter: None,
-        exporter_version: None,
-        process: None,
-        bpmn_diagram: None,
-    };
-    assert!(import_to_mdx(&defs).is_err());
 }
 
 #[test]

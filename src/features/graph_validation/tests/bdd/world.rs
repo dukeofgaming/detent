@@ -1,7 +1,10 @@
 use cucumber::{writer, StatsWriter as _, World, WriterExt as _};
 use detent::features::graph_validation::domain::bpmn::Process;
 
+mod dangling_source_reported;
 mod dangling_target_reported;
+mod dead_end_detected;
+mod duplicate_flow_id_rejected;
 mod duplicate_id_rejected;
 #[path = "../fixtures/linear_process.rs"]
 mod fixtures;

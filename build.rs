@@ -25,7 +25,7 @@ fn main() -> io::Result<()> {
             integration_modules.push((feature_name.clone(), integration_test));
         }
 
-        let cucumber_test = entry.path().join("tests/bdd/mod.rs");
+        let cucumber_test = entry.path().join("tests/bdd/world.rs");
         if cucumber_test.exists() {
             println!("cargo:rerun-if-changed={}", cucumber_test.display());
             cucumber_modules.push((feature_name, cucumber_test));
