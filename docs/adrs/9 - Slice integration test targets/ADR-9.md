@@ -7,7 +7,7 @@ status: superseded
 
 ## Context
 
-ADR-8 established that each feature slice owns its own `tests/` subtree and
+[[ADR-8]] established that each feature slice owns its own `tests/` subtree and
 `tests/assets/` fixtures. In practice, the initial implementation of that ADR
 used `#[cfg(test)] mod tests;` inside the slice root, which made Rust compile
 those slice tests as part of the library test target.
@@ -23,7 +23,7 @@ For example, `assert_cmd::Command::cargo_bin("detent")` is appropriate for
 binary integration coverage, but it is a poor fit when those tests are wired
 into the library test target through `#[cfg(test)]` modules.
 
-We still want the ownership and locality introduced by ADR-8:
+We still want the ownership and locality introduced by [[ADR-8]]:
 
 - tests should remain inside the owning feature slice
 - fixtures should remain inside the owning feature slice
@@ -81,6 +81,6 @@ path = "src/features/convert_bpmn_to_mdx/tests/integration.rs"
 
 ## Related
 
-- ADR-8: Organize tests as slice-local fractals
-- Supersedes ADR-8 for how slice tests are compiled and registered
-- Superseded by ADR-10
+- [[ADR-8]]: Organize tests as slice-local fractals
+- Supersedes [[ADR-8]] for how slice tests are compiled and registered
+- Superseded by [[ADR-10]]

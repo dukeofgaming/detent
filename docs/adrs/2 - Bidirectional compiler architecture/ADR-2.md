@@ -34,7 +34,7 @@ We need to decide on the architecture for these transformations.
     └─────────────┘
 ```
 
-The IR uses the XSD-generated Rust types (ADR-1), ensuring the same type system validates both directions.
+The IR uses the XSD-generated Rust types ([[ADR-1]]), ensuring the same type system validates both directions.
 
 ## Rationale
 
@@ -76,5 +76,5 @@ src/
 - Slightly more complex than two separate tools
 - IR must preserve information from both sources
 
-## Related ADRs
-- ADR-1: XSD as Source of Truth
+## Related
+- [[ADR-1]]: XSD as Source of Truth

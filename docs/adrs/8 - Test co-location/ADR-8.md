@@ -74,7 +74,7 @@ where Rust resolves `mod tests;` to `tests/mod.rs`.
 
 ## Related
 
-- ADR-7: Domain-layer graph validation
+- [[ADR-7]]: Domain-layer graph validation
 - Supersedes the previous project-root `tests/compiler.rs` and
   `tests/graph_validation.rs` harness layout
 - Supersedes the intermediate single-file `{module}/tests.rs` convention

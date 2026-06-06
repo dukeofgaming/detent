@@ -5,11 +5,11 @@ status: accepted
 ---
 # ADR-4: Handcrafted BPMN Types Instead of XSD Codegen
 
-Supersedes ADR-1 for type generation.
+Supersedes [[ADR-1]] for type generation.
 
 ## Context
 
-ADR-1 proposed using `xsd-parser` to generate Rust types from BPMN 2.0 XSDs.
+[[ADR-1]] proposed using `xsd-parser` to generate Rust types from BPMN 2.0 XSDs.
 After implementation, this approach failed due to:
 
 1. **Schema complexity**: BPMN 2.0 XSD includes 5+ interconnected schemas 
@@ -99,7 +99,7 @@ If runtime validation of YAML frontmatter is needed:
 - Validate YAML against JSON Schema using a Rust crate like `jsonschema`
 - This could be a pre-commit hook or test-time validation, not build-time codegen
 
-## Related ADRs
-- ADR-1: XSD as Source of Truth (partially superseded for codegen; XSD remains
+## Related
+- [[ADR-1]]: XSD as Source of Truth (partially superseded for codegen; XSD remains
   authoritative for validation)
-- ADR-3: Rust Dependencies (updated to remove build-time xsd-parser)
+- [[ADR-3]]: Rust Dependencies (updated to remove build-time xsd-parser)

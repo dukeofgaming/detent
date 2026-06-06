@@ -105,4 +105,4 @@ convenience methods remain as thin wrappers for discoverability.
 
 ## Related
 
-- Superseded by [[ADR-11]](../11%20-%20Screaming%20architecture%20for%20directories%20and%20files/ADR-11.md): Screaming Architecture for Directories and Files
+- Superseded by [[ADR-11]]: Screaming Architecture for Directories and Files

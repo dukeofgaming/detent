@@ -7,7 +7,7 @@ status: accepted
 
 ## Context
 
-Our initial screaming architecture work (ADR-5) established a one-type-per-file
+Our initial screaming architecture work ([[ADR-5]]) established a one-type-per-file
 convention for BPMN domain types, but the principle was applied only to the
 `src/bpmn/types/` tree. As the project grew, other parts of the codebase —
 feature slices, their internal layers, and especially test structures — silently
@@ -38,7 +38,7 @@ concern in its name.
    concept. Exceptions: thin re-export modules (`mod.rs`), trivial helper
    closures shared only within a single parent.
 
-2. **One type per file** (carried forward from ADR-5). A file named
+2. **One type per file** (carried forward from [[ADR-5]]). A file named
    `start_event.rs` defines `StartEvent` and nothing else. A file named
    `task.rs` defines `Task` and nothing else.
 
@@ -135,6 +135,6 @@ Architecture layer it holds. The test structure mirrors this precision.
 
 ## Related
 
-- Supersedes ADR-5: Screaming Architecture with One Type Per File
-- Referenced by [[ADR-12]](ADR-12.md): BDD Test Layout
+- Supersedes [[ADR-5]]: Screaming Architecture with One Type Per File
+- Referenced by [[ADR-12]]: BDD Test Layout
 - Robert C. Martin, "Screaming Architecture" (Clean Architecture, Chapter 21)

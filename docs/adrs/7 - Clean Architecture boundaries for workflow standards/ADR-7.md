@@ -18,10 +18,10 @@ This means BPMN should be treated as the first standard adapter, not as the shap
 
 The current ADR set already points in this direction:
 
-- ADR-2 establishes a shared intermediate representation and bidirectional transformation architecture
-- ADR-4 rejects BPMN XSD code generation as the core type strategy and keeps handcrafted types for the supported subset
-- ADR-5 prefers screaming architecture and one type per file for clarity
-- ADR-6 prefers modern Rust module layout
+- [[ADR-2]] establishes a shared intermediate representation and bidirectional transformation architecture
+- [[ADR-4]] rejects BPMN XSD code generation as the core type strategy and keeps handcrafted types for the supported subset
+- [[ADR-5]] prefers screaming architecture and one type per file for clarity
+- [[ADR-6]] prefers modern Rust module layout
 
 We now need an explicit architectural boundary so that:
 
@@ -578,7 +578,7 @@ For example:
 
 These layers are **architectural boundaries**, not a requirement to abandon screaming architecture.
 
-This ADR does **not** override ADR-5 or ADR-6.
+This ADR does **not** override [[ADR-5]] or [[ADR-6]].
 
 We should preserve discoverability while enforcing dependency direction. That means either of the following can be valid:
 
@@ -633,7 +633,7 @@ Follow-up decisions should define:
 1. Robert C. Martin, *Clean Architecture*
 2. Eric Evans, *Domain-Driven Design*
 3. Vaughn Vernon, *Implementing Domain-Driven Design*
-4. ADR-2: Bidirectional Compiler Architecture
-5. ADR-4: Handcrafted BPMN Types Instead of XSD Codegen
-6. ADR-5: Screaming Architecture with One Type Per File
-7. ADR-6: Use `folder.rs` Instead of `folder/mod.rs` for Module Definitions
+4. [[ADR-2]]: Bidirectional Compiler Architecture
+5. [[ADR-4]]: Handcrafted BPMN Types Instead of XSD Codegen
+6. [[ADR-5]]: Screaming Architecture with One Type Per File
+7. [[ADR-6]]: Use `folder.rs` Instead of `folder/mod.rs` for Module Definitions

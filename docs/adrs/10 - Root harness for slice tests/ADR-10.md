@@ -7,7 +7,7 @@ status: accepted
 
 ## Context
 
-ADR-9 improved on ADR-8 by moving slice-owned tests out of the library test
+[[ADR-9]] improved on [[ADR-8]] by moving slice-owned tests out of the library test
 target. However, its mechanism required one `[[test]]` registration in
 `Cargo.toml` per slice test root.
 
@@ -74,6 +74,6 @@ Rules:
 
 ## Related
 
-- ADR-8: Organize tests as slice-local fractals
-- ADR-9: Use explicit slice integration test targets
-- Supersedes ADR-9 for test discovery and registration
+- [[ADR-8]]: Organize tests as slice-local fractals
+- [[ADR-9]]: Use explicit slice integration test targets
+- Supersedes [[ADR-9]] for test discovery and registration

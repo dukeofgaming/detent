@@ -76,6 +76,6 @@ xsd-parser-types = "0.1"  # Runtime types used by generated code
 xsd-parser = "1.4"
 ```
 
-## Related ADRs
-- ADR-1: XSD as Source of Truth
-- ADR-2: Bidirectional Compiler Architecture
+## Related
+- [[ADR-1]]: XSD as Source of Truth
+- [[ADR-2]]: Bidirectional Compiler Architecture
