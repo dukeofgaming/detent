@@ -23,6 +23,8 @@ mod dangling_source_reported;
 mod duplicate_flow_id_rejected;
 #[path = "scenarios/dead_end_detected.rs"]
 mod dead_end_detected;
+#[path = "scenarios/process_flow_analysis.rs"]
+mod process_flow_analysis;
 
 use fixtures::linear_process;
 

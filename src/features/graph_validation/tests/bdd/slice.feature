@@ -47,3 +47,27 @@ Feature: Graph Validation
     Given a linear process with a dead end "nowhere"
     When I validate the process graph
     Then validation fails reporting "dead end"
+
+  Scenario: Flow connectivity
+    Given a well-formed linear process
+    When I analyze the process flow
+    Then start_1 flows to task_1
+    And task_1 flows to end_1
+    And end_1 has no outgoing flows
+    And start_1 has no incoming flows
+    And task_1 comes from start_1
+    And end_1 comes from task_1
+    And the entry node is start_1
+    And the exit node is end_1
+
+  Scenario: Reachable nodes
+    Given a well-formed linear process
+    When I analyze the process flow
+    Then start_1 can reach task_1
+    And start_1 can reach end_1
+    And task_1 can reach end_1
+
+  Scenario: Orphan is isolated
+    Given a linear process with an orphan "orphan_1"
+    When I analyze the process flow
+    Then orphan_1 can only reach itself

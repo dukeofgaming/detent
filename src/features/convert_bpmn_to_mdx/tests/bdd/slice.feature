@@ -46,6 +46,33 @@ Feature: Convert BPMN to MDX
     When I attempt to import the BPMN to MDX
     Then import fails
 
+  Scenario: Import filenames match IDs
+    Given in-memory definitions with start, task, end, and two flows
+    When I import the parsed definitions to MDX
+    Then one output filename is "start_1.mdx"
+    And one output filename is "task_1.mdx"
+    And one output filename is "end_1.mdx"
+    And one output filename is "flow_1.mdx"
+    And one output filename is "flow_2.mdx"
+
+  Scenario: Frontmatter has no XML artifacts
+    Given in-memory definitions with start, task, end, and two flows
+    When I import the parsed definitions to MDX
+    Then no output contains '@' or '$text' in its frontmatter
+
+  Scenario: Hello-world BPMN metadata
+    Given the hello-world BPMN fixture
+    When I parse the BPMN to definitions
+    Then the process id is "hello_world"
+    And the process name is "hello-world"
+    And the process is executable and public
+    And the process documentation is "This is a hello world activity"
+
+  Scenario: Hello-world MDX compiles
+    Given the hello-world MDX fixtures
+    When I compile the MDX inputs to definitions
+    Then the compiled task name is "Hello World"
+
   Scenario: MDX compiles and imports back
     Given a minimal MDX input set with start, task, end, and two flows
     When I compile the MDX inputs to definitions
