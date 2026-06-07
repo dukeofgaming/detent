@@ -1,0 +1,41 @@
+name: 'Sync Issues to GitHub'
+description: 'Sync issues from docs/issues/ to GitHub Issues'
+
+inputs:
+  dry-run:
+    description: 'Show what would be created without making changes'
+    required: false
+    default: 'false'
+  verbose:
+    description: 'Enable verbose logging'
+    required: false
+    default: 'false'
+
+outputs:
+  exit-code:
+    description: 'Exit code from the sync command'
+    value: ${{ steps.sync.outputs.exit-code }}
+  summary:
+    description: 'Summary output from the sync command'
+    value: ${{ steps.sync.outputs.summary }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Setup Deno
+      uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2
+
+    - name: Run sync-issues
+      id: sync
+      shell: bash
+      run: |
+        set -o pipefail
+        cd ${{ github.workspace }}
+        deno run --allow-all .github/actions/sync-issues/sync-issues/index.ts push --verbose ${{ inputs.dry-run == 'true' && '--dry-run' || '' }}
+        echo "exit-code=$?" >> $GITHUB_OUTPUT
+        echo "summary=Completed" >> $GITHUB_OUTPUT

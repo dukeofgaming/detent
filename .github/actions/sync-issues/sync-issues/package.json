@@ -1,0 +1,22 @@
+{
+  "name": "sync-issues",
+  "version": "1.0.0",
+  "description": "GitHub Issue sync tool",
+  "type": "module",
+  "imports": {
+    "#domain/types": "./src/features/gh-push/domain/types/index.ts",
+    "#domain/services": "./src/features/gh-push/domain/services/index.ts",
+    "#domain/services/*": "./src/features/gh-push/domain/services/*.ts",
+    "#application/ports": "./src/features/gh-push/application/ports/index.ts",
+    "#application/ports/*": "./src/features/gh-push/application/ports/*.ts",
+    "#application/usecases/*": "./src/features/gh-push/application/usecases/*.ts",
+    "#adapters/*": "./src/features/gh-push/adapters/*.ts",
+    "#infrastructure/*": "./src/features/gh-push/infrastructure/*.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  }
+}

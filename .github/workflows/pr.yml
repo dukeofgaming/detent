@@ -1,0 +1,35 @@
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract branch name
+        run: echo "BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+
+      - name: Build and test in devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: detent-devcontainer
+          cacheFrom: detent-devcontainer:cache
+          subFolder: .
+          runCmd: |
+            cargo test && \
+            cargo build --release && \
+            mkdir -p artifacts && \
+            cp target/release/detent artifacts/detent-${{ env.BRANCH_NAME }}-${{ github.sha }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: detent-${{ env.BRANCH_NAME }}
+          path: artifacts/detent-*
+          retention-days: 7

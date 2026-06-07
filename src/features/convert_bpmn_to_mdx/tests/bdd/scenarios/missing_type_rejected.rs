@@ -1,0 +1,12 @@
+use cucumber::given;
+use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
+
+use super::ConvertWorld;
+
+#[given("an MDX input whose frontmatter omits the type field")]
+fn given_missing_type(world: &mut ConvertWorld) {
+    world.mdx_inputs = vec![MdxInput {
+        filename: "no_type.mdx".to_string(),
+        content: "---\nid: start_1\n---\n".to_string(),
+    }];
+}
