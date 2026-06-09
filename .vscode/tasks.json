@@ -1,0 +1,47 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // See https://code.visualstudio.com/docs/editor/tasks-appendix
+    // https://stackoverflow.com/questions/72817555/devcontainer-how-to-open-terminal-with-custom-commands-when-opening-the-contain
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "▶ Generate cucumber report",
+            "type": "shell",
+            "command": "node scripts/cucumber-report.mjs",
+            "isBackground": false,
+            "problemMatcher": [],
+            "presentation": {
+                "group": "development",
+                "reveal": "always",
+                "panel": "new",
+                "showReuseMessage": false,
+            },
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiGreen"
+            }
+        },
+        {
+            "label": "▶ Serve cucumber report",
+            "dependsOn": "▶ Generate cucumber report",
+            "dependsOrder": "sequence",
+            "type": "shell",
+            "command": "bash scripts/start-cucumber-report.sh",
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "folderOpen",
+            },
+            "presentation": {
+                "group": "development",
+                "reveal": "always",
+                "panel": "new",
+                "showReuseMessage": false,
+            },
+            "icon": {
+                "id": "globe",
+                "color": "terminal.ansiYellow"
+            }
+        },
+    ]
+}

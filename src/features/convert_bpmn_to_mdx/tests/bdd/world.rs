@@ -61,8 +61,19 @@ pub async fn run() -> bool {
         env!("CARGO_MANIFEST_DIR"),
         "/src/features/convert_bpmn_to_mdx/tests/bdd/slice.feature"
     );
+    let json_file = std::fs::File::create(
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/target/cucumber-report/convert_bpmn_to_mdx.json"
+        ),
+    )
+    .expect("Failed to create JSON output");
+    let json_writer = writer::Json::for_tee(json_file).normalized();
+    let combined = writer::Basic::stdout()
+        .summarized()
+        .tee(json_writer);
     let summarized = ConvertWorld::cucumber()
-        .with_writer(writer::Basic::stdout().summarized())
+        .with_writer(combined)
         .run(features_path)
         .await;
     summarized.execution_has_failed()

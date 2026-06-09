@@ -25,12 +25,13 @@
         "unifiedjs.vscode-mdx",
         "sst-dev.opencode",
         "foam.foam-vscode",
-        "denoland.vscode-deno"
+        "denoland.vscode-deno",
+        "CucumberOpen.cucumber-official"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "rust-analyzer.cargo.loadOutDirsFromCheck": true,
-        "rust-analyzer.checkOnSave.command": "clippy"
+        "rust-analyzer.check.command": "clippy"
       }
     }
   },

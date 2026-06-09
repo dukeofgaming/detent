@@ -22,7 +22,7 @@ libxml = { version = "0.3", optional = true }
 
 [dev-dependencies]
 assert_cmd = "2.0"
-cucumber = "0.23"
+cucumber = { version = "0.23", features = ["output-json"] }
 predicates = "3.1"
 serde_test = "1.0.177"
 tempfile = "3.19"
