@@ -68,10 +68,19 @@ pub async fn run() -> bool {
         ),
     )
     .expect("Failed to create JSON output");
+    let junit_file = std::fs::File::create(
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/target/cucumber-report/convert_bpmn_to_mdx.junit.xml"
+        ),
+    )
+    .expect("Failed to create JUnit output");
     let json_writer = writer::Json::for_tee(json_file).normalized();
+    let junit_writer = writer::JUnit::for_tee(junit_file, 0).normalized();
     let combined = writer::Basic::stdout()
         .summarized()
-        .tee(json_writer);
+        .tee(json_writer)
+        .tee(junit_writer);
     let summarized = ConvertWorld::cucumber()
         .with_writer(combined)
         .run(features_path)
