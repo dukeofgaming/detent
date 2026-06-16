@@ -76,5 +76,5 @@ xsd-parser = "1.4"
 
 ### Negative
 
-1. `xsd-parser` is a build dependency, increasing build time
-2. May need to vendor or customize generated code for BPMN edge cases
+1. Build-time `xsd-parser` was removed after [[ADR-4]] superseded codegen; handcrafted types replaced it
+2. Optional native-only `libxml` (feature `xsd-validation`) is not WASM-compatible and must live in infrastructure behind a `SchemaValidator` port ([[ADR-7]]), not in adapter modules

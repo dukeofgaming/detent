@@ -36,7 +36,13 @@ Supported BPMN elements (per spec.md):
 | documentation | Should Have |
 | extensionElements | Could Have |
 
-Implementation: create `src/bpmn/types.rs` with `Definitions` (root element), `Process`, `FlowElement` enum (StartEvent, EndEvent, Task variants, Gateway variants), `SequenceFlow`, and common attributes (id, name, incoming, outgoing).
+Implementation: create handcrafted types under the BPMN **adapter** layer of the
+relevant feature slice (e.g.
+`src/features/convert_bpmn_to_mdx/adapters/bpmn/types/`) with `Definitions`
+(root element), `Process`, `FlowElement` enum (StartEvent, EndEvent, Task
+variants, Gateway variants), `SequenceFlow`, and common attributes (id, name,
+incoming, outgoing). These types are the compile/import IR ([[ADR-2]]); they
+must not be placed in or re-exported from the domain layer ([[ADR-7]]).
 
 ### Options
 
