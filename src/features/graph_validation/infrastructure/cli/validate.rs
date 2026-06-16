@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 #[cfg(feature = "xsd-validation")]
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::validate_bpmn_xsd;
+use crate::features::convert_bpmn_to_mdx::infrastructure::validate_bpmn_xsd;
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, Validate};
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
 use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;

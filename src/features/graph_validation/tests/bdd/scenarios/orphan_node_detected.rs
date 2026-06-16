@@ -1,17 +1,14 @@
 use cucumber::given;
-use detent::features::graph_validation::domain::bpmn::Task;
+use detent::features::graph_validation::domain::workflow::{Node, NodeType};
 
 use super::GraphValidationWorld;
 
 #[given(regex = r#"^a linear process with an orphan "([^"]+)"$"#)]
 fn given_orphan(world: &mut GraphValidationWorld, orphan_id: String) {
-    let mut p = super::linear_process();
-    p.tasks.push(Task {
+    let mut w = super::linear_process();
+    w.nodes.push(Node {
         id: orphan_id,
-        name: Some("Orphan".to_string()),
-        incoming: vec![],
-        outgoing: vec![],
-        documentation: None,
+        node_type: NodeType::Action,
     });
-    world.process = Some(p);
+    world.workflow = Some(w);
 }

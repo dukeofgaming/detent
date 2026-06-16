@@ -7,14 +7,10 @@ use super::{analysis_of, FlowAnalysis, GraphValidationWorld};
 
 #[when("I analyze the process flow")]
 fn when_analyze(world: &mut GraphValidationWorld) {
-    let process = world.process.as_ref().expect("process must be set");
-    let graph = Graph::new(process);
+    let workflow = world.workflow.as_ref().expect("workflow must be set");
+    let graph = Graph::new(workflow);
 
-    let node_ids: Vec<String> = process
-        .flow_elements()
-        .nodes()
-        .map(|n| n.id().to_string())
-        .collect();
+    let node_ids: Vec<String> = workflow.nodes.iter().map(|n| n.id.clone()).collect();
 
     let mut successors = HashMap::new();
     let mut predecessors = HashMap::new();
@@ -22,11 +18,11 @@ fn when_analyze(world: &mut GraphValidationWorld) {
     for id in &node_ids {
         successors.insert(
             id.clone(),
-            graph.successors(id).map(|n| n.id().to_string()).collect(),
+            graph.successors(id).map(|n| n.id.clone()).collect(),
         );
         predecessors.insert(
             id.clone(),
-            graph.predecessors(id).map(|n| n.id().to_string()).collect(),
+            graph.predecessors(id).map(|n| n.id.clone()).collect(),
         );
         reachable.insert(id.clone(), graph.reachable_from(id));
     }
@@ -34,12 +30,12 @@ fn when_analyze(world: &mut GraphValidationWorld) {
     let entry_nodes = graph
         .entry_nodes()
         .iter()
-        .map(|n| n.id().to_string())
+        .map(|n| n.id.clone())
         .collect();
     let exit_nodes = graph
         .exit_nodes()
         .iter()
-        .map(|n| n.id().to_string())
+        .map(|n| n.id.clone())
         .collect();
 
     world.analysis = Some(FlowAnalysis {

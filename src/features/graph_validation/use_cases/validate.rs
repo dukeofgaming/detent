@@ -1,10 +1,10 @@
-use crate::features::graph_validation::adapters::bpmn::to_domain_process;
+use crate::features::graph_validation::adapters::bpmn::to_workflow;
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, Definitions, Process};
 use crate::features::graph_validation::domain::graph::Graph;
 
 pub fn validate_bpmn_process(process: &Process) -> Result<(), Vec<String>> {
-    let domain_process = to_domain_process(process);
-    Graph::new(&domain_process).validate()
+    let workflow = to_workflow(process);
+    Graph::new(&workflow).validate()
 }
 
 pub fn validate_bpmn_definitions(definitions: &Definitions) -> Result<(), Vec<String>> {

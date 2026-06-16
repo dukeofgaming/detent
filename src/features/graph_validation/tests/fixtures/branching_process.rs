@@ -1,98 +1,55 @@
-use detent::features::graph_validation::domain::bpmn::{
-    EndEvent, ExclusiveGateway, Process, SequenceFlow, StartEvent, Task,
-};
+use detent::features::graph_validation::domain::workflow::{Flow, Node, NodeType, Workflow};
 
-/// A branching-and-merging process:
-///
-/// ```text
-/// start_1 -> gateway_1 -+-> task_a -+-> end_1
-///                       +-> task_b -+
-/// ```
-///
-/// `gateway_1` has two outgoing flows and `end_1` has two incoming flows, so
-/// this exercises multi-successor and multi-predecessor graph behaviour that a
-/// strictly linear process cannot.
-pub fn branching_process() -> Process {
-    Process {
+pub fn branching_process() -> Workflow {
+    Workflow {
         id: "process_branching".to_string(),
-        name: Some("Branching Process".to_string()),
-        is_executable: Some(true),
-        process_type: None,
-        documentation: None,
-        start_events: vec![StartEvent {
-            id: "start_1".to_string(),
-            name: None,
-            outgoing: vec!["flow_in".to_string()],
-            documentation: None,
-        }],
-        end_events: vec![EndEvent {
-            id: "end_1".to_string(),
-            name: None,
-            incoming: vec!["flow_a_out".to_string(), "flow_b_out".to_string()],
-            documentation: None,
-        }],
-        tasks: vec![
-            Task {
-                id: "task_a".to_string(),
-                name: Some("Task A".to_string()),
-                incoming: vec!["flow_a".to_string()],
-                outgoing: vec!["flow_a_out".to_string()],
-                documentation: None,
+        nodes: vec![
+            Node {
+                id: "start_1".to_string(),
+                node_type: NodeType::Start,
             },
-            Task {
+            Node {
+                id: "gateway_1".to_string(),
+                node_type: NodeType::Gateway,
+            },
+            Node {
+                id: "task_a".to_string(),
+                node_type: NodeType::Action,
+            },
+            Node {
                 id: "task_b".to_string(),
-                name: Some("Task B".to_string()),
-                incoming: vec!["flow_b".to_string()],
-                outgoing: vec!["flow_b_out".to_string()],
-                documentation: None,
+                node_type: NodeType::Action,
+            },
+            Node {
+                id: "end_1".to_string(),
+                node_type: NodeType::End,
             },
         ],
-        service_tasks: vec![],
-        script_tasks: vec![],
-        exclusive_gateways: vec![ExclusiveGateway {
-            id: "gateway_1".to_string(),
-        }],
-        parallel_gateways: vec![],
-        sequence_flows: vec![
-            SequenceFlow {
+        flows: vec![
+            Flow {
                 id: "flow_in".to_string(),
-                name: None,
-                source_ref: "start_1".to_string(),
-                target_ref: "gateway_1".to_string(),
-                condition_expression: None,
-                documentation: None,
+                source: "start_1".to_string(),
+                target: "gateway_1".to_string(),
             },
-            SequenceFlow {
+            Flow {
                 id: "flow_a".to_string(),
-                name: None,
-                source_ref: "gateway_1".to_string(),
-                target_ref: "task_a".to_string(),
-                condition_expression: None,
-                documentation: None,
+                source: "gateway_1".to_string(),
+                target: "task_a".to_string(),
             },
-            SequenceFlow {
+            Flow {
                 id: "flow_b".to_string(),
-                name: None,
-                source_ref: "gateway_1".to_string(),
-                target_ref: "task_b".to_string(),
-                condition_expression: None,
-                documentation: None,
+                source: "gateway_1".to_string(),
+                target: "task_b".to_string(),
             },
-            SequenceFlow {
+            Flow {
                 id: "flow_a_out".to_string(),
-                name: None,
-                source_ref: "task_a".to_string(),
-                target_ref: "end_1".to_string(),
-                condition_expression: None,
-                documentation: None,
+                source: "task_a".to_string(),
+                target: "end_1".to_string(),
             },
-            SequenceFlow {
+            Flow {
                 id: "flow_b_out".to_string(),
-                name: None,
-                source_ref: "task_b".to_string(),
-                target_ref: "end_1".to_string(),
-                condition_expression: None,
-                documentation: None,
+                source: "task_b".to_string(),
+                target: "end_1".to_string(),
             },
         ],
     }

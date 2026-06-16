@@ -1,2 +1,2 @@
-pub mod bpmn;
 pub mod graph;
+pub mod workflow;

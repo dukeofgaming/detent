@@ -9,7 +9,7 @@ fn test_find_node_returns_existing_node() {
 
     let node = graph.find_node("task_1");
     assert!(node.is_some());
-    assert_eq!(node.unwrap().id(), "task_1");
+    assert_eq!(node.unwrap().id, "task_1");
 }
 
 #[test]

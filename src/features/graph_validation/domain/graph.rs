@@ -1,72 +1,79 @@
 use std::collections::{HashMap, HashSet};
 
-use super::bpmn::{FlowNode, Process, SequenceFlow};
+use super::workflow::{Flow, Node, NodeType, Workflow};
 
 pub struct Graph<'a> {
-    process: &'a Process,
-    nodes: HashMap<String, FlowNode>,
-    outgoing_edges: HashMap<&'a str, Vec<&'a SequenceFlow>>,
-    incoming_edges: HashMap<&'a str, Vec<&'a SequenceFlow>>,
+    workflow: &'a Workflow,
+    node_by_id: HashMap<&'a str, &'a Node>,
+    outgoing_by_source: HashMap<&'a str, Vec<&'a Flow>>,
+    incoming_by_target: HashMap<&'a str, Vec<&'a Flow>>,
 }
 
 impl<'a> Graph<'a> {
-    pub fn new(process: &'a Process) -> Self {
-        let flow_elements = process.flow_elements();
+    pub fn new(workflow: &'a Workflow) -> Self {
+        let node_by_id: HashMap<&str, &Node> = workflow
+            .nodes
+            .iter()
+            .map(|n| (n.id.as_str(), n))
+            .collect();
 
-        let mut nodes = HashMap::new();
-        for node in flow_elements.nodes() {
-            nodes.insert(node.id().to_string(), node);
-        }
+        let mut outgoing_by_source: HashMap<&str, Vec<&Flow>> = HashMap::new();
+        let mut incoming_by_target: HashMap<&str, Vec<&Flow>> = HashMap::new();
 
-        let mut outgoing_edges: HashMap<&str, Vec<&SequenceFlow>> = HashMap::new();
-        let mut incoming_edges: HashMap<&str, Vec<&SequenceFlow>> = HashMap::new();
-
-        for flow in &process.sequence_flows {
-            outgoing_edges.entry(flow.source_ref.as_str()).or_default().push(flow);
-            incoming_edges.entry(flow.target_ref.as_str()).or_default().push(flow);
+        for flow in &workflow.flows {
+            outgoing_by_source
+                .entry(flow.source.as_str())
+                .or_default()
+                .push(flow);
+            incoming_by_target
+                .entry(flow.target.as_str())
+                .or_default()
+                .push(flow);
         }
 
         Self {
-            process,
-            nodes,
-            outgoing_edges,
-            incoming_edges,
+            workflow,
+            node_by_id,
+            outgoing_by_source,
+            incoming_by_target,
         }
     }
 
-    pub fn find_node(&self, id: &str) -> Option<&FlowNode> {
-        self.nodes.get(id)
+    pub fn find_node(&self, id: &str) -> Option<&Node> {
+        self.node_by_id.get(id).copied()
     }
 
-    pub fn successors(&self, node_id: &str) -> impl Iterator<Item = &FlowNode> {
-        self.outgoing_edges
+    pub fn successors(&self, node_id: &str) -> impl Iterator<Item = &Node> + '_ {
+        self.outgoing_by_source
             .get(node_id)
             .into_iter()
             .flat_map(|flows| flows.iter())
-            .filter_map(|flow| self.nodes.get(flow.target_ref.as_str()))
+            .filter_map(|flow| self.node_by_id.get(flow.target.as_str()))
+            .copied()
     }
 
-    pub fn predecessors(&self, node_id: &str) -> impl Iterator<Item = &FlowNode> {
-        self.incoming_edges
+    pub fn predecessors(&self, node_id: &str) -> impl Iterator<Item = &Node> + '_ {
+        self.incoming_by_target
             .get(node_id)
             .into_iter()
             .flat_map(|flows| flows.iter())
-            .filter_map(|flow| self.nodes.get(flow.source_ref.as_str()))
+            .filter_map(|flow| self.node_by_id.get(flow.source.as_str()))
+            .copied()
     }
 
-    pub fn entry_nodes(&self) -> Vec<&FlowNode> {
-        self.process
-            .start_events
+    pub fn entry_nodes(&self) -> Vec<&Node> {
+        self.workflow
+            .nodes
             .iter()
-            .filter_map(|e| self.nodes.get(&e.id))
+            .filter(|n| n.node_type == NodeType::Start)
             .collect()
     }
 
-    pub fn exit_nodes(&self) -> Vec<&FlowNode> {
-        self.process
-            .end_events
+    pub fn exit_nodes(&self) -> Vec<&Node> {
+        self.workflow
+            .nodes
             .iter()
-            .filter_map(|e| self.nodes.get(&e.id))
+            .filter(|n| n.node_type == NodeType::End)
             .collect()
     }
 
@@ -79,7 +86,7 @@ impl<'a> Graph<'a> {
                 continue;
             }
             for succ in self.successors(current) {
-                queue.push(succ.id());
+                queue.push(&succ.id);
             }
         }
 
@@ -89,36 +96,36 @@ impl<'a> Graph<'a> {
     pub fn validate(&self) -> Result<(), Vec<String>> {
         let mut errors = Vec::new();
 
-        if self.process.start_events.is_empty() {
+        if !self.workflow.nodes.iter().any(|n| n.node_type == NodeType::Start) {
             errors.push("Process has no start event".to_string());
         }
-        if self.process.end_events.is_empty() {
+        if !self.workflow.nodes.iter().any(|n| n.node_type == NodeType::End) {
             errors.push("Process has no end event".to_string());
         }
 
-        for flow in &self.process.sequence_flows {
-            if !self.nodes.contains_key(flow.source_ref.as_str()) {
+        for flow in &self.workflow.flows {
+            if !self.node_by_id.contains_key(flow.source.as_str()) {
                 errors.push(format!(
                     "Sequence flow '{}' has dangling sourceRef '{}'",
-                    flow.id, flow.source_ref
+                    flow.id, flow.source
                 ));
             }
-            if !self.nodes.contains_key(flow.target_ref.as_str()) {
+            if !self.node_by_id.contains_key(flow.target.as_str()) {
                 errors.push(format!(
                     "Sequence flow '{}' has dangling targetRef '{}'",
-                    flow.id, flow.target_ref
+                    flow.id, flow.target
                 ));
             }
         }
 
-        let mut seen_ids: HashSet<String> = HashSet::new();
-        for id in self.process.flow_elements().nodes().map(|n| n.id().to_string()) {
-            if !seen_ids.insert(id.clone()) {
-                errors.push(format!("Duplicate element ID '{}'", id));
+        let mut seen_ids: HashSet<&str> = HashSet::new();
+        for node in &self.workflow.nodes {
+            if !seen_ids.insert(node.id.as_str()) {
+                errors.push(format!("Duplicate element ID '{}'", node.id));
             }
         }
-        for flow in &self.process.sequence_flows {
-            if !seen_ids.insert(flow.id.clone()) {
+        for flow in &self.workflow.flows {
+            if !seen_ids.insert(flow.id.as_str()) {
                 errors.push(format!("Duplicate element ID '{}'", flow.id));
             }
         }
@@ -126,14 +133,14 @@ impl<'a> Graph<'a> {
         let reachable: HashSet<String> = self
             .entry_nodes()
             .iter()
-            .flat_map(|entry| self.reachable_from(entry.id()))
+            .flat_map(|entry| self.reachable_from(&entry.id))
             .collect();
 
-        for node in self.nodes.values() {
-            if !reachable.contains(node.id()) {
+        for node in self.node_by_id.values() {
+            if !reachable.contains(node.id.as_str()) {
                 errors.push(format!(
                     "Node '{}' is unreachable from any start event",
-                    node.id()
+                    node.id
                 ));
             }
         }
@@ -143,24 +150,24 @@ impl<'a> Graph<'a> {
             .iter()
             .flat_map(|exit| {
                 let mut visited: HashSet<&str> = HashSet::new();
-                let mut queue: Vec<&str> = vec![exit.id()];
+                let mut queue: Vec<&str> = vec![&exit.id];
                 while let Some(current) = queue.pop() {
                     if !visited.insert(current) {
                         continue;
                     }
                     for pred in self.predecessors(current) {
-                        queue.push(pred.id());
+                        queue.push(&pred.id);
                     }
                 }
                 visited.into_iter().map(String::from).collect::<Vec<_>>()
             })
             .collect();
 
-        for node in self.nodes.values() {
-            if !can_reach_end.contains(node.id()) {
+        for node in self.node_by_id.values() {
+            if !can_reach_end.contains(node.id.as_str()) {
                 errors.push(format!(
                     "Node '{}' is a dead end (cannot reach any end event)",
-                    node.id()
+                    node.id
                 ));
             }
         }

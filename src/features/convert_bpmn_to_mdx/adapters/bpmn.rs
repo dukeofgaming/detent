@@ -4,13 +4,7 @@
 
 pub mod types;
 
-#[cfg(feature = "xsd-validation")]
-pub mod xsd_validator;
-
 pub use types::*;
-
-#[cfg(feature = "xsd-validation")]
-pub use xsd_validator::{validate_bpmn_file_xsd, validate_bpmn_xsd, XsdValidationError};
 
 use quick_xml::de::from_str;
 use quick_xml::se::to_string;

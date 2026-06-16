@@ -6,7 +6,7 @@ use super::GraphValidationWorld;
 
 #[given("a branching process with an exclusive gateway")]
 fn given_branching(world: &mut GraphValidationWorld) {
-    world.process = Some(super::branching_process());
+    world.workflow = Some(super::branching_process());
 }
 
 #[then(regex = r"^(\S+) branches to (\S+) and (\S+)$")]

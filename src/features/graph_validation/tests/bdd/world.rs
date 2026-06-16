@@ -1,5 +1,5 @@
 use cucumber::{writer, StatsWriter as _, World, WriterExt as _};
-use detent::features::graph_validation::domain::bpmn::Process;
+use detent::features::graph_validation::domain::workflow::Workflow;
 use std::collections::HashMap;
 
 #[path = "../fixtures/linear_process.rs"]
@@ -34,9 +34,6 @@ mod branching_process_validated;
 use branching_fixture::branching_process;
 use fixtures::{linear_process, linear_process_with_retargeted_exit};
 
-/// Owned snapshot of the flow analysis computed by the
-/// "When I analyze the process flow" step, so that `Then` steps read cached
-/// results instead of rebuilding a borrowed `Graph` on each assertion.
 #[derive(Debug, Default)]
 pub struct FlowAnalysis {
     pub successors: HashMap<String, Vec<String>>,
@@ -48,14 +45,12 @@ pub struct FlowAnalysis {
 
 #[derive(Debug, Default, World)]
 pub struct GraphValidationWorld {
-    process: Option<Process>,
+    workflow: Option<Workflow>,
     analysis: Option<FlowAnalysis>,
     errors: Option<Vec<String>>,
     succeeded: bool,
 }
 
-/// Borrow the cached flow analysis, panicking with a helpful message when the
-/// "When I analyze the process flow" step has not run yet.
 fn analysis_of(world: &GraphValidationWorld) -> &FlowAnalysis {
     world
         .analysis
