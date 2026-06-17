@@ -1,5 +1,6 @@
 //! BPMN Process type
 
+use serde::de;
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -8,8 +9,21 @@ use super::{
 };
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Validate;
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum ProcessElement {
+    StartEvent(StartEvent),
+    EndEvent(EndEvent),
+    Task(Task),
+    ServiceTask(ServiceTask),
+    ScriptTask(ScriptTask),
+    ExclusiveGateway(ExclusiveGateway),
+    ParallelGateway(ParallelGateway),
+    SequenceFlow(SequenceFlow),
+}
+
 /// BPMN Process - container for flow elements
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize)]
 #[serde(rename = "process")]
 pub struct Process {
     #[serde(rename = "@id", alias = "id")]
@@ -62,6 +76,56 @@ pub struct Process {
 
     #[serde(rename = "sequenceFlow", default)]
     pub sequence_flows: Vec<SequenceFlow>,
+}
+
+impl<'de> Deserialize<'de> for Process {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(rename = "process")]
+        struct ProcessHelper {
+            #[serde(rename = "@id", alias = "id")]
+            id: String,
+            #[serde(rename = "@name", alias = "name")]
+            name: Option<String>,
+            #[serde(rename = "@isExecutable", alias = "isExecutable")]
+            is_executable: Option<bool>,
+            #[serde(rename = "@processType", alias = "processType")]
+            process_type: Option<String>,
+            #[serde(rename = "documentation")]
+            documentation: Option<Documentation>,
+            #[serde(rename = "$value", default)]
+            elements: Vec<ProcessElement>,
+        }
+
+        let helper = ProcessHelper::deserialize(deserializer)?;
+
+        let mut process = Process {
+            id: helper.id,
+            name: helper.name,
+            is_executable: helper.is_executable,
+            process_type: helper.process_type,
+            documentation: helper.documentation,
+            ..Default::default()
+        };
+
+        for elem in helper.elements {
+            match elem {
+                ProcessElement::StartEvent(e) => process.start_events.push(e),
+                ProcessElement::EndEvent(e) => process.end_events.push(e),
+                ProcessElement::Task(t) => process.tasks.push(t),
+                ProcessElement::ServiceTask(t) => process.service_tasks.push(t),
+                ProcessElement::ScriptTask(t) => process.script_tasks.push(t),
+                ProcessElement::ExclusiveGateway(g) => process.exclusive_gateways.push(g),
+                ProcessElement::ParallelGateway(g) => process.parallel_gateways.push(g),
+                ProcessElement::SequenceFlow(f) => process.sequence_flows.push(f),
+            }
+        }
+
+        Ok(process)
+    }
 }
 
 impl Process {
