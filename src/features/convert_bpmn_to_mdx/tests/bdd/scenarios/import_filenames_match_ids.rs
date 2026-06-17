@@ -59,8 +59,9 @@ fn given_simple_defs(world: &mut ConvertWorld) {
                     condition_expression: None,
                     documentation: None,
                 },
-            ],
-        }),
+                ],
+                ..Default::default()
+            }),
         bpmn_diagram: None,
     });
 }

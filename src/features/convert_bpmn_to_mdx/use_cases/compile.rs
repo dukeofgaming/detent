@@ -91,6 +91,7 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
         exclusive_gateways: vec![],
         parallel_gateways: vec![],
         sequence_flows: vec![],
+        ..Default::default()
     };
 
     for input in inputs {

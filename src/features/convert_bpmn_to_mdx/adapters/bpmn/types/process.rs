@@ -9,7 +9,7 @@ use super::{
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Validate;
 
 /// BPMN Process - container for flow elements
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename = "process")]
 pub struct Process {
     #[serde(rename = "@id", alias = "id")]

@@ -47,6 +47,7 @@ fn given_conditional_flow(world: &mut ConvertWorld) {
                 }),
                 documentation: None,
             }],
+            ..Default::default()
         }),
         bpmn_diagram: None,
     });
