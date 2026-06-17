@@ -17,7 +17,8 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-# End of https://www.toptal.com/developers/gitignore/api/rust
+# Detent import artifacts (generated MDX in current directory)
+/*.mdx
 
 # Node tooling
 node_modules/
