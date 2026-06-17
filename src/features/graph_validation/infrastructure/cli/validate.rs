@@ -3,10 +3,11 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 #[cfg(feature = "xsd-validation")]
-use crate::features::convert_bpmn_to_mdx::infrastructure::validate_bpmn_xsd;
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, Validate};
+use crate::features::convert_bpmn_to_mdx::infrastructure::xsd_validator::LibxmlSchemaValidator;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Validate;
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
-use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
+use crate::features::graph_validation::use_cases::schema_validator::NoopSchemaValidator;
+use crate::features::graph_validation::use_cases::validate_workflow;
 
 pub fn run(files: Vec<PathBuf>) -> ExitCode {
     let mut has_errors = false;
@@ -43,17 +44,16 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
 
     #[cfg(feature = "xsd-validation")]
     {
-        validate_bpmn_xsd(&content).map_err(|e| format!("XSD validation failed: {}", e))?;
+        let validator = LibxmlSchemaValidator;
+        return validate_bpmn_content(&content, &validator);
     }
 
-    let defs = parse_bpmn(&content).map_err(|e| format!("Invalid BPMN: {}", e))?;
-    defs.validate_for_bpmn()?;
+    let validator = NoopSchemaValidator;
+    validate_bpmn_content(&content, &validator)
+}
 
-    if let Err(errors) = validate_bpmn_definitions(&defs) {
-        return Err(format!("Graph validation failed:\n{}", errors.join("\n")));
-    }
-
-    Ok(())
+fn validate_bpmn_content(content: &str, validator: &dyn crate::features::graph_validation::use_cases::schema_validator::SchemaValidator) -> Result<(), String> {
+    validate_workflow::validate_bpmn_string(content, validator)
 }
 
 fn validate_mdx(path: &PathBuf) -> Result<(), String> {
