@@ -52,7 +52,7 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
     validate_bpmn_content(&content, &validator)
 }
 
-fn validate_bpmn_content(content: &str, validator: &dyn crate::features::graph_validation::use_cases::schema_validator::SchemaValidator) -> Result<(), String> {
+fn validate_bpmn_content(content: &str, validator: &impl crate::features::graph_validation::use_cases::schema_validator::SchemaValidator) -> Result<(), String> {
     validate_workflow::validate_bpmn_string(content, validator)
 }
 
