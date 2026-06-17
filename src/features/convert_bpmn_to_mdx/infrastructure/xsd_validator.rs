@@ -6,7 +6,6 @@
 use crate::features::convert_bpmn_to_mdx::use_cases::schema_validator::SchemaValidator;
 use libxml::parser::Parser;
 use libxml::schemas::{SchemaParserContext, SchemaValidationContext};
-use std::path::Path;
 
 pub struct LibxmlSchemaValidator;
 
@@ -95,18 +94,4 @@ pub fn validate_bpmn_xsd(xml_content: &str) -> Result<(), XsdValidationError> {
     })?;
 
     Ok(())
-}
-
-/// Validate a BPMN file at the given path against the BPMN 2.0 XSD schema
-///
-/// # Arguments
-/// * `path` - Path to the BPMN file
-///
-/// # Returns
-/// * `Ok(())` if validation succeeds
-/// * `Err(XsdValidationError)` if validation fails
-pub fn validate_bpmn_file_xsd(path: &Path) -> Result<(), XsdValidationError> {
-    let content = std::fs::read_to_string(path)
-        .map_err(|e| XsdValidationError::FileReadError(e.to_string()))?;
-    validate_bpmn_xsd(&content)
 }

@@ -8,4 +8,4 @@ pub mod cli {
 pub mod xsd_validator;
 
 #[cfg(feature = "xsd-validation")]
-pub use xsd_validator::{validate_bpmn_file_xsd, validate_bpmn_xsd, XsdValidationError};
+pub use xsd_validator::{validate_bpmn_xsd, XsdValidationError};
