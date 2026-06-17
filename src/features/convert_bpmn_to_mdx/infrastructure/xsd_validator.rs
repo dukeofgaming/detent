@@ -3,17 +3,8 @@
 //! This module provides XSD validation using libxml2 bindings.
 //! It is only available when the `xsd-validation` feature is enabled.
 
-use crate::features::convert_bpmn_to_mdx::use_cases::schema_validator::SchemaValidator;
 use libxml::parser::Parser;
 use libxml::schemas::{SchemaParserContext, SchemaValidationContext};
-
-pub struct LibxmlSchemaValidator;
-
-impl SchemaValidator for LibxmlSchemaValidator {
-    fn validate_xml(&self, xml: &str) -> Result<(), String> {
-        validate_bpmn_xsd(xml).map_err(|e| e.to_string())
-    }
-}
 
 /// Errors that can occur during XSD validation
 #[derive(Debug)]
