@@ -5,6 +5,7 @@
 
 use regex::Regex;
 use serde::Serialize;
+use std::sync::LazyLock;
 
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Definitions;
 
@@ -91,18 +92,22 @@ fn to_mdx_output<T: Serialize>(id: &str, bpmn_type: &str, data: &T) -> Result<Md
 }
 
 fn clean_yaml_for_mdx(yaml: &str) -> String {
-    let re_single_at = Regex::new(r"'@([a-zA-Z_][a-zA-Z0-9_]*)':").unwrap();
-    let re_double_at = Regex::new(r#""@([a-zA-Z_][a-zA-Z0-9_]*)":"#).unwrap();
+    static RE_SINGLE_AT: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"'@([a-zA-Z_][a-zA-Z0-9_]*)':").unwrap());
+    static RE_DOUBLE_AT: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r#""@([a-zA-Z_][a-zA-Z0-9_]*)":"#).unwrap());
+    static RE_SINGLE_DOLLAR: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"'\$([a-zA-Z_][a-zA-Z0-9_]*)':").unwrap());
+    static RE_DOUBLE_DOLLAR: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r#""\$([a-zA-Z_][a-zA-Z0-9_]*)":"#).unwrap());
+    static RE_UNQUOTED_DOLLAR: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"(\s)\$([a-zA-Z_][a-zA-Z0-9_]*):").unwrap());
 
-    let re_single_dollar = Regex::new(r"'\$([a-zA-Z_][a-zA-Z0-9_]*)':").unwrap();
-    let re_double_dollar = Regex::new(r#""\$([a-zA-Z_][a-zA-Z0-9_]*)":"#).unwrap();
-    let re_unquoted_dollar = Regex::new(r"(\s)\$([a-zA-Z_][a-zA-Z0-9_]*):").unwrap();
-
-    let result = re_single_at.replace_all(yaml, "$1:");
-    let result = re_double_at.replace_all(&result, "$1:");
-    let result = re_single_dollar.replace_all(&result, "$1:");
-    let result = re_double_dollar.replace_all(&result, "$1:");
-    let result = re_unquoted_dollar.replace_all(&result, "$1$2:");
+    let result = RE_SINGLE_AT.replace_all(yaml, "$1:");
+    let result = RE_DOUBLE_AT.replace_all(&result, "$1:");
+    let result = RE_SINGLE_DOLLAR.replace_all(&result, "$1:");
+    let result = RE_DOUBLE_DOLLAR.replace_all(&result, "$1:");
+    let result = RE_UNQUOTED_DOLLAR.replace_all(&result, "$1$2:");
 
     result.to_string()
 }
