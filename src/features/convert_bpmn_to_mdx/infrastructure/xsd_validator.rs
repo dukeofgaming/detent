@@ -3,7 +3,7 @@
 //! This module provides XSD validation using libxml2 bindings.
 //! It is only available when the `xsd-validation` feature is enabled.
 
-use crate::features::graph_validation::use_cases::schema_validator::SchemaValidator;
+use crate::features::convert_bpmn_to_mdx::use_cases::schema_validator::SchemaValidator;
 use libxml::parser::Parser;
 use libxml::schemas::{SchemaParserContext, SchemaValidationContext};
 use std::path::Path;

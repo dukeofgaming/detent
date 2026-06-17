@@ -20,6 +20,9 @@ fn main() -> io::Result<()> {
         }
 
         let feature_name = entry.file_name().to_string_lossy().into_owned();
+        if !is_slice_enabled(&feature_name) {
+            continue;
+        }
         let integration_test = entry.path().join("tests/integration/mod.rs");
         if integration_test.exists() {
             println!("cargo:rerun-if-changed={}", integration_test.display());
@@ -81,4 +84,11 @@ fn main() -> io::Result<()> {
 
 fn normalize_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
+}
+
+fn is_slice_enabled(name: &str) -> bool {
+    match name {
+        "graph_validation" => env::var("CARGO_FEATURE_GRAPH_VALIDATION").is_ok(),
+        _ => true,
+    }
 }

@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use detent::features::convert_bpmn_to_mdx;
+#[cfg(feature = "graph-validation")]
 use detent::features::graph_validation;
 
 #[derive(Parser)]
@@ -85,12 +86,25 @@ enum Commands {
 fn main() -> ExitCode {
     let cli = Cli::parse();
 
+    #[cfg(feature = "graph-validation")]
+    {
+        return match cli.command {
+            Commands::Validate { files } => graph_validation::infrastructure::cli::validate::run(files),
+            Commands::Import {
+                bpmn_file,
+                output_directory,
+            } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
+            Commands::Compile { directory, output } => graph_validation::infrastructure::cli::compile::run(directory, output),
+        };
+    }
+
+    #[cfg(not(feature = "graph-validation"))]
     match cli.command {
-        Commands::Validate { files } => graph_validation::infrastructure::cli::validate::run(files),
+        Commands::Validate { files } => convert_bpmn_to_mdx::infrastructure::cli::validate::run(files),
         Commands::Import {
             bpmn_file,
             output_directory,
         } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
-        Commands::Compile { directory, output } => graph_validation::infrastructure::cli::compile::run(directory, output),
+        Commands::Compile { directory, output } => convert_bpmn_to_mdx::infrastructure::cli::compile::run(directory, output),
     }
 }
