@@ -17,9 +17,6 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-# Detent import artifacts (generated MDX in current directory)
-/*.mdx
-
 # Node tooling
 node_modules/
 .npm/
