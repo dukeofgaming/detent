@@ -30,6 +30,8 @@ mod dead_end_detected;
 mod process_flow_analysis;
 #[path = "scenarios/branching_process_validated.rs"]
 mod branching_process_validated;
+#[path = "scenarios/parametrized_fixture_validation.rs"]
+mod parametrized_fixture_validation;
 
 use branching_fixture::branching_process;
 use fixtures::{linear_process, linear_process_with_retargeted_exit};

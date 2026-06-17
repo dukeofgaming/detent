@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:ns1="modeler" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:ns0="xmlns" id="bpmn_copilot_Definition_id" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="f0f3e8d" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.6.0" ns0:modeler="http://camunda.org/schema/modeler/1.0" ns1:executionPlatform="Camunda Cloud" ns1:executionPlatformVersion="8.6">
+  <bpmn:collaboration id="Collaboration_1" isClosed="false">
+    <bpmn:participant id="Participant_EditorialDept" name="Editorial Department" processRef="Process_EditorialWorkflow" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_EditorialWorkflow" processType="None" isClosed="false" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_System" name="System" />
+      <bpmn:lane id="Lane_Copywriter" name="Copywriter" />
+      <bpmn:lane id="Lane_Editor" name="Editor" />
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Timer" name="Daily at 5am">
+      <bpmn:outgoing>Flow_ToConsultSources</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1">
+        <bpmn:timeCycle>0 5 * * * ?</bpmn:timeCycle>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:scriptTask id="Task_ConsultSources" name="Consult News Sources">
+      <bpmn:incoming>Flow_ToConsultSources</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToGroupStories</bpmn:outgoing>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="Task_GroupStories" name="Group Stories and Extract Highlights" implementation="##WebService">
+      <bpmn:incoming>Flow_ToGroupStories</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCreateDraft</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_CreateDraft" name="Create Draft Story" implementation="##WebService">
+      <bpmn:incoming>Flow_ToCreateDraft</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCopywriterReview</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_CopywriterReview" name="Review and Edit Draft" implementation="##unspecified">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formKey="camunda-forms:bpmn:userTask:Task_CopywriterReview" />
+        <zeebe:assignmentDefinition assignee="copywriter" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToCopywriterReview</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToEditorReview</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_EditorReview" name="Approve for Publication" implementation="##unspecified">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formKey="camunda-forms:bpmn:userTask:Task_EditorReview" />
+        <zeebe:assignmentDefinition assignee="editor" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToEditorReview</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToPublish</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_PublishArticle" name="Publish Article" implementation="##WebService">
+      <bpmn:incoming>Flow_ToPublish</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToDistribution</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_SplitDistribution">
+      <bpmn:incoming>Flow_ToDistribution</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToForum</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ToLinkedIn</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="Task_CreateForumTopic" name="REST Outbound Connector: Create Forum Topic" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" implementation="##WebService">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:http-json:1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToForum</bpmn:incoming>
+      <bpmn:outgoing>Flow_JoinForum</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_PostToLinkedIn" name="REST Outbound Connector: Post to LinkedIn" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" implementation="##WebService">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:http-json:1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToLinkedIn</bpmn:incoming>
+      <bpmn:outgoing>Flow_JoinLinkedIn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_JoinDistribution">
+      <bpmn:incoming>Flow_JoinForum</bpmn:incoming>
+      <bpmn:incoming>Flow_JoinLinkedIn</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToEnd</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="EndEvent_ProcessComplete" name="Process Complete">
+      <bpmn:incoming>Flow_ToEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_ToConsultSources" sourceRef="StartEvent_Timer" targetRef="Task_ConsultSources" />
+    <bpmn:sequenceFlow id="Flow_ToGroupStories" sourceRef="Task_ConsultSources" targetRef="Task_GroupStories" />
+    <bpmn:sequenceFlow id="Flow_ToCreateDraft" sourceRef="Task_GroupStories" targetRef="Task_CreateDraft" />
+    <bpmn:sequenceFlow id="Flow_ToCopywriterReview" sourceRef="Task_CreateDraft" targetRef="Task_CopywriterReview" />
+    <bpmn:sequenceFlow id="Flow_ToEditorReview" sourceRef="Task_CopywriterReview" targetRef="Task_EditorReview" />
+    <bpmn:sequenceFlow id="Flow_ToPublish" sourceRef="Task_EditorReview" targetRef="Task_PublishArticle" />
+    <bpmn:sequenceFlow id="Flow_ToDistribution" sourceRef="Task_PublishArticle" targetRef="Gateway_SplitDistribution" />
+    <bpmn:sequenceFlow id="Flow_ToForum" sourceRef="Gateway_SplitDistribution" targetRef="Task_CreateForumTopic" />
+    <bpmn:sequenceFlow id="Flow_ToLinkedIn" sourceRef="Gateway_SplitDistribution" targetRef="Task_PostToLinkedIn" />
+    <bpmn:sequenceFlow id="Flow_JoinForum" sourceRef="Task_CreateForumTopic" targetRef="Gateway_JoinDistribution" />
+    <bpmn:sequenceFlow id="Flow_JoinLinkedIn" sourceRef="Task_PostToLinkedIn" targetRef="Gateway_JoinDistribution" />
+    <bpmn:sequenceFlow id="Flow_ToEnd" sourceRef="Gateway_JoinDistribution" targetRef="EndEvent_ProcessComplete" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_EditorialWorkflow">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_EditorialWorkflow" bpmnElement="Process_EditorialWorkflow">
+      <bpmndi:BPMNShape id="StartEvent_Timer_di" bpmnElement="StartEvent_Timer">
+        <dc:Bounds x="167" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="154" y="138" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConsultSources_di" bpmnElement="Task_ConsultSources">
+        <dc:Bounds x="285" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GroupStories_di" bpmnElement="Task_GroupStories">
+        <dc:Bounds x="435" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CreateDraft_di" bpmnElement="Task_CreateDraft">
+        <dc:Bounds x="585" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CopywriterReview_di" bpmnElement="Task_CopywriterReview">
+        <dc:Bounds x="735" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EditorReview_di" bpmnElement="Task_EditorReview">
+        <dc:Bounds x="885" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishArticle_di" bpmnElement="Task_PublishArticle">
+        <dc:Bounds x="1035" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_SplitDistribution_di" bpmnElement="Gateway_SplitDistribution">
+        <dc:Bounds x="1210" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CreateForumTopic_di" bpmnElement="Task_CreateForumTopic">
+        <dc:Bounds x="1335" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PostToLinkedIn_di" bpmnElement="Task_PostToLinkedIn">
+        <dc:Bounds x="1335" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_JoinDistribution_di" bpmnElement="Gateway_JoinDistribution">
+        <dc:Bounds x="1510" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_ProcessComplete_di" bpmnElement="EndEvent_ProcessComplete">
+        <dc:Bounds x="1667" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1640" y="138" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_ToConsultSources_di" bpmnElement="Flow_ToConsultSources">
+        <di:waypoint x="203" y="120" />
+        <di:waypoint x="285" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToGroupStories_di" bpmnElement="Flow_ToGroupStories">
+        <di:waypoint x="385" y="120" />
+        <di:waypoint x="435" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCreateDraft_di" bpmnElement="Flow_ToCreateDraft">
+        <di:waypoint x="535" y="120" />
+        <di:waypoint x="585" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCopywriterReview_di" bpmnElement="Flow_ToCopywriterReview">
+        <di:waypoint x="685" y="120" />
+        <di:waypoint x="735" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToEditorReview_di" bpmnElement="Flow_ToEditorReview">
+        <di:waypoint x="835" y="120" />
+        <di:waypoint x="885" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToPublish_di" bpmnElement="Flow_ToPublish">
+        <di:waypoint x="985" y="120" />
+        <di:waypoint x="1035" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToDistribution_di" bpmnElement="Flow_ToDistribution">
+        <di:waypoint x="1135" y="120" />
+        <di:waypoint x="1210" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToForum_di" bpmnElement="Flow_ToForum">
+        <di:waypoint x="1260" y="120" />
+        <di:waypoint x="1335" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToLinkedIn_di" bpmnElement="Flow_ToLinkedIn">
+        <di:waypoint x="1235" y="145" />
+        <di:waypoint x="1235" y="260" />
+        <di:waypoint x="1335" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_JoinForum_di" bpmnElement="Flow_JoinForum">
+        <di:waypoint x="1435" y="120" />
+        <di:waypoint x="1510" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_JoinLinkedIn_di" bpmnElement="Flow_JoinLinkedIn">
+        <di:waypoint x="1435" y="260" />
+        <di:waypoint x="1535" y="260" />
+        <di:waypoint x="1535" y="145" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToEnd_di" bpmnElement="Flow_ToEnd">
+        <di:waypoint x="1560" y="120" />
+        <di:waypoint x="1667" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

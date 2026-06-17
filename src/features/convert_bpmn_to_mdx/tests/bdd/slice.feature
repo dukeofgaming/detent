@@ -89,3 +89,14 @@ Feature: Convert BPMN to MDX
     Given in-memory definitions whose sequence flow carries a condition expression
     When I import the parsed definitions to MDX
     Then the flow_1 MDX output contains the condition "amount > 100"
+
+  Scenario Outline: BPMN fixture imports to MDX
+    Given the <fixture> BPMN fixture
+    When I import it to MDX
+    Then <count> MDX outputs are produced
+    And each output contains a frontmatter block
+    And each output contains its BPMN type
+
+    Examples:
+      | fixture      | count |
+      | hello-world  | 5     |
