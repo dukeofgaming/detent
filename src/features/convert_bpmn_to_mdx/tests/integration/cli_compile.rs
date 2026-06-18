@@ -77,11 +77,6 @@ fn test_compile_output_flag_overrides_derived_name() {
 }
 
 #[test]
-fn test_compile_requires_path() {
-    detent!().arg("compile").arg("nonexistent-dir").assert().failure();
-}
-
-#[test]
 fn test_compile_missing_directory() {
     detent!()
         .arg("compile")
