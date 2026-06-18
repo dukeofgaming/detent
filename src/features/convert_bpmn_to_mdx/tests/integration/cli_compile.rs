@@ -15,7 +15,7 @@ fn test_compile_help() {
 }
 
 #[test]
-fn test_compile_requires_directory() {
+fn test_compile_requires_path() {
     detent!().arg("compile").assert().failure();
 }
 
@@ -88,6 +88,43 @@ fn test_compile_ignores_non_mdx_files() {
 }
 
 #[test]
+fn test_compile_with_individual_files() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let output_file = temp_dir.path().join("output.bpmn");
+    let asset_dir = hello_world_asset_dir();
+    let mdx_files: Vec<_> = std::fs::read_dir(&asset_dir)
+        .expect("Failed to read asset dir")
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("mdx"))
+        .collect();
+
+    let mut cmd = detent!();
+    cmd.arg("compile");
+    for f in &mdx_files {
+        cmd.arg(f);
+    }
+    cmd.arg("--output").arg(&output_file).assert().success();
+
+    let content = std::fs::read_to_string(&output_file).expect("Failed to read output");
+    assert!(content.contains("definitions"));
+    assert!(content.contains("process"));
+}
+
+#[test]
+fn test_compile_rejects_non_mdx_file() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let non_mdx = temp_dir.path().join("data.txt");
+    std::fs::write(&non_mdx, "not mdx content").expect("Failed to write");
+    detent!()
+        .arg("compile")
+        .arg(&non_mdx)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Not an .mdx file"));
+}
+
+#[test]
 fn test_compile_tolerates_dangling_flow_target() {
     use std::process::ExitCode;
 
@@ -116,7 +153,7 @@ fn test_compile_tolerates_dangling_flow_target() {
     }
 
     let status = detent::features::convert_bpmn_to_mdx::infrastructure::cli::compile::run(
-        Path::new(&input_dir).to_path_buf(),
+        vec![Path::new(&input_dir).to_path_buf()],
         Some(output_file.clone()),
     );
     assert_eq!(status, ExitCode::SUCCESS);

@@ -15,6 +15,6 @@ pub use retry_config::RetryConfig;
 
 // Re-export BPMN types for frontmatter use
 pub use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
-    EndEvent, ExclusiveGateway, ParallelGateway, Process, ScriptTask, SequenceFlow, ServiceTask,
-    StartEvent, Task,
+    EndEvent, ExclusiveGateway, ManualTask, ParallelGateway, Process, ScriptTask, SequenceFlow,
+    ServiceTask, StartEvent, Task, UserTask,
 };

@@ -4,6 +4,11 @@ use std::path::Path;
 
 use super::{hello_world_asset_dir, hello_world_asset_path};
 
+fn tdd_asset_path() -> std::path::PathBuf {
+    std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/features/convert_bpmn_to_mdx/tests/assets/tdd/tdd.bpmn2")
+}
+
 const EXPECTED_MDX_FILES: &[&str] = &[
     "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx",
     "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx",
@@ -75,6 +80,36 @@ fn test_import_frontmatter_matches_reference() {
         let ref_yaml: serde_yaml::Value = serde_yaml::from_str(&ref_fm).expect("Invalid YAML");
         assert_eq!(gen_yaml, ref_yaml, "Frontmatter mismatch for {}", file_name);
     }
+}
+
+#[test]
+fn test_imported_tdd_fixture_compiles() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let output_dir = temp_dir.path();
+    let output_file = temp_dir.path().join("roundtrip.bpmn");
+
+    detent!()
+        .arg("import")
+        .arg(tdd_asset_path())
+        .arg("--output-directory")
+        .arg(output_dir)
+        .assert()
+        .success();
+
+    detent!()
+        .arg("compile")
+        .arg(output_dir)
+        .arg("--output")
+        .arg(&output_file)
+        .assert()
+        .success();
+
+    let content = fs::read_to_string(&output_file).expect("Failed to read round-trip output");
+    assert!(content.contains("Task_WriteFeatureFile"));
+    assert!(content.contains("Task_WriteFailingTest"));
+    assert!(content.contains("Task_WriteCode"));
+    assert!(content.contains("Task_RunLocalTests"));
+    assert!(content.contains("Task_RefactorCode"));
 }
 
 #[test]

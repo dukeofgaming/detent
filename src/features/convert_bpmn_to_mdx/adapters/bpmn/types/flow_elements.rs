@@ -3,8 +3,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    EndEvent, ExclusiveGateway, FlowNode, ParallelGateway, ScriptTask, SequenceFlow, ServiceTask,
-    StartEvent, Task,
+    EndEvent, ExclusiveGateway, FlowNode, ManualTask, ParallelGateway, ScriptTask, SequenceFlow,
+    ServiceTask, StartEvent, Task, UserTask,
 };
 
 /// Container for all flow element types
@@ -18,6 +18,12 @@ pub struct FlowElements {
 
     #[serde(rename = "task", default)]
     pub tasks: Vec<Task>,
+
+    #[serde(rename = "manualTask", default)]
+    pub manual_tasks: Vec<ManualTask>,
+
+    #[serde(rename = "userTask", default)]
+    pub user_tasks: Vec<UserTask>,
 
     #[serde(rename = "serviceTask", default)]
     pub service_tasks: Vec<ServiceTask>,
@@ -44,6 +50,8 @@ impl FlowElements {
             .map(FlowNode::StartEvent)
             .chain(self.end_events.iter().cloned().map(FlowNode::EndEvent))
             .chain(self.tasks.iter().cloned().map(FlowNode::Task))
+            .chain(self.manual_tasks.iter().cloned().map(FlowNode::ManualTask))
+            .chain(self.user_tasks.iter().cloned().map(FlowNode::UserTask))
             .chain(
                 self.service_tasks
                     .iter()

@@ -24,26 +24,8 @@ pub fn serialize_bpmn(definitions: &Definitions) -> Result<String, quick_xml::Se
 
 fn strip_unsupported(xml: &str) -> String {
     static RE: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"(?s)<(?:bpmn:)?(userTask|manualTask|laneSet|lane|collaboration|participant)\b[^>]*>.*?</(?:bpmn:)?(?:userTask|manualTask|laneSet|lane|collaboration|participant)\s*>").unwrap()
+        Regex::new(r"(?s)<(?:bpmn:)?(laneSet|lane|collaboration|participant)\b[^>]*>.*?</(?:bpmn:)?(?:laneSet|lane|collaboration|participant)\s*>").unwrap()
     });
     RE.replace_all(xml, "").to_string()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn strip_removes_user_task() {
-        let xml = r#"<bpmn:process id="p">
-    <bpmn:serviceTask id="st1"/>
-    <bpmn:userTask id="ut1"><bpmn:incoming>f1</bpmn:incoming></bpmn:userTask>
-    <bpmn:serviceTask id="st2"/>
-</bpmn:process>"#;
-
-        let stripped = strip_unsupported(xml);
-        assert!(!stripped.contains("userTask"), "userTask should be removed: {}", stripped);
-        assert!(stripped.contains("st1"), "serviceTask st1 should remain");
-        assert!(stripped.contains("st2"), "serviceTask st2 should remain");
-    }
-}

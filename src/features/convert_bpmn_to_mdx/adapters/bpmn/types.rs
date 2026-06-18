@@ -23,7 +23,7 @@ pub use flow_node::FlowNode;
 pub use gateways::{ExclusiveGateway, ParallelGateway};
 pub use process::Process;
 pub use sequence_flow::SequenceFlow;
-pub use tasks::{ScriptTask, ServiceTask, Task};
+pub use tasks::{ManualTask, ScriptTask, ServiceTask, Task, UserTask};
 
 pub trait Validate {
     fn validate(&self) -> Result<(), String>;

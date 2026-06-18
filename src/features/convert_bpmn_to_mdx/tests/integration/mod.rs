@@ -19,6 +19,7 @@ macro_rules! detent {
     }};
 }
 
+mod bpmn_parsing;
 mod bpmn_types;
 #[cfg(feature = "xsd-validation")]
 mod bpmn_xsd_validation;

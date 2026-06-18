@@ -4,8 +4,8 @@ use serde::de;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Documentation, EndEvent, ExclusiveGateway, FlowElements, ParallelGateway, ScriptTask,
-    SequenceFlow, ServiceTask, StartEvent, Task,
+    Documentation, EndEvent, ExclusiveGateway, FlowElements, ManualTask, ParallelGateway,
+    ScriptTask, SequenceFlow, ServiceTask, StartEvent, Task, UserTask,
 };
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Validate;
 
@@ -15,6 +15,8 @@ enum ProcessElement {
     StartEvent(StartEvent),
     EndEvent(EndEvent),
     Task(Task),
+    ManualTask(ManualTask),
+    UserTask(UserTask),
     ServiceTask(ServiceTask),
     ScriptTask(ScriptTask),
     ExclusiveGateway(ExclusiveGateway),
@@ -61,6 +63,12 @@ pub struct Process {
 
     #[serde(rename = "task", default)]
     pub tasks: Vec<Task>,
+
+    #[serde(rename = "manualTask", default)]
+    pub manual_tasks: Vec<ManualTask>,
+
+    #[serde(rename = "userTask", default)]
+    pub user_tasks: Vec<UserTask>,
 
     #[serde(rename = "serviceTask", default)]
     pub service_tasks: Vec<ServiceTask>,
@@ -116,6 +124,8 @@ impl<'de> Deserialize<'de> for Process {
                 ProcessElement::StartEvent(e) => process.start_events.push(e),
                 ProcessElement::EndEvent(e) => process.end_events.push(e),
                 ProcessElement::Task(t) => process.tasks.push(t),
+                ProcessElement::ManualTask(t) => process.manual_tasks.push(t),
+                ProcessElement::UserTask(t) => process.user_tasks.push(t),
                 ProcessElement::ServiceTask(t) => process.service_tasks.push(t),
                 ProcessElement::ScriptTask(t) => process.script_tasks.push(t),
                 ProcessElement::ExclusiveGateway(g) => process.exclusive_gateways.push(g),
@@ -135,6 +145,8 @@ impl Process {
             start_events: self.start_events.clone(),
             end_events: self.end_events.clone(),
             tasks: self.tasks.clone(),
+            manual_tasks: self.manual_tasks.clone(),
+            user_tasks: self.user_tasks.clone(),
             service_tasks: self.service_tasks.clone(),
             script_tasks: self.script_tasks.clone(),
             exclusive_gateways: self.exclusive_gateways.clone(),

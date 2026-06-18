@@ -100,5 +100,5 @@ Feature: Convert BPMN to MDX
     Examples:
       | fixture      | count |
       | hello-world  | 5     |
-      | blog-post    | 22    |
-      | tdd          | 19    |
+      | blog-post    | 24    |
+      | tdd          | 24    |

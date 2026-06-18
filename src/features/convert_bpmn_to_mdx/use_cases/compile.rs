@@ -88,6 +88,8 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
         tasks: vec![],
         service_tasks: vec![],
         script_tasks: vec![],
+        manual_tasks: vec![],
+        user_tasks: vec![],
         exclusive_gateways: vec![],
         parallel_gateways: vec![],
         sequence_flows: vec![],
@@ -132,6 +134,24 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         message: e.to_string(),
                     })?;
                 process.tasks.push(task);
+            }
+            "bpmn:manualTask" => {
+                let task = mdx
+                    .parse_manual_task()
+                    .map_err(|e| CompileError::DeserializationError {
+                        filename: input.filename.clone(),
+                        message: e.to_string(),
+                    })?;
+                process.manual_tasks.push(task);
+            }
+            "bpmn:userTask" => {
+                let task = mdx
+                    .parse_user_task()
+                    .map_err(|e| CompileError::DeserializationError {
+                        filename: input.filename.clone(),
+                        message: e.to_string(),
+                    })?;
+                process.user_tasks.push(task);
             }
             "bpmn:serviceTask" => {
                 let task =

@@ -21,6 +21,18 @@ pub fn to_workflow(p: &Process) -> Workflow {
             node_type: NodeType::Action,
         });
     }
+    for t in &p.manual_tasks {
+        nodes.push(Node {
+            id: t.id.clone(),
+            node_type: NodeType::Action,
+        });
+    }
+    for t in &p.user_tasks {
+        nodes.push(Node {
+            id: t.id.clone(),
+            node_type: NodeType::Action,
+        });
+    }
     for t in &p.service_tasks {
         nodes.push(Node {
             id: t.id.clone(),

@@ -3,8 +3,8 @@
 use serde::de::DeserializeOwned;
 
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
-    EndEvent, ExclusiveGateway, ParallelGateway, Process, ScriptTask, SequenceFlow, ServiceTask,
-    StartEvent, Task,
+    EndEvent, ExclusiveGateway, ManualTask, ParallelGateway, Process, ScriptTask, SequenceFlow,
+    ServiceTask, StartEvent, Task, UserTask,
 };
 
 /// Complete MDX file structure
@@ -47,9 +47,13 @@ impl MdxFile {
     /// Generic method to parse frontmatter as any deserializable BPMN type
     ///
     /// # Example
-    /// ```ignore
-    /// let start_event: StartEvent = mdx.parse_as()?;
-    /// let task: Task = mdx.parse_as()?;
+    /// ```text
+    /// use detent::features::convert_bpmn_to_mdx::adapters::mdx::{MdxFile, StartEvent};
+    ///
+    /// let mdx = MdxFile::parse("---\nid: start_1\noutgoing:\n- flow_1\n---\n").unwrap();
+    /// let start_event: StartEvent = mdx.parse_as().unwrap();
+    ///
+    /// assert_eq!(start_event.id, "start_1");
     /// ```
     pub fn parse_as<T: DeserializeOwned>(&self) -> Result<T, serde_yaml::Error> {
         serde_yaml::from_str(&self.frontmatter)
@@ -69,6 +73,16 @@ impl MdxFile {
 
     /// Parse the frontmatter as a Task
     pub fn parse_task(&self) -> Result<Task, serde_yaml::Error> {
+        self.parse_as()
+    }
+
+    /// Parse the frontmatter as a ManualTask
+    pub fn parse_manual_task(&self) -> Result<ManualTask, serde_yaml::Error> {
+        self.parse_as()
+    }
+
+    /// Parse the frontmatter as a UserTask
+    pub fn parse_user_task(&self) -> Result<UserTask, serde_yaml::Error> {
         self.parse_as()
     }
 

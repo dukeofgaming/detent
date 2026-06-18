@@ -64,18 +64,18 @@ enum Commands {
     },
     /// Compile MDX files into BPMN XML
     #[command(
-        long_about = "Compile a directory of MDX files into a BPMN XML document.\n\
+        long_about = "Compile one or more .mdx files into a BPMN XML document.\n\
         \n\
-        Reads all .mdx files from the given directory, parses their YAML\n\
-        frontmatter by type field (e.g. bpmn:startEvent, bpmn:task,\n\
+        Pass .mdx files directly, or pass a directory to scan for MDX files.\n\
+        Parses YAML frontmatter by type field (e.g. bpmn:startEvent, bpmn:task,\n\
         bpmn:sequenceFlow), and assembles a BPMN 2.0 Definitions document.\n\
         \n\
         Emits BPMN XML after structural frontmatter parsing and assembly."
     )]
     Compile {
-        /// Directory containing .mdx files to compile
+        /// One or more .mdx files or a directory containing .mdx files
         #[arg(required = true)]
-        directory: PathBuf,
+        files: Vec<PathBuf>,
 
         /// Output BPMN XML file (default: prints to stdout)
         #[arg(short, long)]
@@ -94,7 +94,7 @@ fn main() -> ExitCode {
                 bpmn_file,
                 output_directory,
             } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
-            Commands::Compile { directory, output } => graph_validation::infrastructure::cli::compile::run(directory, output),
+            Commands::Compile { files, output } => graph_validation::infrastructure::cli::compile::run(files, output),
         };
     }
 
@@ -105,6 +105,6 @@ fn main() -> ExitCode {
             bpmn_file,
             output_directory,
         } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
-        Commands::Compile { directory, output } => convert_bpmn_to_mdx::infrastructure::cli::compile::run(directory, output),
+        Commands::Compile { files, output } => convert_bpmn_to_mdx::infrastructure::cli::compile::run(files, output),
     }
 }

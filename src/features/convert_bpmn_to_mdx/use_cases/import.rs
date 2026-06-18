@@ -55,6 +55,14 @@ pub fn import_to_mdx(definitions: &Definitions) -> Result<Vec<MdxOutput>, Import
         outputs.push(to_mdx_output(&task.id, "bpmn:task", task)?);
     }
 
+    for task in &process.manual_tasks {
+        outputs.push(to_mdx_output(&task.id, "bpmn:manualTask", task)?);
+    }
+
+    for task in &process.user_tasks {
+        outputs.push(to_mdx_output(&task.id, "bpmn:userTask", task)?);
+    }
+
     for task in &process.service_tasks {
         outputs.push(to_mdx_output(&task.id, "bpmn:serviceTask", task)?);
     }

@@ -6,50 +6,86 @@ use crate::features::convert_bpmn_to_mdx::adapters::bpmn::serialize_bpmn;
 use crate::features::convert_bpmn_to_mdx::use_cases::compile::{compile_to_definitions, MdxInput};
 use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
 
-pub fn run(directory: PathBuf, output: Option<PathBuf>) -> ExitCode {
-    let entries = match fs::read_dir(&directory) {
-        Ok(entries) => entries,
-        Err(e) => {
-            eprintln!("Failed to read directory {}: {}", directory.display(), e);
-            return ExitCode::FAILURE;
-        }
-    };
-
+pub fn run(files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
     let mut inputs: Vec<MdxInput> = Vec::new();
 
-    for entry in entries {
-        let entry = match entry {
-            Ok(e) => e,
-            Err(e) => {
-                eprintln!("Failed to read directory entry: {}", e);
+    for path in &files {
+        if !path.exists() {
+            if path.extension().and_then(|e| e.to_str()) == Some("mdx")
+                || path.extension().is_none()
+            {
+                eprintln!("Failed to read {}: no such file or directory", path.display());
                 return ExitCode::FAILURE;
             }
-        };
-
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) != Some("mdx") {
-            continue;
+            eprintln!("Not an .mdx file: {}", path.display());
+            return ExitCode::FAILURE;
         }
 
-        let filename = path
-            .file_name()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string();
+        if path.is_dir() {
+            let entries = match fs::read_dir(path) {
+                Ok(entries) => entries,
+                Err(e) => {
+                    eprintln!("Failed to read directory {}: {}", path.display(), e);
+                    return ExitCode::FAILURE;
+                }
+            };
 
-        let content = match fs::read_to_string(&path) {
-            Ok(c) => c,
-            Err(e) => {
-                eprintln!("Failed to read {}: {}", path.display(), e);
+            for entry in entries {
+                let entry = match entry {
+                    Ok(e) => e,
+                    Err(e) => {
+                        eprintln!("Failed to read directory entry: {}", e);
+                        return ExitCode::FAILURE;
+                    }
+                };
+
+                let entry_path = entry.path();
+                if entry_path.extension().and_then(|e| e.to_str()) != Some("mdx") {
+                    continue;
+                }
+
+                let filename = entry_path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string();
+
+                let content = match fs::read_to_string(&entry_path) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        eprintln!("Failed to read {}: {}", entry_path.display(), e);
+                        return ExitCode::FAILURE;
+                    }
+                };
+
+                inputs.push(MdxInput { filename, content });
+            }
+        } else {
+            if path.extension().and_then(|e| e.to_str()) != Some("mdx") {
+                eprintln!("Not an .mdx file: {}", path.display());
                 return ExitCode::FAILURE;
             }
-        };
 
-        inputs.push(MdxInput { filename, content });
+            let filename = path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string();
+
+            let content = match fs::read_to_string(path) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("Failed to read {}: {}", path.display(), e);
+                    return ExitCode::FAILURE;
+                }
+            };
+
+            inputs.push(MdxInput { filename, content });
+        }
     }
 
     if inputs.is_empty() {
-        eprintln!("No .mdx files found in {}", directory.display());
+        eprintln!("No .mdx files found");
         return ExitCode::FAILURE;
     }
 
