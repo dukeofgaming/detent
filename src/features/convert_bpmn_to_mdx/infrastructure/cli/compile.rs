@@ -5,7 +5,10 @@ use std::process::ExitCode;
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::serialize_bpmn;
 use crate::features::convert_bpmn_to_mdx::use_cases::compile::{compile_to_definitions, MdxInput};
 
-pub fn run(files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
+pub fn run(mut files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
+    if files.is_empty() {
+        files.push(PathBuf::from("."));
+    }
     let mut inputs: Vec<MdxInput> = Vec::new();
 
     for path in &files {
@@ -104,17 +107,33 @@ pub fn run(files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
         }
     };
 
-    match output {
-        Some(path) => {
-            if let Err(e) = fs::write(&path, &xml) {
-                eprintln!("Failed to write {}: {}", path.display(), e);
-                return ExitCode::FAILURE;
-            }
-            println!("Compiled BPMN written to {}", path.display());
+    let output_path = output.unwrap_or_else(|| {
+        let first = &files[0];
+        if first.is_dir() {
+            let dir_name = if                 first.display().to_string() == "." {
+                std::env::current_dir()
+                    .ok()
+                    .and_then(|p| p.file_name().map(|n| n.to_os_string()))
+                    .unwrap_or_else(|| std::ffi::OsString::from("process"))
+            } else {
+                first
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_os_string()
+            };
+            PathBuf::from(dir_name).with_extension("bpmn")
+        } else {
+            PathBuf::new()
         }
-        None => {
-            print!("{}", xml);
-        }
+    });
+
+    if output_path.as_os_str().is_empty() {
+        print!("{}", xml);
+    } else if let Err(e) = fs::write(&output_path, &xml) {
+        eprintln!("Failed to write {}: {}", output_path.display(), e);
+        return ExitCode::FAILURE;
+    } else {
+        println!("Compiled BPMN written to {}", output_path.display());
     }
 
     ExitCode::SUCCESS

@@ -73,8 +73,8 @@ enum Commands {
         Emits BPMN XML after structural frontmatter parsing and assembly."
     )]
     Compile {
-        /// One or more .mdx files or a directory containing .mdx files
-        #[arg(required = true)]
+        /// One or more .mdx files or a directory containing .mdx files (default: current directory)
+        #[arg(default_values = ["."])]
         files: Vec<PathBuf>,
 
         /// Output BPMN XML file (default: prints to stdout)

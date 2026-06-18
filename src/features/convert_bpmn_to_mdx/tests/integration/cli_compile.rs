@@ -14,9 +14,71 @@ fn test_compile_help() {
         .stdout(predicate::str::contains("MDX files"));
 }
 
+fn make_minimal_workflow(dir: &std::path::Path) {
+    std::fs::create_dir_all(dir).expect("Failed to create dir");
+    std::fs::write(dir.join("start_1.mdx"), "---\ntype: bpmn:startEvent\nid: start_1\noutgoing:\n- flow_1\n---\n").expect("Failed to write");
+    std::fs::write(dir.join("end_1.mdx"), "---\ntype: bpmn:endEvent\nid: end_1\nincoming:\n- flow_1\n---\n").expect("Failed to write");
+    std::fs::write(dir.join("flow_1.mdx"), "---\ntype: bpmn:sequenceFlow\nid: flow_1\nsourceRef: start_1\ntargetRef: end_1\n---\n").expect("Failed to write");
+}
+
+#[test]
+fn test_compile_defaults_to_current_directory() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    make_minimal_workflow(temp_dir.path());
+
+    detent!()
+        .current_dir(temp_dir.path())
+        .arg("compile")
+        .assert()
+        .success();
+}
+
+#[test]
+fn test_compile_writes_output_named_after_directory() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let mdx_dir = temp_dir.path().join("my_workflow");
+    make_minimal_workflow(&mdx_dir);
+
+    let expected_output = temp_dir.path().join("my_workflow.bpmn");
+
+    detent!()
+        .current_dir(temp_dir.path())
+        .arg("compile")
+        .arg("my_workflow")
+        .assert()
+        .success();
+
+    assert!(expected_output.exists(), "Expected {} to exist", expected_output.display());
+    let content = fs::read_to_string(&expected_output).expect("Failed to read output");
+    assert!(content.contains("definitions"));
+    assert!(content.contains("start_1"));
+}
+
+#[test]
+fn test_compile_output_flag_overrides_derived_name() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let mdx_dir = temp_dir.path().join("my_workflow");
+    make_minimal_workflow(&mdx_dir);
+
+    let custom_output = temp_dir.path().join("custom.bpmn");
+    let default_output = temp_dir.path().join("my_workflow.bpmn");
+
+    detent!()
+        .current_dir(temp_dir.path())
+        .arg("compile")
+        .arg("my_workflow")
+        .arg("--output")
+        .arg(&custom_output)
+        .assert()
+        .success();
+
+    assert!(custom_output.exists());
+    assert!(!default_output.exists(), "Should not create default-named file when --output is given");
+}
+
 #[test]
 fn test_compile_requires_path() {
-    detent!().arg("compile").assert().failure();
+    detent!().arg("compile").arg("nonexistent-dir").assert().failure();
 }
 
 #[test]
@@ -65,13 +127,23 @@ fn test_compile_output_contains_all_elements() {
 
 #[test]
 fn test_compile_writes_to_stdout_by_default() {
-    detent!()
-        .arg("compile")
-        .arg(hello_world_asset_dir())
-        .assert()
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    make_minimal_workflow(temp_dir.path());
+    let mdx_files: Vec<_> = std::fs::read_dir(temp_dir.path())
+        .expect("Failed to read dir")
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("mdx"))
+        .collect();
+
+    let mut cmd = detent!();
+    cmd.arg("compile");
+    for f in &mdx_files {
+        cmd.arg(f.path());
+    }
+    cmd.assert()
         .success()
         .stdout(predicate::str::contains("definitions"))
-        .stdout(predicate::str::contains("process"));
+        .stdout(predicate::str::contains("start_1"));
 }
 
 #[test]
