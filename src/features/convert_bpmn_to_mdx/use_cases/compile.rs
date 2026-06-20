@@ -3,10 +3,41 @@
 //! Converts a collection of MDX file contents into a BPMN Definitions (the IR).
 //! This is pure logic with no filesystem interaction and no graph-semantic checks.
 
+use serde::Deserialize;
+
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
-    BPMNDiagram, BPMNEdge, BPMNPlane, BPMNShape, Definitions, Process,
+    BPMNDiagram, BPMNEdge, BPMNLabel, BPMNPlane, BPMNShape, Bounds, Definitions, Process, Waypoint,
 };
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
+
+#[derive(Debug, Deserialize)]
+struct DiagramBlock {
+    #[serde(default)]
+    bounds: Option<BoundsData>,
+    #[serde(default)]
+    label: Option<LabelData>,
+    #[serde(default)]
+    waypoints: Option<Vec<WaypointData>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct BoundsData {
+    x: String,
+    y: String,
+    width: String,
+    height: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct LabelData {
+    bounds: BoundsData,
+}
+
+#[derive(Debug, Deserialize)]
+struct WaypointData {
+    x: String,
+    y: String,
+}
 
 /// A single MDX file input for compilation
 #[derive(Debug, Clone)]
@@ -74,6 +105,61 @@ fn extract_type(frontmatter: &str) -> Option<String> {
     None
 }
 
+fn parse_diagram(frontmatter: &str) -> Option<DiagramBlock> {
+    let value: serde_yaml::Value = serde_yaml::from_str(frontmatter).ok()?;
+    let diagram = value.get("diagram")?;
+    serde_yaml::from_value(diagram.clone()).ok()
+}
+
+fn to_shape(element_id: &str, d: &DiagramBlock) -> BPMNShape {
+    let bounds = d.bounds.as_ref().unwrap();
+    BPMNShape {
+        id: format!("{}_di", element_id),
+        bpmn_element: element_id.to_string(),
+        bounds: Bounds {
+            x: bounds.x.clone(),
+            y: bounds.y.clone(),
+            width: bounds.width.clone(),
+            height: bounds.height.clone(),
+        },
+        label: d.label.as_ref().map(|l| BPMNLabel {
+            bounds: Bounds {
+                x: l.bounds.x.clone(),
+                y: l.bounds.y.clone(),
+                width: l.bounds.width.clone(),
+                height: l.bounds.height.clone(),
+            },
+        }),
+    }
+}
+
+fn to_edge(element_id: &str, d: &DiagramBlock) -> BPMNEdge {
+    BPMNEdge {
+        id: format!("{}_di", element_id),
+        bpmn_element: element_id.to_string(),
+        waypoints: d
+            .waypoints
+            .as_ref()
+            .map(|wps| {
+                wps.iter()
+                    .map(|w| Waypoint {
+                        x: w.x.clone(),
+                        y: w.y.clone(),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        label: d.label.as_ref().map(|l| BPMNLabel {
+            bounds: Bounds {
+                x: l.bounds.x.clone(),
+                y: l.bounds.y.clone(),
+                width: l.bounds.width.clone(),
+                height: l.bounds.height.clone(),
+            },
+        }),
+    }
+}
+
 pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, CompileError> {
     if inputs.is_empty() {
         return Err(CompileError::EmptyInputs);
@@ -112,7 +198,7 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                 filename: input.filename.clone(),
             })?;
 
-        match bpmn_type.as_str() {
+        let element_id = match bpmn_type.as_str() {
             "bpmn:startEvent" => {
                 let event =
                     mdx.parse_start_event()
@@ -120,7 +206,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                             filename: input.filename.clone(),
                             message: e.to_string(),
                         })?;
+                let id = event.id.clone();
                 process.start_events.push(event);
+                id
             }
             "bpmn:endEvent" => {
                 let event =
@@ -129,7 +217,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                             filename: input.filename.clone(),
                             message: e.to_string(),
                         })?;
+                let id = event.id.clone();
                 process.end_events.push(event);
+                id
             }
             "bpmn:task" => {
                 let task = mdx
@@ -138,7 +228,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         filename: input.filename.clone(),
                         message: e.to_string(),
                     })?;
+                let id = task.id.clone();
                 process.tasks.push(task);
+                id
             }
             "bpmn:manualTask" => {
                 let task = mdx
@@ -147,7 +239,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         filename: input.filename.clone(),
                         message: e.to_string(),
                     })?;
+                let id = task.id.clone();
                 process.manual_tasks.push(task);
+                id
             }
             "bpmn:userTask" => {
                 let task = mdx
@@ -156,7 +250,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         filename: input.filename.clone(),
                         message: e.to_string(),
                     })?;
+                let id = task.id.clone();
                 process.user_tasks.push(task);
+                id
             }
             "bpmn:serviceTask" => {
                 let task =
@@ -165,7 +261,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                             filename: input.filename.clone(),
                             message: e.to_string(),
                         })?;
+                let id = task.id.clone();
                 process.service_tasks.push(task);
+                id
             }
             "bpmn:scriptTask" => {
                 let task =
@@ -174,7 +272,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                             filename: input.filename.clone(),
                             message: e.to_string(),
                         })?;
+                let id = task.id.clone();
                 process.script_tasks.push(task);
+                id
             }
             "bpmn:exclusiveGateway" => {
                 let gateway = mdx.parse_exclusive_gateway().map_err(|e| {
@@ -183,7 +283,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         message: e.to_string(),
                     }
                 })?;
+                let id = gateway.id.clone();
                 process.exclusive_gateways.push(gateway);
+                id
             }
             "bpmn:parallelGateway" => {
                 let gateway = mdx.parse_parallel_gateway().map_err(|e| {
@@ -192,7 +294,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         message: e.to_string(),
                     }
                 })?;
+                let id = gateway.id.clone();
                 process.parallel_gateways.push(gateway);
+                id
             }
             "bpmn:sequenceFlow" => {
                 let flow =
@@ -201,31 +305,23 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                             filename: input.filename.clone(),
                             message: e.to_string(),
                         })?;
+                let id = flow.id.clone();
                 process.sequence_flows.push(flow);
-            }
-            "bpmndi:BPMNShape" => {
-                let shape = mdx
-                    .parse_as::<BPMNShape>()
-                    .map_err(|e| CompileError::DeserializationError {
-                        filename: input.filename.clone(),
-                        message: e.to_string(),
-                    })?;
-                diagram_shapes.push(shape);
-            }
-            "bpmndi:BPMNEdge" => {
-                let edge = mdx
-                    .parse_as::<BPMNEdge>()
-                    .map_err(|e| CompileError::DeserializationError {
-                        filename: input.filename.clone(),
-                        message: e.to_string(),
-                    })?;
-                diagram_edges.push(edge);
+                id
             }
             _ => {
                 return Err(CompileError::UnknownType {
                     filename: input.filename.clone(),
                     bpmn_type,
                 });
+            }
+        };
+
+        if let Some(diagram) = parse_diagram(&mdx.frontmatter) {
+            if diagram.bounds.is_some() {
+                diagram_shapes.push(to_shape(&element_id, &diagram));
+            } else if diagram.waypoints.is_some() {
+                diagram_edges.push(to_edge(&element_id, &diagram));
             }
         }
     }

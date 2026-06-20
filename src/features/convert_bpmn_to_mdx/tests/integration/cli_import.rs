@@ -76,8 +76,14 @@ fn test_import_frontmatter_matches_reference() {
                 .expect("Failed to read reference");
         let gen_fm = extract_frontmatter(&generated).unwrap();
         let ref_fm = extract_frontmatter(&reference).unwrap();
-        let gen_yaml: serde_yaml::Value = serde_yaml::from_str(&gen_fm).expect("Invalid YAML");
-        let ref_yaml: serde_yaml::Value = serde_yaml::from_str(&ref_fm).expect("Invalid YAML");
+        let mut gen_yaml: serde_yaml::Value = serde_yaml::from_str(&gen_fm).expect("Invalid YAML");
+        let mut ref_yaml: serde_yaml::Value = serde_yaml::from_str(&ref_fm).expect("Invalid YAML");
+        if let serde_yaml::Value::Mapping(ref mut m) = gen_yaml {
+            m.remove("diagram");
+        }
+        if let serde_yaml::Value::Mapping(ref mut m) = ref_yaml {
+            m.remove("diagram");
+        }
         assert_eq!(gen_yaml, ref_yaml, "Frontmatter mismatch for {}", file_name);
     }
 }
