@@ -46,6 +46,13 @@ pub struct Process {
     pub is_executable: Option<bool>,
 
     #[serde(
+        rename = "@isClosed",
+        alias = "isClosed",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub is_closed: Option<bool>,
+
+    #[serde(
         rename = "@processType",
         alias = "processType",
         skip_serializing_if = "Option::is_none"
@@ -100,6 +107,8 @@ impl<'de> Deserialize<'de> for Process {
             name: Option<String>,
             #[serde(rename = "@isExecutable", alias = "isExecutable")]
             is_executable: Option<bool>,
+            #[serde(rename = "@isClosed", alias = "isClosed")]
+            is_closed: Option<bool>,
             #[serde(rename = "@processType", alias = "processType")]
             process_type: Option<String>,
             #[serde(rename = "documentation")]
@@ -114,6 +123,7 @@ impl<'de> Deserialize<'de> for Process {
             id: helper.id,
             name: helper.name,
             is_executable: helper.is_executable,
+            is_closed: helper.is_closed,
             process_type: helper.process_type,
             documentation: helper.documentation,
             ..Default::default()
