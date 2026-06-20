@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::Process;
+use super::{BPMNDiagram, Process};
 
 /// Root element of a BPMN document
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -27,9 +27,9 @@ pub struct Definitions {
     #[serde(rename = "process", skip_serializing_if = "Option::is_none")]
     pub process: Option<Process>,
 
-    /// Diagram info is preserved as raw XML (skipped during parsing)
-    #[serde(skip)]
-    pub bpmn_diagram: Option<String>,
+    /// Diagram info
+    #[serde(rename = "BPMNDiagram", skip_serializing_if = "Option::is_none")]
+    pub bpmn_diagram: Option<BPMNDiagram>,
 }
 
 impl Definitions {

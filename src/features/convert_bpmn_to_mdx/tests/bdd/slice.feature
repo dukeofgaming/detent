@@ -3,10 +3,10 @@ Feature: Convert BPMN to MDX
   I want to round-trip between BPMN XML and MDX flow-element files
   So that I can author processes in MDX and emit valid BPMN
 
-  Scenario: Hello-world imports to 5 MDX
+  Scenario: Hello-world imports to 10 MDX
     Given the hello-world BPMN fixture
     When I import it to MDX
-    Then 5 MDX outputs are produced
+    Then 10 MDX outputs are produced
     And each output contains a frontmatter block
     And each output contains its BPMN type
 
@@ -99,6 +99,6 @@ Feature: Convert BPMN to MDX
 
     Examples:
       | fixture      | count |
-      | hello-world  | 5     |
-      | blog-post    | 24    |
-      | tdd          | 24    |
+      | hello-world  | 10    |
+      | blog-post    | 48    |
+      | tdd          | 48    |

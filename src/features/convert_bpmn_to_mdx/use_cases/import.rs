@@ -83,6 +83,15 @@ pub fn import_to_mdx(definitions: &Definitions) -> Result<Vec<MdxOutput>, Import
         outputs.push(to_mdx_output(&flow.id, "bpmn:sequenceFlow", flow)?);
     }
 
+    if let Some(diagram) = &definitions.bpmn_diagram {
+        for shape in &diagram.plane.shapes {
+            outputs.push(to_mdx_output(&shape.id, "bpmndi:BPMNShape", shape)?);
+        }
+        for edge in &diagram.plane.edges {
+            outputs.push(to_mdx_output(&edge.id, "bpmndi:BPMNEdge", edge)?);
+        }
+    }
+
     Ok(outputs)
 }
 

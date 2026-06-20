@@ -5,6 +5,7 @@
 
 mod condition_expression;
 mod definitions;
+mod diagram;
 mod documentation;
 mod events;
 mod flow_elements;
@@ -16,6 +17,7 @@ mod tasks;
 
 pub use condition_expression::ConditionExpression;
 pub use definitions::Definitions;
+pub use diagram::{BPMNDiagram, BPMNEdge, BPMNLabel, BPMNPlane, BPMNShape, Bounds, Waypoint};
 pub use documentation::Documentation;
 pub use events::{EndEvent, StartEvent};
 pub use flow_elements::FlowElements;

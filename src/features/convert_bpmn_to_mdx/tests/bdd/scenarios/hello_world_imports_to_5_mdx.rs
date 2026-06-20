@@ -40,7 +40,8 @@ fn then_all_have_bpmn_type(world: &mut ConvertWorld) {
     let outputs = world.import_outputs.as_ref().expect("expected import outputs");
     for output in outputs {
         assert!(
-            output.content.contains("type: bpmn:"),
+            output.content.contains("type: bpmn")
+                || output.content.contains("type: bpmndi"),
             "{} missing type field",
             output.filename
         );

@@ -3,7 +3,9 @@
 //! Converts a collection of MDX file contents into a BPMN Definitions (the IR).
 //! This is pure logic with no filesystem interaction and no graph-semantic checks.
 
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{Definitions, Process};
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
+    BPMNDiagram, BPMNEdge, BPMNPlane, BPMNShape, Definitions, Process,
+};
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
 
 /// A single MDX file input for compilation
@@ -95,6 +97,9 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
         sequence_flows: vec![],
         ..Default::default()
     };
+
+    let mut diagram_shapes: Vec<BPMNShape> = Vec::new();
+    let mut diagram_edges: Vec<BPMNEdge> = Vec::new();
 
     for input in inputs {
         let mdx = MdxFile::parse(&input.content).map_err(|e| CompileError::ParseError {
@@ -198,6 +203,24 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
                         })?;
                 process.sequence_flows.push(flow);
             }
+            "bpmndi:BPMNShape" => {
+                let shape = mdx
+                    .parse_as::<BPMNShape>()
+                    .map_err(|e| CompileError::DeserializationError {
+                        filename: input.filename.clone(),
+                        message: e.to_string(),
+                    })?;
+                diagram_shapes.push(shape);
+            }
+            "bpmndi:BPMNEdge" => {
+                let edge = mdx
+                    .parse_as::<BPMNEdge>()
+                    .map_err(|e| CompileError::DeserializationError {
+                        filename: input.filename.clone(),
+                        message: e.to_string(),
+                    })?;
+                diagram_edges.push(edge);
+            }
             _ => {
                 return Err(CompileError::UnknownType {
                     filename: input.filename.clone(),
@@ -207,6 +230,20 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
         }
     }
 
+    let bpmn_diagram = if diagram_shapes.is_empty() && diagram_edges.is_empty() {
+        None
+    } else {
+        Some(BPMNDiagram {
+            id: "BPMNDiagram_1".to_string(),
+            plane: BPMNPlane {
+                id: "BPMNPlane_1".to_string(),
+                bpmn_element: process.id.clone(),
+                shapes: diagram_shapes,
+                edges: diagram_edges,
+            },
+        })
+    };
+
     let definitions = Definitions {
         id: "definitions_1".to_string(),
         name: None,
@@ -214,7 +251,7 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
         exporter: Some("detent".to_string()),
         exporter_version: None,
         process: Some(process),
-        bpmn_diagram: None,
+        bpmn_diagram,
     };
 
     Ok(definitions)
