@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
-    BPMNEdge, BPMNShape, Bounds, Definitions, Waypoint,
+    BPMNEdge, BPMNShape, Definitions,
 };
 
 /// A single MDX file output from the import process
