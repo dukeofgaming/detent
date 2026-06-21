@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
     EndEvent, ExclusiveGateway, ManualTask, ParallelGateway, Process, ScriptTask, SequenceFlow,
-    ServiceTask, StartEvent, Task, UserTask,
+    ServiceTask, StartEvent, Task, UserTask, Validate,
 };
 
 /// Complete MDX file structure
@@ -37,11 +37,6 @@ impl MdxFile {
         let body = rest[end_pos + 4..].trim().to_string();
 
         Ok(Self { frontmatter, body })
-    }
-
-    /// Serialize to MDX string
-    pub fn to_mdx_string(&self) -> String {
-        format!("---\n{}\n---\n\n{}\n", self.frontmatter, self.body)
     }
 
     /// Generic method to parse frontmatter as any deserializable BPMN type
@@ -122,9 +117,62 @@ impl MdxFile {
         serde_yaml::from_value(value)
     }
 
-    /// Get raw frontmatter for generic parsing
-    pub fn frontmatter(&self) -> &str {
-        &self.frontmatter
+    /// Validate frontmatter by dispatching on the `type` field.
+    pub fn validate(&self) -> Result<(), String> {
+        let value: serde_yaml::Value = serde_yaml::from_str(&self.frontmatter)
+            .map_err(|e| format!("Invalid frontmatter YAML: {}", e))?;
+        let bpmn_type = value
+            .get("type")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| "Frontmatter must include a type field".to_string())?;
+
+        match bpmn_type {
+            "bpmn:process" => self
+                .parse_process()
+                .map_err(|e| format!("Invalid process frontmatter: {}", e))?
+                .validate(),
+            "bpmn:startEvent" => self
+                .parse_start_event()
+                .map_err(|e| format!("Invalid start event frontmatter: {}", e))?
+                .validate(),
+            "bpmn:endEvent" => self
+                .parse_end_event()
+                .map_err(|e| format!("Invalid end event frontmatter: {}", e))?
+                .validate(),
+            "bpmn:task" => self
+                .parse_task()
+                .map_err(|e| format!("Invalid task frontmatter: {}", e))?
+                .validate(),
+            "bpmn:manualTask" => self
+                .parse_manual_task()
+                .map_err(|e| format!("Invalid manual task frontmatter: {}", e))?
+                .validate(),
+            "bpmn:userTask" => self
+                .parse_user_task()
+                .map_err(|e| format!("Invalid user task frontmatter: {}", e))?
+                .validate(),
+            "bpmn:serviceTask" => self
+                .parse_service_task()
+                .map_err(|e| format!("Invalid service task frontmatter: {}", e))?
+                .validate(),
+            "bpmn:scriptTask" => self
+                .parse_script_task()
+                .map_err(|e| format!("Invalid script task frontmatter: {}", e))?
+                .validate(),
+            "bpmn:sequenceFlow" => self
+                .parse_sequence_flow()
+                .map_err(|e| format!("Invalid sequence flow frontmatter: {}", e))?
+                .validate(),
+            "bpmn:exclusiveGateway" => self
+                .parse_exclusive_gateway()
+                .map_err(|e| format!("Invalid exclusive gateway frontmatter: {}", e))?
+                .validate(),
+            "bpmn:parallelGateway" => self
+                .parse_parallel_gateway()
+                .map_err(|e| format!("Invalid parallel gateway frontmatter: {}", e))?
+                .validate(),
+            other => Err(format!("Unknown BPMN type: {other}")),
+        }
     }
 }
 

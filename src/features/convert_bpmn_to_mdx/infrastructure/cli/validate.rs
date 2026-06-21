@@ -4,7 +4,7 @@ use std::process::ExitCode;
 
 #[cfg(feature = "xsd-validation")]
 use crate::features::convert_bpmn_to_mdx::infrastructure::validate_bpmn_xsd;
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{parse_bpmn, Validate};
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
 
 pub fn run(files: Vec<PathBuf>) -> ExitCode {
@@ -53,22 +53,5 @@ fn validate_bpmn(path: &PathBuf) -> Result<(), String> {
 fn validate_mdx(path: &PathBuf) -> Result<(), String> {
     let content = fs::read_to_string(path).map_err(|e| format!("Failed to read file: {}", e))?;
     let mdx = MdxFile::parse(&content).map_err(|e| format!("Invalid MDX: {}", e))?;
-
-    if let Ok(process) = mdx.parse_process() {
-        return process.validate();
-    }
-    if let Ok(event) = mdx.parse_start_event() {
-        return event.validate();
-    }
-    if let Ok(event) = mdx.parse_end_event() {
-        return event.validate();
-    }
-    if let Ok(task) = mdx.parse_task() {
-        return task.validate();
-    }
-    if let Ok(flow) = mdx.parse_sequence_flow() {
-        return flow.validate();
-    }
-
-    Err("Could not parse frontmatter as a valid BPMN type".to_string())
+    mdx.validate()
 }

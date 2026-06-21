@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Documentation;
+use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{Documentation, Validate};
 
 /// BPMN Exclusive Gateway (XOR)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -40,4 +40,13 @@ pub struct ExclusiveGateway {
 
     #[serde(rename = "documentation", skip_serializing_if = "Option::is_none")]
     pub documentation: Option<Documentation>,
+}
+
+impl Validate for ExclusiveGateway {
+    fn validate(&self) -> Result<(), String> {
+        if self.id.is_empty() {
+            return Err("ExclusiveGateway must have an id".to_string());
+        }
+        Ok(())
+    }
 }

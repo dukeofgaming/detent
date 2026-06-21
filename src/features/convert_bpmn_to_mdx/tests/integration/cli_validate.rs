@@ -118,3 +118,128 @@ fn test_validate_tolerates_dangling_flow_target() {
         detent::features::convert_bpmn_to_mdx::infrastructure::cli::validate::run(vec![invalid_bpmn]);
     assert_eq!(status, ExitCode::SUCCESS);
 }
+
+fn write_temp_mdx(dir: &std::path::Path, name: &str, content: &str) -> std::path::PathBuf {
+    let path = dir.join(name);
+    fs::write(&path, content).expect("Failed to write temp MDX");
+    path
+}
+
+#[test]
+fn test_validate_mdx_exclusive_gateway() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "gateway_1.mdx",
+        "---\ntype: bpmn:exclusiveGateway\nid: gateway_1\ngatewayDirection: Diverging\nincoming:\n- flow_in\noutgoing:\n- flow_a\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("✓"));
+}
+
+#[test]
+fn test_validate_mdx_parallel_gateway() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "gateway_1.mdx",
+        "---\ntype: bpmn:parallelGateway\nid: gateway_1\ngatewayDirection: Diverging\nincoming:\n- flow_in\noutgoing:\n- flow_a\n- flow_b\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("✓"));
+}
+
+#[test]
+fn test_validate_mdx_service_task() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "svc_1.mdx",
+        "---\ntype: bpmn:serviceTask\nid: svc_1\nname: Call Service\nimplementation: Java\nincoming:\n- flow_in\noutgoing:\n- flow_out\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("✓"));
+}
+
+#[test]
+fn test_validate_mdx_script_task() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "script_1.mdx",
+        "---\ntype: bpmn:scriptTask\nid: script_1\nname: Run Script\nscriptFormat: javascript\nincoming:\n- flow_in\noutgoing:\n- flow_out\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("✓"));
+}
+
+#[test]
+fn test_validate_mdx_manual_task() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "manual_1.mdx",
+        "---\ntype: bpmn:manualTask\nid: manual_1\nname: Manual Step\nincoming:\n- flow_in\noutgoing:\n- flow_out\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("✓"));
+}
+
+#[test]
+fn test_validate_mdx_user_task() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "user_1.mdx",
+        "---\ntype: bpmn:userTask\nid: user_1\nname: Review\nincoming:\n- flow_in\noutgoing:\n- flow_out\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("✓"));
+}
+
+#[test]
+fn test_validate_mdx_rejects_gateway_without_id() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let path = write_temp_mdx(
+        temp_dir.path(),
+        "gateway_bad.mdx",
+        "---\ntype: bpmn:exclusiveGateway\nid: \"\"\ngatewayDirection: Diverging\n---\n",
+    );
+
+    detent!()
+        .arg("validate")
+        .arg(&path)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("ExclusiveGateway must have an id"));
+}
