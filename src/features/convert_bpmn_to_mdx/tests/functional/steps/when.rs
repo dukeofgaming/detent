@@ -16,11 +16,16 @@ fn when_compile(world: &mut ConvertWorld) {
     }
 }
 
-#[when("I attempt to import the parsed definitions to MDX")]
+#[when("I attempt to import the BPMN to MDX")]
 fn when_attempt_import(world: &mut ConvertWorld) {
-    let defs = world.parsed_defs.as_ref().expect("parsed_defs must be set");
-    match detent::features::convert_bpmn_to_mdx::use_cases::import::import_to_mdx(defs) {
-        Ok(outputs) => world.import_outputs = Some(outputs),
+    let xml = world.bpmn_xml.as_ref().expect("bpmn_xml must be set");
+    match detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn(xml) {
+        Ok(defs) => {
+            match detent::features::convert_bpmn_to_mdx::use_cases::import::import_to_mdx(&defs) {
+                Ok(outputs) => world.import_outputs = Some(outputs),
+                Err(_) => world.import_failed = true,
+            }
+        }
         Err(_) => world.import_failed = true,
     }
 }

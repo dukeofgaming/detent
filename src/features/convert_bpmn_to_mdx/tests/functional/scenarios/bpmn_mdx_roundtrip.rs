@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::fs;
 
 use cucumber::{given, then, when};
 use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
@@ -12,15 +13,33 @@ use detent::features::convert_bpmn_to_mdx::use_cases::import::{
 
 use super::ConvertWorld;
 
-fn frontmatter_by_filename(outputs: &[MdxOutput]) -> BTreeMap<String, serde_yaml::Value> {
+fn import_fixture(_world: &mut ConvertWorld, relative_path: &str) -> Vec<MdxOutput> {
+    let xml = fs::read_to_string(super::fixture_path(relative_path)).expect("fixture must be readable");
+    let definitions = parse_bpmn(&xml).expect("fixture BPMN must parse");
+    import_to_mdx(&definitions).expect("fixture BPMN must import to MDX")
+}
+
+fn frontmatter_by_filename(outputs: Vec<MdxOutput>) -> BTreeMap<String, serde_yaml::Value> {
     outputs
-        .iter()
+        .into_iter()
         .map(|output| {
             let mdx = MdxFile::parse(&output.content).expect("MDX output must parse");
             let frontmatter = serde_yaml::from_str(&mdx.frontmatter).expect("frontmatter YAML");
-            (output.filename.clone(), frontmatter)
+            (output.filename, frontmatter)
         })
         .collect()
+}
+
+fn compile_outputs(outputs: &[MdxOutput]) -> Vec<MdxOutput> {
+    let inputs: Vec<MdxInput> = outputs
+        .iter()
+        .map(|output| MdxInput {
+            filename: output.filename.clone(),
+            content: output.content.clone(),
+        })
+        .collect();
+    let definitions = compile_to_definitions(&inputs).expect("imported MDX must compile");
+    import_to_mdx(&definitions).expect("compiled definitions must import")
 }
 
 fn string_at<'a>(value: &'a serde_yaml::Value, keys: &[&str]) -> &'a str {
@@ -110,10 +129,15 @@ fn then_metadata(world: &mut ConvertWorld) {
     assert_eq!(diagram.plane.bpmn_element, "Process_DeveloperWorkflow");
 }
 
+#[given("the tdd BPMN fixture is imported to MDX")]
+fn given_tdd_import(world: &mut ConvertWorld) {
+    world.import_outputs = Some(import_fixture(world, "tdd/tdd.bpmn2"));
+}
+
 #[then("tdd import outputs include rich process metadata")]
 fn then_tdd_metadata(world: &mut ConvertWorld) {
     let outputs = frontmatter_by_filename(
-        world.import_outputs.as_ref().expect("import outputs"),
+        world.import_outputs.clone().expect("import outputs"),
     );
     let process = outputs
         .get("Process_DeveloperWorkflow.mdx")
@@ -168,26 +192,21 @@ fn then_tdd_metadata(world: &mut ConvertWorld) {
     assert!(yes_flow.get("@xsi:type").is_none());
 }
 
-#[when("I import the fixture and compile-roundtrip its frontmatter")]
+#[given(regex = r#"^the "(.+)" fixture$"#)]
+fn given_roundtrip_fixture(world: &mut ConvertWorld, path: String) {
+    world.bpmn_xml = Some(path);
+}
+
+#[when("I import and compile-roundtrip the fixture")]
 fn when_roundtrip(world: &mut ConvertWorld) {
-    let xml = world.bpmn_xml.as_ref().expect("bpmn_xml must be set");
-    let definitions = parse_bpmn(xml).expect("fixture BPMN must parse");
-
-    let first_outputs = import_to_mdx(&definitions).expect("fixture BPMN must import to MDX");
-    let first_fm = frontmatter_by_filename(&first_outputs);
-
-    let inputs: Vec<MdxInput> = first_outputs
-        .iter()
-        .map(|o| MdxInput {
-            filename: o.filename.clone(),
-            content: o.content.clone(),
-        })
-        .collect();
-    let compiled = compile_to_definitions(&inputs).expect("imported MDX must compile back");
-    let second_outputs = import_to_mdx(&compiled).expect("compiled definitions must import");
-    let second_fm = frontmatter_by_filename(&second_outputs);
-
-    world.e2e_file_content = Some(format!("{:?}|{:?}", first_fm, second_fm));
+    let relative = world.bpmn_xml.as_ref().expect("fixture path").clone();
+    let imported = import_fixture(world, &relative);
+    let roundtripped = compile_outputs(&imported);
+    world.e2e_file_content = Some(format!(
+        "{:?}|{:?}",
+        frontmatter_by_filename(imported),
+        frontmatter_by_filename(roundtripped)
+    ));
 }
 
 #[then("imported frontmatter matches after compile roundtrip")]
