@@ -72,3 +72,4 @@ docs/adrs/<N> - <short-name>/
 | **ADR-7** | Screaming Architecture | accepted |
 | **ADR-8** | BDD Test Layout | accepted |
 | **ADR-9** | Vertical Slices | accepted |
+| **ADR-10** | AAA Step Organization | accepted |
