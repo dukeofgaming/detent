@@ -8,7 +8,6 @@ mod definitions;
 mod diagram;
 mod documentation;
 mod events;
-mod flow_elements;
 mod flow_node;
 mod gateways;
 mod process;
@@ -20,7 +19,6 @@ pub use definitions::Definitions;
 pub use diagram::{BPMNDiagram, BPMNEdge, BPMNLabel, BPMNPlane, BPMNShape, Bounds, Waypoint};
 pub use documentation::Documentation;
 pub use events::{EndEvent, StartEvent};
-pub use flow_elements::FlowElements;
 pub use flow_node::FlowNode;
 pub use gateways::{ExclusiveGateway, ParallelGateway};
 pub use process::Process;
@@ -30,8 +28,3 @@ pub use tasks::{ManualTask, ScriptTask, ServiceTask, Task, UserTask};
 pub trait Validate {
     fn validate(&self) -> Result<(), String>;
 }
-
-/// BPMN 2.0 namespace
-pub const BPMN_NS: &str = "http://www.omg.org/spec/BPMN/20100524/MODEL";
-/// BPMN DI namespace
-pub const BPMNDI_NS: &str = "http://www.omg.org/spec/BPMN/20100524/DI";

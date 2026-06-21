@@ -4,8 +4,8 @@ use serde::de;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Documentation, EndEvent, ExclusiveGateway, FlowElements, ManualTask, ParallelGateway,
-    ScriptTask, SequenceFlow, ServiceTask, StartEvent, Task, UserTask,
+    Documentation, EndEvent, ExclusiveGateway, ManualTask, ParallelGateway, ScriptTask,
+    SequenceFlow, ServiceTask, StartEvent, Task, UserTask,
 };
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Validate;
 
@@ -149,22 +149,6 @@ impl<'de> Deserialize<'de> for Process {
 }
 
 impl Process {
-    /// Get all flow elements as a FlowElements struct (for convenience)
-    pub fn flow_elements(&self) -> FlowElements {
-        FlowElements {
-            start_events: self.start_events.clone(),
-            end_events: self.end_events.clone(),
-            tasks: self.tasks.clone(),
-            manual_tasks: self.manual_tasks.clone(),
-            user_tasks: self.user_tasks.clone(),
-            service_tasks: self.service_tasks.clone(),
-            script_tasks: self.script_tasks.clone(),
-            exclusive_gateways: self.exclusive_gateways.clone(),
-            parallel_gateways: self.parallel_gateways.clone(),
-            sequence_flows: self.sequence_flows.clone(),
-        }
-    }
-
     pub fn validate_for_bpmn(&self) -> Result<(), String> {
         if self.id.is_empty() {
             return Err("Process must have an id".to_string());
