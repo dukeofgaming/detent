@@ -23,6 +23,7 @@ The current ADR set already points in this direction:
 - [[ADR-3]] rejects BPMN XSD code generation as the core type strategy and keeps handcrafted types for the supported subset
 - [[ADR-7]] applies screaming architecture and one type per file across the project (evolved from type-only refactor, see ADR-7 Context)
 - [[ADR-4]] prefers modern Rust module layout
+- [[ADR-9]] organizes capabilities as vertical slices under `src/features/`
 
 We now need an explicit architectural boundary so that:
 
@@ -349,3 +350,7 @@ pub struct EngineServicesBuilder {
 2. Requires discipline to prevent domain from importing adapter/infrastructure crates
 3. Initial refactoring from BPMN-first codebase to layered architecture is non-trivial
 4. Schema validation does not replace: domain graph invariants, deterministic execution rules, import/export rules for MDX round-trip behavior, engine state transition rules, or cross-node semantic constraints defined by the spec
+
+## Related
+
+- [[ADR-9]] — vertical slices; layers apply inside each slice

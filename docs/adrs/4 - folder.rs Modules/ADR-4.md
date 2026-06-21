@@ -94,3 +94,7 @@ Risk is low: pure file renames with no code changes required. All imports and pu
 
 1. Git history shows file moves (use `git log --follow` to trace)
 2. Contributors familiar only with legacy style may need brief onboarding
+
+## Related
+
+- [[ADR-9]] — feature-root `mod.rs` exception keeps each vertical slice self-contained

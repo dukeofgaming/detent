@@ -103,3 +103,4 @@ maintenance. BDD and unit roots discovered the same way as integration.
 
 - [[ADR-7]] — screaming names for test directories
 - [[ADR-8]] — BDD file layout inside `bdd/`
+- [[ADR-9]] — slice as the unit that owns tests and fixtures

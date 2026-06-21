@@ -71,3 +71,4 @@ docs/adrs/<N> - <short-name>/
 | **ADR-6** | Slice Test Harness | accepted |
 | **ADR-7** | Screaming Architecture | accepted |
 | **ADR-8** | BDD Test Layout | accepted |
+| **ADR-9** | Vertical Slices | accepted |

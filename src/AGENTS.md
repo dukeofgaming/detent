@@ -12,11 +12,12 @@ Before any edit, verify against ALL active ADRs. Proposed ADRs are informational
 | **ADR-6** | accepted | Slice tests stay under `src/features/<feature>/tests/` and are discovered through stable root `tests/` harness files |
 | **ADR-7** | accepted | Every file/directory name screams its single concern; avoid generic names like `utils/`, `common/`, `steps.rs` |
 | **ADR-8** | accepted | BDD test layout: `world.rs`, `slice.feature`, `scenarios/`, `steps/{given,when,then,and}.rs` |
+| **ADR-9** | accepted | Vertical slices under `src/features/<feature>/`; no cross-slice adapter imports; slice owns tests and fixtures |
 
 ## Architecture
 
 - `src/` contains only the CLI entry point (`main.rs`), crate root (`lib.rs`), `features/`, and runtime assets under `src/assets/` (BPMN XSD schemas for optional `xsd-validation`; not codegen source of truth per ADR-3).
-- Feature-layer code lives under `src/features/<feature>/` using up to four layer folders/files: domain, use_cases, adapters, infrastructure. Compatibility shims under `src/` must not become the primary implementation home.
+- Feature-layer code lives under `src/features/<feature>/` as vertical slices (ADR-9), each using up to four layer folders/files: domain, use_cases, adapters, infrastructure. Compatibility shims under `src/` must not become the primary implementation home.
 
 ## Coding Mandates
 
