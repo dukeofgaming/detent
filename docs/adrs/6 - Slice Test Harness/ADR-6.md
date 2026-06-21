@@ -8,7 +8,7 @@ supersedes:
 
 ## Context
 
-Slice-owned tests went through three wiring models before this ADR. The **goal
+Slice-owned tests went through several wiring models before this ADR. The **goal
 stayed constant** throughout: tests and fixtures live inside the owning feature
 slice; project-root `tests/` is only a Cargo discovery shim.
 
@@ -37,21 +37,23 @@ slice; project-root `tests/` is only a Cargo discovery shim.
    slice, tests split into `integration/mod.rs`, optional `unit/mod.rs`, and
    `bdd/world.rs` with `scenarios/`, `steps/`, and `assets/hello_world/` etc.
 
+7. **BDD at every test level** (2026-06): all slice tests are Cucumber BDD
+   scenarios grouped by test level (`unit`, `functional`, `integration`, `e2e`).
+   Plain `#[test]` modules and the separate `feature_slices_cucumber` harness
+   were removed.
+
 Current discovery (`build.rs`):
 
-- `src/features/*/tests/integration/mod.rs`
-- `src/features/*/tests/unit/mod.rs` (when present)
-- `src/features/*/tests/bdd/world.rs`
+- `src/features/*/tests/world.rs`
 
-Root entrypoints:
+Root entrypoint:
 
-- `tests/feature_slices.rs` → integration + unit modules
-- `tests/feature_slices_cucumber.rs` → BDD worlds
+- `tests/feature_slices.rs` → one async Cucumber runner per slice
 
 ## Decision
 
 Keep slice test **files and fixtures** under `src/features/<feature>/tests/`.
-Expose them to Cargo through **generated root harness** files — not
+Expose them to Cargo through a **single generated root harness** — not
 `#[cfg(test)] mod tests` in library code, and not per-slice `[[test]]` TOML entries.
 
 ```rust
@@ -59,14 +61,15 @@ Expose them to Cargo through **generated root harness** files — not
 include!(concat!(env!("OUT_DIR"), "/feature_slices.rs"));
 ```
 
-`build.rs` scans slice directories and emits `#[path = "..."] mod` wiring.
+`build.rs` scans slice directories for `tests/world.rs` and emits `#[path = "..."] mod` wiring plus one `#[test]` function per slice that calls `run()`.
 
 Rules:
 
-- Slice tests: `src/features/<feature>/tests/{integration,unit,bdd}/`
+- Slice tests: `src/features/<feature>/tests/{unit,functional,integration,e2e}/` (see [[ADR-8]])
+- Slice entrypoint: `src/features/<feature>/tests/world.rs`
 - Slice fixtures: `src/features/<feature>/tests/assets/<scenario>/`
 - No `#[cfg(test)] mod tests` in production slice code unless testing private
-  internals with no better seam ([[ADR-8]] BDD/integration cover public behavior)
+  internals with no better seam
 - Slices duplicate fixtures where needed — no shared cross-slice test modules
 
 ### Options
@@ -76,12 +79,12 @@ Rules:
 | `#[cfg(test)]` in feature root | Wrong target for CLI tests — **rejected** |
 | Per-slice `[[test]]` in Cargo.toml | Correct targets, TOML churn — **superseded** |
 | Root harness + `build.rs` | Stable discovery, slice ownership — **chosen** |
+| Separate plain-test and Cucumber harnesses | Two binaries, duplicated discovery — **superseded** |
 
 ### Rationale
 
-Combines slice locality (from the 2025 co-location work) with correct Cargo
-targets (from the explicit-`[[test]]` experiment) without ongoing TOML
-maintenance. BDD and unit roots discovered the same way as integration.
+Combines slice locality with correct Cargo targets without ongoing TOML
+maintenance. One harness keeps `cargo test` simple — no extra `--test` flags.
 
 ## Consequences
 
@@ -89,9 +92,9 @@ maintenance. BDD and unit roots discovered the same way as integration.
 
 1. Slice owns tests and fixtures; root `tests/` is a thin stable harness
 2. `cargo test --lib` stays limited to actual library unit tests
-3. New tests in existing slice files need no manifest changes
-4. New slice needs only `tests/integration/mod.rs` (and optional unit/BDD roots)
-5. Layout aligns with [[ADR-7]] (`integration/`, `unit/`, `bdd/`) and [[ADR-8]]
+3. New scenarios in existing slice feature files need no manifest changes
+4. New slice needs only `tests/world.rs` (and level directories per [[ADR-8]])
+5. Layout aligns with [[ADR-7]] (level directories scream test type) and [[ADR-8]]
 
 ### Negative
 
@@ -102,5 +105,5 @@ maintenance. BDD and unit roots discovered the same way as integration.
 ## Related
 
 - [[ADR-7]] — screaming names for test directories
-- [[ADR-8]] — BDD file layout inside `bdd/`
+- [[ADR-8]] — BDD file layout by test level
 - [[ADR-9]] — slice as the unit that owns tests and fixtures

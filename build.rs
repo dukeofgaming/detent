@@ -10,9 +10,7 @@ fn main() -> io::Result<()> {
 
     println!("cargo:rerun-if-changed={}", features_dir.display());
 
-    let mut integration_modules = Vec::new();
-    let mut unit_modules = Vec::new();
-    let mut cucumber_modules = Vec::new();
+    let mut world_modules = Vec::new();
     for entry in fs::read_dir(&features_dir)? {
         let entry = entry?;
         if !entry.file_type()?.is_dir() {
@@ -23,61 +21,31 @@ fn main() -> io::Result<()> {
         if !is_slice_enabled(&feature_name) {
             continue;
         }
-        let integration_test = entry.path().join("tests/integration/mod.rs");
-        if integration_test.exists() {
-            println!("cargo:rerun-if-changed={}", integration_test.display());
-            integration_modules.push((feature_name.clone(), integration_test));
-        }
 
-        let unit_test = entry.path().join("tests/unit/mod.rs");
-        if unit_test.exists() {
-            println!("cargo:rerun-if-changed={}", unit_test.display());
-            unit_modules.push((feature_name.clone(), unit_test));
-        }
-
-        let cucumber_test = entry.path().join("tests/bdd/world.rs");
-        if cucumber_test.exists() {
-            println!("cargo:rerun-if-changed={}", cucumber_test.display());
-            cucumber_modules.push((feature_name, cucumber_test));
+        let world_test = entry.path().join("tests/world.rs");
+        if world_test.exists() {
+            println!("cargo:rerun-if-changed={}", world_test.display());
+            world_modules.push((feature_name, world_test));
         }
     }
 
-    integration_modules.sort_by(|left, right| left.0.cmp(&right.0));
-    unit_modules.sort_by(|left, right| left.0.cmp(&right.0));
-    cucumber_modules.sort_by(|left, right| left.0.cmp(&right.0));
+    world_modules.sort_by(|left, right| left.0.cmp(&right.0));
 
-    let mut integration_src = String::new();
-    for (feature_name, integration_test) in &integration_modules {
-        integration_src.push_str(&format!(
+    let mut harness_src = String::new();
+    for (feature_name, world_test) in &world_modules {
+        harness_src.push_str(&format!(
             "#[path = {:?}]\nmod {};\n\n",
-            normalize_path(integration_test),
+            normalize_path(world_test),
             feature_name
         ));
     }
-    for (feature_name, unit_test) in &unit_modules {
-        integration_src.push_str(&format!(
-            "#[path = {:?}]\nmod {}_unit;\n\n",
-            normalize_path(unit_test),
-            feature_name
-        ));
-    }
-    fs::write(out_dir.join("feature_slices.rs"), integration_src)?;
-
-    let mut cucumber_src = String::new();
-    for (feature_name, cucumber_test) in &cucumber_modules {
-        cucumber_src.push_str(&format!(
-            "#[path = {:?}]\nmod {}_cucumber;\n\n",
-            normalize_path(cucumber_test),
-            feature_name
-        ));
-    }
-    for (feature_name, _) in &cucumber_modules {
-        cucumber_src.push_str(&format!(
-            "#[test]\nfn {feature}_cucumber_scenarios() {{\n    let runtime = tokio::runtime::Builder::new_current_thread()\n        .enable_all()\n        .build()\n        .expect(\"failed to build tokio runtime\");\n    let failed = runtime.block_on({feature}_cucumber::run());\n    assert!(!failed, \"{feature} cucumber scenarios failed\");\n}}\n\n",
+    for (feature_name, _) in &world_modules {
+        harness_src.push_str(&format!(
+            "#[test]\nfn {feature}() {{\n    let runtime = tokio::runtime::Builder::new_current_thread()\n        .enable_all()\n        .build()\n        .expect(\"failed to build tokio runtime\");\n    let failed = runtime.block_on({feature}::run());\n    assert!(!failed, \"{feature} scenarios failed\");\n}}\n\n",
             feature = feature_name
         ));
     }
-    fs::write(out_dir.join("feature_slices_cucumber.rs"), cucumber_src)?;
+    fs::write(out_dir.join("feature_slices.rs"), harness_src)?;
 
     Ok(())
 }

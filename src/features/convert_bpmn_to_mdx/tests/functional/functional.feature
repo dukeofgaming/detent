@@ -1,14 +1,7 @@
-Feature: Convert BPMN to MDX
+Feature: Convert BPMN to MDX functional tests
   As a developer
-  I want to round-trip between BPMN XML and MDX flow-element files
-  So that I can author processes in MDX and emit valid BPMN
-
-  Scenario: Hello-world imports to 6 MDX
-    Given the hello-world BPMN fixture
-    When I import it to MDX
-    Then 6 MDX outputs are produced
-    And each output contains a frontmatter block
-    And each output contains its BPMN type
+  I want use-case orchestration between BPMN and MDX
+  So that processes round-trip in-process
 
   Scenario: Minimal MDX compiles to process
     Given a minimal MDX input set with start, task, end, and two flows
@@ -60,16 +53,6 @@ Feature: Convert BPMN to MDX
     When I import the parsed definitions to MDX
     Then no output contains '@' or '$text' in its frontmatter
 
-  Scenario: Hello-world BPMN metadata
-    Given the hello-world BPMN fixture
-    When I parse the BPMN to definitions
-    Then the process id is "hello_world"
-    And the process name is "hello-world"
-    And the process is executable and public
-    And the process documentation is "This is a hello world activity"
-    And the definitions were exported by "jBPM Process Modeler" version "2.0"
-    And the definitions target namespace is "http://www.omg.org/bpmn20"
-
   Scenario: Hello-world MDX compiles
     Given the hello-world MDX fixtures
     When I compile the MDX inputs to definitions
@@ -90,15 +73,22 @@ Feature: Convert BPMN to MDX
     When I import the parsed definitions to MDX
     Then the flow_1 MDX output contains the condition "amount > 100"
 
-  Scenario Outline: BPMN fixture imports to MDX
-    Given the <fixture> BPMN fixture
-    When I import it to MDX
-    Then <count> MDX outputs are produced
-    And each output contains a frontmatter block
-    And each output contains its BPMN type
+  Scenario: Process metadata MDX controls compiled definitions
+    Given process metadata MDX inputs
+    When I compile the process metadata inputs
+    Then compiled definitions carry process and diagram metadata
+
+  Scenario: Imports include process and definitions metadata
+    Given the tdd BPMN fixture is imported to MDX
+    Then tdd import outputs include rich process metadata
+
+  Scenario Outline: Imported fixture frontmatter is stable after compile roundtrip
+    Given the "<fixture>" fixture
+    When I import and compile-roundtrip the fixture
+    Then imported frontmatter matches after compile roundtrip
 
     Examples:
-      | fixture      | count |
-      | hello-world  | 6     |
-      | blog-post    | 25    |
-      | tdd          | 25    |
+      | fixture                              |
+      | tdd/tdd.bpmn2                        |
+      | blog_post/blog-post.bpmn2            |
+      | hello_world/hello-world.bpmn2        |

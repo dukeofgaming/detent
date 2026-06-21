@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::Path;
 
+use cucumber::{given, then, when};
 use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 use detent::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
 use detent::features::convert_bpmn_to_mdx::use_cases::compile::{
@@ -11,16 +11,10 @@ use detent::features::convert_bpmn_to_mdx::use_cases::import::{
     import_to_mdx, MdxOutput,
 };
 
-fn fixture_path(relative_path: &str) -> String {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/features/convert_bpmn_to_mdx/tests/assets")
-        .join(relative_path)
-        .to_string_lossy()
-        .to_string()
-}
+use super::ConvertWorld;
 
-fn import_fixture(relative_path: &str) -> Vec<MdxOutput> {
-    let xml = fs::read_to_string(fixture_path(relative_path)).expect("fixture must be readable");
+fn import_fixture(_world: &mut ConvertWorld, relative_path: &str) -> Vec<MdxOutput> {
+    let xml = fs::read_to_string(super::fixture_path(relative_path)).expect("fixture must be readable");
     let definitions = parse_bpmn(&xml).expect("fixture BPMN must parse");
     import_to_mdx(&definitions).expect("fixture BPMN must import to MDX")
 }
@@ -64,9 +58,12 @@ fn bool_at(value: &serde_yaml::Value, keys: &[&str]) -> bool {
     current.as_bool().expect("expected bool value")
 }
 
-#[test]
-fn process_metadata_mdx_controls_compiled_definitions() {
-    let process_mdx = r#"---
+#[given("process metadata MDX inputs")]
+fn given_process_metadata(world: &mut ConvertWorld) {
+    world.mdx_inputs = vec![
+        MdxInput {
+            filename: "Process_DeveloperWorkflow.mdx".to_string(),
+            content: r#"---
 type: bpmn:process
 id: Process_DeveloperWorkflow
 name: TDD Developer Workflow
@@ -84,54 +81,36 @@ diagram:
     id: BPMNPlane_Process_DeveloperWorkflow
     bpmnElement: Process_DeveloperWorkflow
 ---
-"#;
-    let start_event_mdx = r#"---
-type: bpmn:startEvent
-id: StartEvent_NewFeature
-outgoing:
-- Flow_1q9w0c5
----
-"#;
-    let end_event_mdx = r#"---
-type: bpmn:endEvent
-id: EndEvent_Done
-incoming:
-- Flow_1q9w0c5
----
-"#;
-    let flow_mdx = r#"---
-type: bpmn:sequenceFlow
-id: Flow_1q9w0c5
-sourceRef: StartEvent_NewFeature
-targetRef: EndEvent_Done
----
-"#;
-
-    let definitions = compile_to_definitions(&[
-        MdxInput {
-            filename: "Process_DeveloperWorkflow.mdx".to_string(),
-            content: process_mdx.to_string(),
+"#
+            .to_string(),
         },
         MdxInput {
             filename: "StartEvent_NewFeature.mdx".to_string(),
-            content: start_event_mdx.to_string(),
+            content: "---\ntype: bpmn:startEvent\nid: StartEvent_NewFeature\noutgoing:\n- Flow_1q9w0c5\n---\n".to_string(),
         },
         MdxInput {
             filename: "EndEvent_Done.mdx".to_string(),
-            content: end_event_mdx.to_string(),
+            content: "---\ntype: bpmn:endEvent\nid: EndEvent_Done\nincoming:\n- Flow_1q9w0c5\n---\n".to_string(),
         },
         MdxInput {
             filename: "Flow_1q9w0c5.mdx".to_string(),
-            content: flow_mdx.to_string(),
+            content: "---\ntype: bpmn:sequenceFlow\nid: Flow_1q9w0c5\nsourceRef: StartEvent_NewFeature\ntargetRef: EndEvent_Done\n---\n".to_string(),
         },
-    ])
-    .expect("process metadata should compile");
+    ];
+}
 
-    let process = definitions.process.as_ref().expect("process should compile");
-    let diagram = definitions
-        .bpmn_diagram
-        .as_ref()
-        .expect("diagram metadata should compile");
+#[when("I compile the process metadata inputs")]
+fn when_compile_metadata(world: &mut ConvertWorld) {
+    world.compile_result = Some(
+        compile_to_definitions(&world.mdx_inputs).expect("process metadata should compile"),
+    );
+}
+
+#[then("compiled definitions carry process and diagram metadata")]
+fn then_metadata(world: &mut ConvertWorld) {
+    let definitions = world.compile_result.as_ref().expect("definitions");
+    let process = definitions.process.as_ref().expect("process");
+    let diagram = definitions.bpmn_diagram.as_ref().expect("diagram");
 
     assert_eq!(definitions.id, "bpmn_copilot_Definition_id");
     assert_eq!(
@@ -150,12 +129,19 @@ targetRef: EndEvent_Done
     assert_eq!(diagram.plane.bpmn_element, "Process_DeveloperWorkflow");
 }
 
-#[test]
-fn imports_include_process_and_definitions_metadata() {
-    let outputs = frontmatter_by_filename(import_fixture("tdd/tdd.bpmn2"));
+#[given("the tdd BPMN fixture is imported to MDX")]
+fn given_tdd_import(world: &mut ConvertWorld) {
+    world.import_outputs = Some(import_fixture(world, "tdd/tdd.bpmn2"));
+}
+
+#[then("tdd import outputs include rich process metadata")]
+fn then_tdd_metadata(world: &mut ConvertWorld) {
+    let outputs = frontmatter_by_filename(
+        world.import_outputs.clone().expect("import outputs"),
+    );
     let process = outputs
         .get("Process_DeveloperWorkflow.mdx")
-        .expect("process metadata file should be imported");
+        .expect("process metadata file");
 
     assert_eq!(string_at(process, &["type"]), "bpmn:process");
     assert_eq!(string_at(process, &["id"]), "Process_DeveloperWorkflow");
@@ -192,43 +178,40 @@ fn imports_include_process_and_definitions_metadata() {
         "Process_DeveloperWorkflow"
     );
 
-    let gateway = outputs
-        .get("Gateway_TestsPass.mdx")
-        .expect("gateway file should be imported");
-    assert_eq!(
-        string_at(gateway, &["diagram", "id"]),
-        "Gateway_TestsPass_di"
-    );
+    let gateway = outputs.get("Gateway_TestsPass.mdx").expect("gateway file");
+    assert_eq!(string_at(gateway, &["diagram", "id"]), "Gateway_TestsPass_di");
     assert!(bool_at(gateway, &["diagram", "isMarkerVisible"]));
 
-    let yes_flow = outputs
-        .get("Flow_1w3e4r5.mdx")
-        .expect("conditional flow file should be imported");
-    let ce = yes_flow.get("conditionExpression").expect("should have conditionExpression");
-    let ce_map = ce.as_mapping().expect("conditionExpression should be mapping");
-    let xsi_val = ce_map.get(&serde_yaml::Value::String("type".to_string()))
-        .expect("expected type key in conditionExpression");
+    let yes_flow = outputs.get("Flow_1w3e4r5.mdx").expect("flow file");
+    let ce = yes_flow.get("conditionExpression").expect("conditionExpression");
+    let ce_map = ce.as_mapping().expect("mapping");
+    let xsi_val = ce_map
+        .get(&serde_yaml::Value::String("type".to_string()))
+        .expect("type key");
     assert_eq!(xsi_val.as_str().unwrap(), "bpmn:tFormalExpression");
-    assert!(
-        yes_flow.get("@xsi:type").is_none(),
-        "condition expression should not expose XML attribute keys"
-    );
+    assert!(yes_flow.get("@xsi:type").is_none());
 }
 
-#[test]
-fn imported_fixture_frontmatter_is_stable_after_compile_roundtrip() {
-    for fixture in [
-        "tdd/tdd.bpmn2",
-        "blog_post/blog-post.bpmn2",
-        "hello_world/hello-world.bpmn2",
-    ] {
-        let imported = import_fixture(fixture);
-        let roundtripped = compile_outputs(&imported);
+#[given(regex = r#"^the "(.+)" fixture$"#)]
+fn given_roundtrip_fixture(world: &mut ConvertWorld, path: String) {
+    world.bpmn_xml = Some(path);
+}
 
-        assert_eq!(
-            frontmatter_by_filename(imported),
-            frontmatter_by_filename(roundtripped),
-            "frontmatter roundtrip changed for {fixture}"
-        );
-    }
+#[when("I import and compile-roundtrip the fixture")]
+fn when_roundtrip(world: &mut ConvertWorld) {
+    let relative = world.bpmn_xml.as_ref().expect("fixture path").clone();
+    let imported = import_fixture(world, &relative);
+    let roundtripped = compile_outputs(&imported);
+    world.e2e_file_content = Some(format!(
+        "{:?}|{:?}",
+        frontmatter_by_filename(imported),
+        frontmatter_by_filename(roundtripped)
+    ));
+}
+
+#[then("imported frontmatter matches after compile roundtrip")]
+fn then_roundtrip_stable(world: &mut ConvertWorld) {
+    let content = world.e2e_file_content.as_ref().expect("roundtrip result");
+    let (left, right) = content.split_once('|').expect("roundtrip pair");
+    assert_eq!(left, right);
 }

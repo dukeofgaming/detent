@@ -27,13 +27,13 @@ By mid-2025 the same discoverability problems appeared elsewhere:
 
 Commit `7486af4` extended screaming architecture **project-wide** (superseding
 the type-only scope). Test restructuring followed: `bdd/scenarios/`,
-`steps/{given,when,then,and}.rs`, `integration/` vs `unit/` ([[ADR-6]],
-[[ADR-8]]).
+`steps/{given,when,then,and}.rs`, test levels `unit/`, `functional/`,
+`integration/`, `e2e/` ([[ADR-6]], [[ADR-8]]).
 
 Screaming architecture applies anywhere a developer asks "what lives here?":
 
-- `tests/unit/` — pure unit tests for this slice
-- `tests/bdd/world.rs` — Cucumber World entrypoint
+- `tests/unit/` — unit-level BDD scenarios for this slice
+- `tests/world.rs` — Cucumber World entrypoint
 - `tests/assets/hello_world/` — hello-world scenario fixtures
 - `use_cases/compile.rs` — MDX → Definitions use case
 
@@ -62,14 +62,14 @@ src/features/convert_bpmn_to_mdx/adapters/bpmn/types/
 | Avoid | Replace with |
 |-------|--------------|
 | `steps.rs` | `steps/given.rs`, `steps/when.rs`, `steps/then.rs` |
-| flat `tests/*.rs` mixing strategies | `tests/bdd/`, `tests/unit/`, `tests/integration/` |
+| flat `tests/*.rs` mixing strategies | `tests/{unit,functional,integration,e2e}/` |
 | `tests/fixtures/` (ambiguous) | `tests/assets/<scenario>/` |
 | `utils/`, `common/`, `helpers/` | name the actual concern |
 
 BDD layout detail: [[ADR-8]].
 
 Build/discovery entrypoints use descriptive names:
-`tests/feature_slices.rs`, `tests/feature_slices_cucumber.rs`, `build.rs`.
+`tests/feature_slices.rs`, `build.rs`.
 
 ### Options
 
@@ -106,4 +106,4 @@ one-concern-per-file for BPMN element structs.
 
 - [[ADR-4]] — `folder.rs` for layers; `mod.rs` only at feature roots
 - [[ADR-6]] — screaming test directory strategy
-- [[ADR-8]] — BDD file naming inside `bdd/`
+- [[ADR-8]] — BDD file naming by test level

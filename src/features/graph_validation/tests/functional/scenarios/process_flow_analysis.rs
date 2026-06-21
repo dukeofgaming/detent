@@ -47,7 +47,7 @@ fn when_analyze(world: &mut GraphValidationWorld) {
     });
 }
 
-fn analysis(world: &GraphValidationWorld) -> &FlowAnalysis {
+fn analysis(world: &mut GraphValidationWorld) -> &FlowAnalysis {
     analysis_of(world)
 }
 

@@ -2,39 +2,43 @@ use cucumber::{writer, StatsWriter as _, World, WriterExt as _};
 use detent::features::graph_validation::domain::workflow::Workflow;
 use std::collections::HashMap;
 
-#[path = "../fixtures/linear_process.rs"]
+#[path = "fixtures/linear_process.rs"]
 mod fixtures;
-#[path = "../fixtures/branching_process.rs"]
+#[path = "fixtures/branching_process.rs"]
 mod branching_fixture;
 mod steps;
 
-#[path = "scenarios/well_formed_process_passes.rs"]
+#[path = "functional/scenarios/well_formed_process_passes.rs"]
 mod well_formed_process_passes;
-#[path = "scenarios/no_start_event_rejected.rs"]
+#[path = "functional/scenarios/no_start_event_rejected.rs"]
 mod no_start_event_rejected;
-#[path = "scenarios/no_end_event_rejected.rs"]
+#[path = "functional/scenarios/no_end_event_rejected.rs"]
 mod no_end_event_rejected;
-#[path = "scenarios/dangling_target_reported.rs"]
+#[path = "functional/scenarios/dangling_target_reported.rs"]
 mod dangling_target_reported;
-#[path = "scenarios/duplicate_id_rejected.rs"]
+#[path = "functional/scenarios/duplicate_id_rejected.rs"]
 mod duplicate_id_rejected;
-#[path = "scenarios/orphan_node_detected.rs"]
+#[path = "functional/scenarios/orphan_node_detected.rs"]
 mod orphan_node_detected;
-#[path = "scenarios/dangling_source_reported.rs"]
+#[path = "functional/scenarios/dangling_source_reported.rs"]
 mod dangling_source_reported;
-#[path = "scenarios/duplicate_flow_id_rejected.rs"]
+#[path = "functional/scenarios/duplicate_flow_id_rejected.rs"]
 mod duplicate_flow_id_rejected;
-#[path = "scenarios/dead_end_detected.rs"]
+#[path = "functional/scenarios/dead_end_detected.rs"]
 mod dead_end_detected;
-#[path = "scenarios/process_flow_analysis.rs"]
+#[path = "functional/scenarios/process_flow_analysis.rs"]
 mod process_flow_analysis;
-#[path = "scenarios/branching_process_validated.rs"]
+#[path = "functional/scenarios/branching_process_validated.rs"]
 mod branching_process_validated;
-#[path = "scenarios/parametrized_fixture_validation.rs"]
+#[path = "integration/scenarios/parametrized_fixture_validation.rs"]
 mod parametrized_fixture_validation;
+#[path = "unit/scenarios/graph_operations.rs"]
+mod graph_operations;
+#[path = "e2e/scenarios/placeholder.rs"]
+mod e2e_placeholder;
 
-use branching_fixture::branching_process;
-use fixtures::{linear_process, linear_process_with_retargeted_exit};
+pub(crate) use branching_fixture::branching_process;
+pub(crate) use fixtures::{linear_process, linear_process_with_retargeted_exit};
 
 #[derive(Debug, Default)]
 pub struct FlowAnalysis {
@@ -51,9 +55,11 @@ pub struct GraphValidationWorld {
     analysis: Option<FlowAnalysis>,
     errors: Option<Vec<String>>,
     succeeded: bool,
+    pub found_node: Option<String>,
+    pub last_successors: Vec<String>,
 }
 
-fn analysis_of(world: &GraphValidationWorld) -> &FlowAnalysis {
+pub(crate) fn analysis_of(world: &GraphValidationWorld) -> &FlowAnalysis {
     world
         .analysis
         .as_ref()
@@ -63,7 +69,7 @@ fn analysis_of(world: &GraphValidationWorld) -> &FlowAnalysis {
 pub async fn run() -> bool {
     let features_path = concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/src/features/graph_validation/tests/bdd/slice.feature"
+        "/src/features/graph_validation/tests"
     );
     let json_file = std::fs::File::create(
         concat!(
@@ -87,7 +93,9 @@ pub async fn run() -> bool {
         .tee(junit_writer);
     let summarized = GraphValidationWorld::cucumber()
         .with_writer(combined)
-        .run(features_path)
+        .filter_run(features_path, |_, _, scenario| {
+            !scenario.tags.iter().any(|tag| tag == "ignore")
+        })
         .await;
     summarized.execution_has_failed()
 }

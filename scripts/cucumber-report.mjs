@@ -21,7 +21,7 @@ if (positional.length === 2) {
 }
 
 if (runTests) {
-  const testRun = spawnSync("cargo", ["test", "--test", "feature_slices_cucumber"], {
+  const testRun = spawnSync("cargo", ["test", "--test", "feature_slices"], {
     stdio: "inherit",
   });
   if (testRun.status !== 0) {
