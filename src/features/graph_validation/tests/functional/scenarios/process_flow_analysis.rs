@@ -1,53 +1,8 @@
-use std::collections::HashMap;
-
-use cucumber::{then, when};
-use detent::features::graph_validation::domain::graph::Graph;
+use cucumber::then;
 
 use super::{analysis_of, FlowAnalysis, GraphValidationWorld};
 
-#[when("I analyze the process flow")]
-fn when_analyze(world: &mut GraphValidationWorld) {
-    let workflow = world.workflow.as_ref().expect("workflow must be set");
-    let graph = Graph::new(workflow);
-
-    let node_ids: Vec<String> = workflow.nodes.iter().map(|n| n.id.clone()).collect();
-
-    let mut successors = HashMap::new();
-    let mut predecessors = HashMap::new();
-    let mut reachable = HashMap::new();
-    for id in &node_ids {
-        successors.insert(
-            id.clone(),
-            graph.successors(id).map(|n| n.id.clone()).collect(),
-        );
-        predecessors.insert(
-            id.clone(),
-            graph.predecessors(id).map(|n| n.id.clone()).collect(),
-        );
-        reachable.insert(id.clone(), graph.reachable_from(id));
-    }
-
-    let entry_nodes = graph
-        .entry_nodes()
-        .iter()
-        .map(|n| n.id.clone())
-        .collect();
-    let exit_nodes = graph
-        .exit_nodes()
-        .iter()
-        .map(|n| n.id.clone())
-        .collect();
-
-    world.analysis = Some(FlowAnalysis {
-        successors,
-        predecessors,
-        entry_nodes,
-        exit_nodes,
-        reachable,
-    });
-}
-
-fn analysis(world: &mut GraphValidationWorld) -> &FlowAnalysis {
+fn analysis(world: &GraphValidationWorld) -> &FlowAnalysis {
     analysis_of(world)
 }
 
@@ -75,24 +30,6 @@ fn then_comes_from(world: &mut GraphValidationWorld, node: String, from: String)
     let preds = &analysis(world).predecessors[&node];
     assert_eq!(preds.len(), 1, "expected 1 predecessor for {}", node);
     assert_eq!(preds[0], from, "expected predecessor of {} to be {}", node, from);
-}
-
-#[then("the entry node is start_1")]
-fn then_entry_node(world: &mut GraphValidationWorld) {
-    let entries = &analysis(world).entry_nodes;
-    assert_eq!(entries, &vec!["start_1".to_string()]);
-}
-
-#[then("the exit node is end_1")]
-fn then_exit_node(world: &mut GraphValidationWorld) {
-    let exits = &analysis(world).exit_nodes;
-    assert_eq!(exits, &vec!["end_1".to_string()]);
-}
-
-#[then(regex = r"^(\S+) can reach (\S+)$")]
-fn then_can_reach(world: &mut GraphValidationWorld, from: String, to: String) {
-    let reached = &analysis(world).reachable[&from];
-    assert!(reached.contains(&to), "{} should be reachable from {}", to, from);
 }
 
 #[then(regex = r"^(\S+) can only reach itself$")]

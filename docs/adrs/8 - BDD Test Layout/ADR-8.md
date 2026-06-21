@@ -28,23 +28,41 @@ Adopt the following layout under `src/features/<slice>/tests/`:
 ```
 tests/
 ├── world.rs                 # Cucumber World struct + run() entrypoint
-├── steps/                   # slice-wide shared step definitions
-│   ├── mod.rs
-│   ├── given.rs
-│   ├── when.rs
-│   ├── then.rs
-│   └── and.rs
 ├── unit/
 │   ├── unit.feature
+│   ├── steps/               # unit-level step definitions
+│   │   ├── mod.rs
+│   │   ├── given.rs
+│   │   ├── when.rs
+│   │   ├── then.rs
+│   │   └── and.rs
 │   └── scenarios/
 ├── functional/
 │   ├── functional.feature
+│   ├── steps/               # functional-level step definitions
+│   │   ├── mod.rs
+│   │   ├── given.rs
+│   │   ├── when.rs
+│   │   ├── then.rs
+│   │   └── and.rs
 │   └── scenarios/
 ├── integration/
 │   ├── integration.feature
+│   ├── steps/               # integration-level step definitions
+│   │   ├── mod.rs
+│   │   ├── given.rs
+│   │   ├── when.rs
+│   │   ├── then.rs
+│   │   └── and.rs
 │   └── scenarios/
 ├── e2e/
 │   ├── e2e.feature
+│   ├── steps/               # e2e-level step definitions
+│   │   ├── mod.rs
+│   │   ├── given.rs
+│   │   ├── when.rs
+│   │   ├── then.rs
+│   │   └── and.rs
 │   └── scenarios/
 └── assets/                  # fixtures (unchanged)
 ```
@@ -78,9 +96,11 @@ tests/
 3. **Scenarios in `{level}/scenarios/`.** Each `.rs` file contains step
    definitions for one or a tight group of related Gherkin scenarios.
 
-4. **Shared steps under `steps/given.rs`, `steps/when.rs`, `steps/then.rs`,
-   `steps/and.rs`.** Step definitions shared across levels live in a file that
-   matches the Gherkin keyword they implement.
+4. **Per-level `steps/` directories.** Each level has its own `steps/`
+   directory under `{level}/steps/`. Step definitions shared across levels
+   are defined in one level's `steps/` (typically the primary consumer) and
+   discovered globally by Cucumber's inventory — no duplication needed.
+   When a step is truly unique to a level, it lives in that level's `steps/`.
 
 5. **Scenario-local steps stay in the scenario file.** When a step is used by
    exactly one scenario group, it lives in `{level}/scenarios/<group>.rs`. When
