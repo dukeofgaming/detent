@@ -16,6 +16,7 @@ RUN apt-get update && \
         build-essential \
         sudo \
         gnupg \
+        openjdk-25-jre-headless \
         && \
     # Add Docker's official GPG key and repository
     install -m 0755 -d /etc/apt/keyrings && \
@@ -34,7 +35,11 @@ RUN apt-get update && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends gh && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    ARCH="$(dpkg --print-architecture)" && \
+    ln -sf "/usr/lib/jvm/java-25-openjdk-${ARCH}" /usr/lib/jvm/default-jre
+
+ENV JAVA_HOME=/usr/lib/jvm/default-jre
 
 # Create user with sudo access - do this in a separate layer that persists after features
 RUN groupadd --gid "${USER_GID}" "${USERNAME}" && \

@@ -26,7 +26,8 @@
         "sst-dev.opencode",
         "foam.foam-vscode",
         "denoland.vscode-deno",
-        "CucumberOpen.cucumber-official"
+        "CucumberOpen.cucumber-official",
+        "SonarSource.sonarlint-vscode"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
