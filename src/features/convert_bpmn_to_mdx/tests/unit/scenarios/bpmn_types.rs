@@ -51,11 +51,17 @@ fn when_sequence_flow(world: &mut ConvertWorld) {
         .expect("Failed to parse BPMN");
     let process = defs.process.expect("Expected process");
     let flow = &process.sequence_flows[0];
-    assert!(!flow.id.is_empty());
-    assert!(!flow.source_ref.is_empty());
-    assert!(!flow.target_ref.is_empty());
-    world.e2e_last_success = true;
+    world.e2e_file_content = Some(format!("{}|{}|{}", flow.id, flow.source_ref, flow.target_ref));
 }
 
 #[then("the sequence flow has non-empty id and refs")]
-fn then_sequence_flow(_world: &mut ConvertWorld) {}
+fn then_sequence_flow(world: &mut ConvertWorld) {
+    let content = world.e2e_file_content.as_ref().expect("expected flow data");
+    let mut parts = content.split('|');
+    let id = parts.next().expect("flow id");
+    let source = parts.next().expect("source ref");
+    let target = parts.next().expect("target ref");
+    assert!(!id.is_empty(), "flow id is empty");
+    assert!(!source.is_empty(), "flow source_ref is empty");
+    assert!(!target.is_empty(), "flow target_ref is empty");
+}

@@ -77,7 +77,7 @@ fn when_parse_sequence_flow(world: &mut ConvertWorld) {
     }
 }
 
-#[when(regex = r#"^I roundtrip the MDX file as a (start event|task|sequence flow)$"#)]
+#[when(regex = r#"^I roundtrip the MDX as a (start event|task|sequence flow) through serde$"#)]
 fn when_roundtrip(world: &mut ConvertWorld, kind: String) {
     let input = &world.mdx_inputs[0];
     let mdx = MdxFile::parse(&input.content).expect("parse MDX");
@@ -86,22 +86,41 @@ fn when_roundtrip(world: &mut ConvertWorld, kind: String) {
             let event = mdx.parse_start_event().expect("parse start event");
             let yaml = serde_yaml::to_string(&event).expect("serialize");
             let parsed: StartEvent = serde_yaml::from_str(&yaml).expect("deserialize");
-            assert_eq!(event, parsed);
+            world.e2e_file_content = Some(format!(
+                "{}|{}",
+                serde_yaml::to_string(&event).unwrap(),
+                serde_yaml::to_string(&parsed).unwrap()
+            ));
         }
         "task" => {
             let task = mdx.parse_task().expect("parse task");
             let yaml = serde_yaml::to_string(&task).expect("serialize");
             let parsed: Task = serde_yaml::from_str(&yaml).expect("deserialize");
-            assert_eq!(task, parsed);
+            world.e2e_file_content = Some(format!(
+                "{}|{}",
+                serde_yaml::to_string(&task).unwrap(),
+                serde_yaml::to_string(&parsed).unwrap()
+            ));
         }
         "sequence flow" => {
             let flow = mdx.parse_sequence_flow().expect("parse flow");
             let yaml = serde_yaml::to_string(&flow).expect("serialize");
             let parsed: SequenceFlow = serde_yaml::from_str(&yaml).expect("deserialize");
-            assert_eq!(flow, parsed);
+            world.e2e_file_content = Some(format!(
+                "{}|{}",
+                serde_yaml::to_string(&flow).unwrap(),
+                serde_yaml::to_string(&parsed).unwrap()
+            ));
         }
         _ => unreachable!(),
     }
+}
+
+#[then("the element is unchanged after serde roundtrip")]
+fn then_roundtrip_unchanged(world: &mut ConvertWorld) {
+    let content = world.e2e_file_content.as_ref().expect("roundtrip result");
+    let (left, right) = content.split_once('|').expect("roundtrip pair");
+    assert_eq!(left, right, "element changed after serde roundtrip");
 }
 
 #[then(regex = r#"^the MDX frontmatter contains "([^"]+)"$"#)]
@@ -181,13 +200,29 @@ fn given_all_mdx(world: &mut ConvertWorld) {
 
 #[when("I parse each MDX file")]
 fn when_parse_each(world: &mut ConvertWorld) {
+    let mut failures = Vec::new();
     for input in &world.mdx_inputs {
-        let mdx = MdxFile::parse(&input.content)
-            .unwrap_or_else(|_| panic!("Failed to parse {}", input.filename));
-        assert!(mdx.frontmatter.contains("type:"), "missing type in {}", input.filename);
-        assert!(mdx.frontmatter.contains("id:"), "missing id in {}", input.filename);
+        match MdxFile::parse(&input.content) {
+            Ok(mdx) => {
+                if !mdx.frontmatter.contains("type:") {
+                    failures.push(format!("{} missing type", input.filename));
+                }
+                if !mdx.frontmatter.contains("id:") {
+                    failures.push(format!("{} missing id", input.filename));
+                }
+            }
+            Err(e) => failures.push(format!("{} parse error: {}", input.filename, e)),
+        }
     }
+    world.e2e_file_content = Some(if failures.is_empty() {
+        String::new()
+    } else {
+        failures.join("\n")
+    });
 }
 
 #[then("all MDX files parse successfully")]
-fn then_all_parse(_world: &mut ConvertWorld) {}
+fn then_all_parse(world: &mut ConvertWorld) {
+    let failures = world.e2e_file_content.as_ref().expect("expected parse results");
+    assert!(failures.is_empty(), "parse failures:\n{}", failures);
+}

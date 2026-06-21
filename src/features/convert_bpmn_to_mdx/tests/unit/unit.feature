@@ -42,15 +42,18 @@ Feature: Convert BPMN to MDX unit tests
 
   Scenario: Roundtrip start event
     Given the hello-world MDX file "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx"
-    When I roundtrip the MDX file as a start event
+    When I roundtrip the MDX as a start event through serde
+    Then the element is unchanged after serde roundtrip
 
   Scenario: Roundtrip task
     Given the hello-world MDX file "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx"
-    When I roundtrip the MDX file as a task
+    When I roundtrip the MDX as a task through serde
+    Then the element is unchanged after serde roundtrip
 
   Scenario: Roundtrip sequence flow
     Given the hello-world MDX file "_4083739B-66F0-4B92-A348-A37DF3B29083.mdx"
-    When I roundtrip the MDX file as a sequence flow
+    When I roundtrip the MDX as a sequence flow through serde
+    Then the element is unchanged after serde roundtrip
 
   Scenario: All hello-world MDX files parseable
     Given all hello-world per-element MDX fixtures

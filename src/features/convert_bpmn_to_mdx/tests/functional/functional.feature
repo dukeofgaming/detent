@@ -36,7 +36,8 @@ Feature: Convert BPMN to MDX functional tests
 
   Scenario: Import rejects no process
     Given a BPMN definition with no process
-    When I attempt to import the BPMN to MDX
+    When I parse the BPMN to definitions
+    When I attempt to import the parsed definitions to MDX
     Then import fails
 
   Scenario: Import filenames match IDs
@@ -61,7 +62,8 @@ Feature: Convert BPMN to MDX functional tests
   Scenario: MDX compiles and imports back
     Given a minimal MDX input set with start, task, end, and two flows
     When I compile the MDX inputs to definitions
-    Then importing the compiled definitions produces 6 MDX outputs
+    When I import the compiled definitions to MDX
+    Then 6 MDX outputs are produced
 
   Scenario: Service task, script task, and gateway compile
     Given an MDX input set with a service task, a script task, and an exclusive gateway
@@ -79,16 +81,17 @@ Feature: Convert BPMN to MDX functional tests
     Then compiled definitions carry process and diagram metadata
 
   Scenario: Imports include process and definitions metadata
-    Given the tdd BPMN fixture is imported to MDX
+    Given the tdd BPMN fixture
+    When I import it to MDX
     Then tdd import outputs include rich process metadata
 
   Scenario Outline: Imported fixture frontmatter is stable after compile roundtrip
-    Given the "<fixture>" fixture
-    When I import and compile-roundtrip the fixture
+    Given the <fixture> BPMN fixture
+    When I import the fixture and compile-roundtrip its frontmatter
     Then imported frontmatter matches after compile roundtrip
 
     Examples:
-      | fixture                              |
-      | tdd/tdd.bpmn2                        |
-      | blog_post/blog-post.bpmn2            |
-      | hello_world/hello-world.bpmn2        |
+      | fixture     |
+      | hello-world |
+      | blog-post   |
+      | tdd         |
