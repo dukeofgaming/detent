@@ -13,12 +13,9 @@ Rust offers two ways to define a module with submodules:
 1. **Legacy style**: `folder/mod.rs` (pre-2018 convention)
 2. **Modern style**: `folder.rs` alongside `folder/` directory (Rust 2018+)
 
-Our codebase currently uses `mod.rs` files throughout:
-- `src/bpmn/mod.rs`
-- `src/bpmn/types/mod.rs`
-- `src/bpmn/types/events/mod.rs`
-- `src/mdx/mod.rs`
-- `src/commands/mod.rs`
+Our codebase previously used legacy `mod.rs` module files under flat `src/bpmn/`
+and `src/mdx/` trees. The project now uses feature slices under
+`src/features/<feature>/`.
 
 ## Decision
 
@@ -28,18 +25,17 @@ Feature roots under `src/features/<feature>/` are an explicit exception: each
 feature root uses `mod.rs` so the feature slice remains physically
 self-contained in one directory.
 
-Example transformation:
+Example transformation (historical flat layout → modern style):
 
 ```
-# Before (current)
+# Before (legacy flat layout)
 src/bpmn/mod.rs
-src/bpmn/types/mod.rs
-src/bpmn/types/events/mod.rs
+src/bpmn/types/events/start_event.rs
 
-# After (modern)
-src/bpmn.rs
-src/bpmn/types.rs
-src/bpmn/types/events.rs
+# After (modern, inside a feature slice)
+src/features/convert_bpmn_to_mdx/adapters/bpmn/types/events/start_event.rs
+src/features/convert_bpmn_to_mdx/use_cases.rs
+src/features/convert_bpmn_to_mdx/infrastructure.rs
 ```
 
 Exceptions: Module declarations directly under `src/` use `mod.rs` rather than `folder.rs`, because `src/` must contain no direct `.rs` files except `main.rs` and `lib.rs`. Feature roots use `src/features/<feature>/mod.rs` rather than `src/features/<feature>.rs` — this keeps each vertical slice self-contained as a single directory that can own implementation, tests, and assets together. Deeper modules inside a feature still follow the `folder.rs` convention (for example, `src/features/convert_bpmn_to_mdx/use_cases.rs`).
@@ -76,18 +72,15 @@ References:
 
 ## Consequences
 
-The impact assessment identified 9 files to rename:
+The impact assessment identified renames from legacy `mod.rs` barrels to
+`folder.rs` layer modules inside feature slices:
 
-| Current Path | New Path |
-|--------------|----------|
-| `src/bpmn/mod.rs` | `src/bpmn.rs` |
-| `src/bpmn/types/mod.rs` | `src/bpmn/types.rs` |
-| `src/bpmn/types/events/mod.rs` | `src/bpmn/types/events.rs` |
-| `src/bpmn/types/gateways/mod.rs` | `src/bpmn/types/gateways.rs` |
-| `src/bpmn/types/tasks/mod.rs` | `src/bpmn/types/tasks.rs` |
-| `src/mdx/mod.rs` | `src/mdx.rs` |
-| `src/mdx/types/mod.rs` | `src/mdx/types.rs` |
-| `src/commands/mod.rs` | `src/commands.rs` |
+| Current pattern | Example |
+|-----------------|---------|
+| Layer barrel | `src/features/convert_bpmn_to_mdx/use_cases.rs` |
+| Feature root exception | `src/features/convert_bpmn_to_mdx/mod.rs` |
+| Type file | `.../adapters/bpmn/types/events/start_event.rs` |
+| Test wiring exception | `.../tests/integration/mod.rs`, `.../tests/bdd/steps/mod.rs` |
 
 Risk is low: pure file renames with no code changes required. All imports and public API remain identical. `cargo test` validates correctness after refactoring. There are no breaking changes — external crate consumers see no difference and internal `use` statements are unchanged.
 

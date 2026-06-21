@@ -8,17 +8,39 @@ supersedes: 1
 
 ## Context
 
-[[ADR-1]] proposed using `xsd-parser` to generate Rust types from BPMN 2.0 XSDs. After implementation, this approach failed due to:
+We need Rust types that round-trip BPMN XML and MDX YAML frontmatter for the
+supported subset in spec.md. The first approach was **XSD-driven codegen**: use
+`xsd-parser` at build time to generate structs from the bundled OMG schemas in
+`src/assets/schemas/`, with `quick-xml` + serde for (de)serialization and
+optional runtime XSD checks via `libxml` (feature `xsd-validation`).
 
-1. **Schema complexity**: BPMN 2.0 XSD includes 5+ interconnected schemas (BPMN20, BPMNDI, DI, DC, Semantic) with complex inheritance
-2. **Code generation errors**: Generated code had duplicate type definitions, unresolved imports, and type conflicts
-3. **Abstract type handling**: Many BPMN types are abstract with substitution groups that don't map cleanly to Rust
+That approach was abandoned after implementation. Codegen failed because:
+
+1. **Schema complexity**: BPMN 2.0 spans BPMN20, BPMNDI, DI, DC, and Semantic
+   XSDs with inheritance and substitution groups that do not map cleanly to Rust
+2. **Generated code defects**: duplicate definitions, unresolved imports, abstract
+   type handling errors
+3. **Wrong abstraction for our scope**: we only need a spec.md subset, not full
+   BPMN 2.0 surface area
+
+What we **kept** from the XSD effort:
+
+- Bundled schemas under `src/assets/schemas/` for **optional runtime validation**
+  (libxml, native-only, behind `xsd-validation`) — not as codegen input
+- `quick-xml` + serde as the serialization stack ([[ADR-3]])
+
+The codebase then moved from flat `src/bpmn/` modules to **feature slices**
+(`src/features/convert_bpmn_to_mdx/adapters/bpmn/types/`) while keeping the
+handcrafted-type strategy. Types are adapter-layer IR ([[ADR-2]]), not domain
+objects ([[ADR-7]]).
 
 ## Decision
 
 **Handcraft minimal Rust types for the BPMN 2.0 subset defined in spec.md.**
 
-The types will use `serde` derives for both XML and YAML serialization, use `quick-xml` for XML parsing, and cover only the elements required by the MVP spec.
+Types use serde for XML and YAML, `quick-xml` for BPMN parse/serialize, and
+live under each slice's BPMN adapter (e.g.
+`src/features/convert_bpmn_to_mdx/adapters/bpmn/types/`).
 
 Supported BPMN elements (per spec.md):
 
@@ -36,41 +58,49 @@ Supported BPMN elements (per spec.md):
 | documentation | Should Have |
 | extensionElements | Could Have |
 
-Implementation: create handcrafted types under the BPMN **adapter** layer of the
-relevant feature slice (e.g.
-`src/features/convert_bpmn_to_mdx/adapters/bpmn/types/`) with `Definitions`
-(root element), `Process`, `FlowElement` enum (StartEvent, EndEvent, Task
-variants, Gateway variants), `SequenceFlow`, and common attributes (id, name,
-incoming, outgoing). These types are the compile/import IR ([[ADR-2]]); they
-must not be placed in or re-exported from the domain layer ([[ADR-7]]).
+Implementation covers `Definitions`, `Process`, per-element structs (tasks,
+events, gateways, flows), and common attributes (id, name, incoming, outgoing).
+Interleaved process children deserialize via an enum-based visitor (replacing
+naive vec-per-type grouping after serde/quick-xml limitations surfaced in
+development).
 
 ### Options
 
-1. **XSD codegen via `xsd-parser`**: Automated but failed due to schema complexity (5+ interconnected schemas, complex inheritance, abstract types with substitution groups that don't map cleanly to Rust).
-2. **XSD → Protobuf → Rust**: No mature converter exists. GitHub search for "xsd to protobuf" returned only 2 results, both doing the reverse direction (proto→xsd). Tools like `xsdata` (Python) can generate code from XSD but don't output .proto. Would require manual Proto schema creation anyway. Not viable.
-3. **Handcrafted types**: Manual but tailored to exactly the subset needed — chosen.
-4. **XSD → JSON Schema** (future option): For runtime YAML validation. Could use `xsdata` (Python) with JSON output format to generate JSON Schema from XSD, then validate YAML against JSON Schema using a Rust crate like `jsonschema`. This could be a pre-commit hook or test-time validation, not build-time codegen.
+1. **XSD codegen via `xsd-parser`**: tried first; failed on schema complexity (see Context)
+2. **XSD → Protobuf → Rust**: no mature converter; would still require manual schema work
+3. **Handcrafted types**: tailored to spec.md subset — **chosen**
+4. **XSD → JSON Schema** (future): possible pre-commit/test-time YAML validation without Rust codegen
+
+Rejected alongside codegen:
+
+- **Manual JSON Schema** for frontmatter — duplicate maintenance vs XSD
+- **Pure-Rust XSD validators** (`xmlschema`, `xsd` crate) — immature for multi-file BPMN schemas at evaluation time
 
 ### Rationale
 
-1. **Immediate compilation**: No build-time codegen complexity or build-script dependencies
-2. **Types tailored exactly to our needs**: Only the elements required by spec.md
-3. **Full control over serde attributes**: Fine-grained control over YAML frontmatter format
-4. **WASM-compatible**: No build-script dependencies at runtime
-5. **Simpler dependency tree**: Removes `xsd-parser` from build dependencies
+1. **Shippable**: no build-script codegen or generated-code surgery
+2. **Exact subset**: only elements we compile/import/validate
+3. **Serde control**: frontmatter field names match BPMN XML conventions
+4. **WASM-safe core path**: handcrafted types + quick-xml; libxml optional and infrastructure-only
+5. **Simpler deps**: no `xsd-parser` build dependency
 
 ## Consequences
 
 ### Positive
 
-1. Immediate compilation, no build-time codegen complexity
-2. Types tailored exactly to our needs
-3. Full control over serde attributes for YAML frontmatter format
-4. WASM-compatible (no build-script dependencies at runtime)
-5. Simpler dependency tree
+1. Immediate compilation; full control over types and serde attributes
+2. WASM-compatible compile/import path without build-time codegen
+3. Round-trip and fixture tests lock behavior to real BPMN files
+4. Optional libxml XSD validation still available for native CI when enabled
 
 ### Negative
 
-1. Manual maintenance if XSD changes (rare for BPMN 2.0, stable since 2011)
-2. Risk of drift from XSD (mitigated by test-time validation: unit tests parse known-good BPMN files into Rust types, round-trip tests serialize back to XML and validate with `xmllint --schema`, integration tests compare generated BPMN with reference files)
-3. Need to add types manually as we expand BPMN coverage
+1. Manual type additions when expanding BPMN coverage
+2. Theoretical drift from full XSD (mitigated by round-trip tests, optional XSD validation, and reference fixtures)
+3. `src/assets/schemas/` can be misread as "source of truth for types" — it is **validation-only**
+
+## Related
+
+- [[ADR-2]] — shared IR for compile/import
+- [[ADR-3]] — dependency stack (quick-xml, optional libxml)
+- [[ADR-7]] — types stay in adapter layer, not domain

@@ -12,7 +12,9 @@ The spec defines two transformations:
 - **Compile** (MDX → BPMN): Convert flow folder of MDX files to deterministic BPMN XML
 - **Import** (BPMN → MDX): Convert BPMN XML to MDX files, preserving existing MDX bodies
 
-We need to decide on the architecture for these transformations. The architecture should leverage the XSD-generated Rust types from [[ADR-1]] as the shared type system.
+We need to decide on the architecture for these transformations. The shared
+type system is handcrafted BPMN adapter types ([[ADR-4]]), including the
+rejected XSD-codegen path documented there.
 
 ## Decision
 
@@ -35,27 +37,22 @@ We need to decide on the architecture for these transformations. The architectur
     └─────────────┘
 ```
 
-The IR uses handcrafted BPMN adapter types ([[ADR-4]], superseding [[ADR-1]]'s
-codegen approach), ensuring the same type system validates both compile and
-import directions.
+The IR uses handcrafted BPMN adapter types ([[ADR-4]]), ensuring the same type
+system validates both compile and import directions.
 
-The module layout organizes concerns as follows:
+The module layout organizes concerns inside feature slices:
+
 ```
-src/
-├── bpmn/
-│   ├── generated.rs    # XSD-generated types
-│   ├── graph.rs        # Graph operations on BPMN model
-│   └── mod.rs
-├── mdx/
-│   ├── parser.rs       # Frontmatter extraction
-│   ├── writer.rs       # MDX generation with body preservation
-│   └── mod.rs
-├── compiler/
-│   ├── compile.rs      # MDX → IR → BPMN
-│   ├── import.rs       # BPMN → IR → MDX
-│   └── mod.rs
-└── cli/
-    └── mod.rs          # CLI commands
+src/features/convert_bpmn_to_mdx/
+├── adapters/
+│   ├── bpmn/          # parse/serialize + handcrafted BPMN types (IR)
+│   └── mdx/           # MDX frontmatter types
+├── use_cases/
+│   ├── compile.rs     # MDX → Definitions
+│   └── import.rs      # Definitions → MDX
+└── infrastructure/
+    ├── cli/           # filesystem orchestration
+    └── xsd_validator.rs  # optional libxml XSD check
 ```
 
 ### Options

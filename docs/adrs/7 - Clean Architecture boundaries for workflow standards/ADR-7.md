@@ -21,7 +21,7 @@ The current ADR set already points in this direction:
 
 - [[ADR-2]] establishes a shared intermediate representation and bidirectional transformation architecture
 - [[ADR-4]] rejects BPMN XSD code generation as the core type strategy and keeps handcrafted types for the supported subset
-- [[ADR-5]] prefers screaming architecture and one type per file for clarity
+- [[ADR-11]] applies screaming architecture and one type per file across the project (evolved from type-only refactor, see ADR-11 Context)
 - [[ADR-6]] prefers modern Rust module layout
 
 We now need an explicit architectural boundary so that:
@@ -60,7 +60,7 @@ As detent grows beyond BPMN-only support, the codebase should move toward the fo
 
 ### Rationale
 
-This architecture is grounded in Robert C. Martin's *Clean Architecture*, Eric Evans' *Domain-Driven Design*, and Vaughn Vernon's *Implementing Domain-Driven Design*. It builds on established ADRs: [[ADR-2]] (bidirectional compiler architecture), [[ADR-4]] (handcrafted BPMN types), [[ADR-5]] (screaming architecture), and [[ADR-6]] (`folder.rs` module style).
+This architecture is grounded in Robert C. Martin's *Clean Architecture*, Eric Evans' *Domain-Driven Design*, and Vaughn Vernon's *Implementing Domain-Driven Design*. It builds on established ADRs: [[ADR-2]] (bidirectional compiler architecture), [[ADR-4]] (handcrafted BPMN types), [[ADR-11]] (screaming architecture), and [[ADR-6]] (`folder.rs` module style).
 
 **Architectural Boundary:**
 
@@ -99,7 +99,7 @@ This architecture is grounded in Robert C. Martin's *Clean Architecture*, Eric E
 
 *Infrastructure.* The Infrastructure layer implements technical capabilities required by the application ports. Examples: `libxml`-based XSD validator, filesystem state store, atomic write + fsync + rename implementation, locking implementation, clock, random jitter, hashing, telemetry sinks, host SDK bridges for Node/Python/WASM.
 
-**Module Organization.** These layers are architectural boundaries, not a requirement to abandon screaming architecture. This ADR does not override [[ADR-5]] or [[ADR-6]]. We should preserve discoverability while enforcing dependency direction. That means either of the following can be valid: top-level layer modules such as `domain/`, `application/`, `adapters/`, `infrastructure/`; or capability-first modules with internal layer boundaries where appropriate.
+**Module Organization.** These layers are architectural boundaries, not a requirement to abandon screaming architecture. This ADR does not override [[ADR-11]] or [[ADR-6]]. We should preserve discoverability while enforcing dependency direction. That means either of the following can be valid: top-level layer modules such as `domain/`, `application/`, `adapters/`, `infrastructure/`; or capability-first modules with internal layer boundaries where appropriate.
 
 The important rule is dependency direction:
 

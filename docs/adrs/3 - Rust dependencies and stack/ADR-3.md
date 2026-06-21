@@ -8,7 +8,7 @@ supersedes:
 
 ## Context
 
-We need to select Rust dependencies that work in WASM targets (for in-browser execution), are performant, are well-maintained, and minimize reinvention. This ADR supports the type generation strategy from [[ADR-1]] and the bidirectional compiler architecture from [[ADR-2]].
+We need to select Rust dependencies that work in WASM targets (for in-browser execution), are performant, are well-maintained, and minimize reinvention. This ADR supports the handcrafted type strategy from [[ADR-4]] and the bidirectional compiler architecture from [[ADR-2]].
 
 ## Decision
 
@@ -18,38 +18,30 @@ Core dependencies:
 
 | Purpose | Crate | Rationale |
 |---------|-------|-----------|
-| **XSD → Rust codegen** | `xsd-parser` | Generates types from XSD with serde/quick-xml support |
-| **XML parsing** | `quick-xml` | Fast, async-capable, WASM-compatible |
-| **YAML parsing** | `serde_yaml` | Already in project, works with serde |
-| **JSON** | `serde_json` | Already in project |
-| **Serialization** | `serde` | Already in project, derive macros |
-| **MDX frontmatter** | custom parser | Simple YAML between `---` delimiters |
+| **XML parsing/serialization** | `quick-xml` | Fast, pure Rust, WASM-compatible |
+| **YAML parsing** | `serde_yaml` | Works with serde for MDX frontmatter |
+| **JSON** | `serde_json` | General serialization |
+| **Serialization** | `serde` | Derive macros across formats |
+| **CLI** | `clap` | Command-line interface |
+| **MDX frontmatter** | custom parser | YAML between `---` delimiters |
+| **XSD validation (optional)** | `libxml` | Native-only; feature `xsd-validation` |
 
-Build dependencies:
+Historical note: build-time `xsd-parser` was tried and removed; see [[ADR-4]].
 
-| Purpose | Crate | Rationale |
-|---------|-------|-----------|
-| **Code generation** | `xsd-parser` | Build-time type generation |
+`Cargo.toml` (runtime dependencies):
 
-Considered but deferred:
-
-| Crate | Purpose | Why Deferred |
-|-------|---------|--------------|
-| `yaserde` | XML+serde | `xsd-parser` + `quick-xml` covers this |
-| `xml-schema` | XSD parsing | Less mature than `xsd-parser` |
-| `jsonschema` | JSON Schema validation | Not needed with type-based validation |
-
-`Cargo.toml` additions:
 ```toml
 [dependencies]
-quick-xml = { version = "0.39", features = ["serialize"] }
+quick-xml = { version = "0.37", features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 serde_json = "1"
-xsd-parser-types = "0.1"  # Runtime types used by generated code
+clap = { version = "4", features = ["derive"] }
+libxml = { version = "0.3", optional = true }
 
-[build-dependencies]
-xsd-parser = "1.4"
+[features]
+default = ["graph-validation"]
+xsd-validation = ["libxml"]
 ```
 
 ### Options
