@@ -80,37 +80,37 @@ fn when_parse_sequence_flow(world: &mut ConvertWorld) {
 #[when(regex = r#"^I roundtrip the MDX file as a (start event|task|sequence flow)$"#)]
 fn when_roundtrip(world: &mut ConvertWorld, kind: String) {
     let input = &world.mdx_inputs[0];
-    // --- Act (parse MDX) ---
+    // Act
     let mdx = MdxFile::parse(&input.content).expect("parse MDX");
     match kind.as_str() {
         "start event" => {
-            // --- Act (parse start event) ---
+            // Act
             let event = mdx.parse_start_event().expect("parse start event");
-            // --- Act (serialize) ---
+            // Act
             let yaml = serde_yaml::to_string(&event).expect("serialize");
-            // --- Act (deserialize) ---
+            // Act
             let parsed: StartEvent = serde_yaml::from_str(&yaml).expect("deserialize");
-            // --- Assert ---
+            // Assert
             assert_eq!(event, parsed);
         }
         "task" => {
-            // --- Act (parse task) ---
+            // Act
             let task = mdx.parse_task().expect("parse task");
-            // --- Act (serialize) ---
+            // Act
             let yaml = serde_yaml::to_string(&task).expect("serialize");
-            // --- Act (deserialize) ---
+            // Act
             let parsed: Task = serde_yaml::from_str(&yaml).expect("deserialize");
-            // --- Assert ---
+            // Assert
             assert_eq!(task, parsed);
         }
         "sequence flow" => {
-            // --- Act (parse flow) ---
+            // Act
             let flow = mdx.parse_sequence_flow().expect("parse flow");
-            // --- Act (serialize) ---
+            // Act
             let yaml = serde_yaml::to_string(&flow).expect("serialize");
-            // --- Act (deserialize) ---
+            // Act
             let parsed: SequenceFlow = serde_yaml::from_str(&yaml).expect("deserialize");
-            // --- Assert ---
+            // Assert
             assert_eq!(flow, parsed);
         }
         _ => unreachable!(),
@@ -195,12 +195,12 @@ fn given_all_mdx(world: &mut ConvertWorld) {
 #[when("I parse each MDX file")]
 fn when_parse_each(world: &mut ConvertWorld) {
     for input in &world.mdx_inputs {
-        // --- Act (parse MDX) ---
+        // Act
         let mdx = MdxFile::parse(&input.content)
             .unwrap_or_else(|_| panic!("Failed to parse {}", input.filename));
-        // --- Assert (frontmatter must have type) ---
+        // Assert
         assert!(mdx.frontmatter.contains("type:"), "missing type in {}", input.filename);
-        // --- Assert (frontmatter must have id) ---
+        // Assert
         assert!(mdx.frontmatter.contains("id:"), "missing id in {}", input.filename);
     }
 }

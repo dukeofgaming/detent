@@ -47,16 +47,14 @@ fn then_flow_node_ids(world: &mut ConvertWorld) {
 #[when("I inspect the first sequence flow")]
 fn when_sequence_flow(world: &mut ConvertWorld) {
     let xml = world.bpmn_xml.as_ref().expect("bpmn_xml must be set");
-    // --- Act (parse BPMN) ---
+    // Act
     let defs = detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn(xml)
         .expect("Failed to parse BPMN");
     let process = defs.process.expect("Expected process");
     let flow = &process.sequence_flows[0];
-    // --- Assert ---
+    // Assert
     assert!(!flow.id.is_empty());
-    // --- Assert ---
     assert!(!flow.source_ref.is_empty());
-    // --- Assert ---
     assert!(!flow.target_ref.is_empty());
     world.e2e_last_success = true;
 }
