@@ -6,8 +6,8 @@ use std::path::PathBuf;
 
 mod steps;
 
-#[path = "scenarios/hello_world_imports_to_5_mdx.rs"]
-mod hello_world_imports_to_5_mdx;
+#[path = "scenarios/hello_world_imports_to_mdx.rs"]
+mod hello_world_imports_to_mdx;
 #[path = "scenarios/minimal_mdx_compiles_to_process.rs"]
 mod minimal_mdx_compiles_to_process;
 #[path = "scenarios/empty_input_rejected.rs"]

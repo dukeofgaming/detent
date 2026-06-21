@@ -6,12 +6,17 @@
 use serde::Deserialize;
 
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{
-    BPMNDiagram, BPMNEdge, BPMNLabel, BPMNPlane, BPMNShape, Bounds, Definitions, Process, Waypoint,
+    BPMNDiagram, BPMNEdge, BPMNLabel, BPMNPlane, BPMNShape, Bounds, Definitions, Documentation,
+    Process, Waypoint,
 };
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
 
 #[derive(Debug, Deserialize)]
 struct DiagramBlock {
+    #[serde(default)]
+    id: Option<String>,
+    #[serde(rename = "isMarkerVisible", default)]
+    is_marker_visible: Option<bool>,
     #[serde(default)]
     bounds: Option<BoundsData>,
     #[serde(default)]
@@ -37,6 +42,13 @@ struct LabelData {
 struct WaypointData {
     x: String,
     y: String,
+}
+
+#[derive(Debug)]
+struct ProcessDiagramData {
+    diagram_id: String,
+    plane_id: String,
+    plane_bpmn_element: String,
 }
 
 /// A single MDX file input for compilation
@@ -111,11 +123,42 @@ fn parse_diagram(frontmatter: &str) -> Option<DiagramBlock> {
     serde_yaml::from_value(diagram.clone()).ok()
 }
 
+fn parse_process_diagram(frontmatter: &str) -> Option<ProcessDiagramData> {
+    let value: serde_yaml::Value = serde_yaml::from_str(frontmatter).ok()?;
+    let diagram = value.get("diagram")?;
+    let plane = diagram.get("plane")?;
+    Some(ProcessDiagramData {
+        diagram_id: optional_string_value(diagram, "id").unwrap_or_default(),
+        plane_id: optional_string_value(plane, "id").unwrap_or_default(),
+        plane_bpmn_element: optional_string_value(plane, "bpmnElement").unwrap_or_default(),
+    })
+}
+
+fn string_value(value: &serde_yaml::Value, key: &str) -> Option<String> {
+    value.get(key)?.as_str().map(ToString::to_string)
+}
+
+fn optional_string_value(value: &serde_yaml::Value, key: &str) -> Option<String> {
+    value
+        .get(key)
+        .and_then(|v| v.as_str().map(ToString::to_string))
+}
+
+fn optional_bool_value(value: &serde_yaml::Value, key: &str) -> Option<bool> {
+    value.get(key).and_then(serde_yaml::Value::as_bool)
+}
+
+fn optional_documentation_value(value: &serde_yaml::Value) -> Option<Documentation> {
+    let documentation = value.get("documentation")?;
+    serde_yaml::from_value(documentation.clone()).ok()
+}
+
 fn to_shape(element_id: &str, d: &DiagramBlock) -> BPMNShape {
     let bounds = d.bounds.as_ref().unwrap();
     BPMNShape {
-        id: format!("{}_di", element_id),
+        id: d.id.clone().unwrap_or_else(|| format!("{}_di", element_id)),
         bpmn_element: element_id.to_string(),
+        is_marker_visible: d.is_marker_visible,
         bounds: Bounds {
             x: bounds.x.clone(),
             y: bounds.y.clone(),
@@ -135,7 +178,7 @@ fn to_shape(element_id: &str, d: &DiagramBlock) -> BPMNShape {
 
 fn to_edge(element_id: &str, d: &DiagramBlock) -> BPMNEdge {
     BPMNEdge {
-        id: format!("{}_di", element_id),
+        id: d.id.clone().unwrap_or_else(|| format!("{}_di", element_id)),
         bpmn_element: element_id.to_string(),
         waypoints: d
             .waypoints
@@ -186,6 +229,12 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
 
     let mut diagram_shapes: Vec<BPMNShape> = Vec::new();
     let mut diagram_edges: Vec<BPMNEdge> = Vec::new();
+    let mut process_diagram: Option<ProcessDiagramData> = None;
+    let mut definitions_id = "definitions_1".to_string();
+    let mut definitions_name = None;
+    let mut definitions_target_namespace = None;
+    let mut definitions_exporter = Some("detent".to_string());
+    let mut definitions_exporter_version = None;
 
     for input in inputs {
         let mdx = MdxFile::parse(&input.content).map_err(|e| CompileError::ParseError {
@@ -199,6 +248,38 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
             })?;
 
         let element_id = match bpmn_type.as_str() {
+            "bpmn:process" => {
+                let frontmatter = serde_yaml::from_str::<serde_yaml::Value>(&mdx.frontmatter)
+                    .map_err(|e| CompileError::DeserializationError {
+                        filename: input.filename.clone(),
+                        message: e.to_string(),
+                    })?;
+                let id = string_value(&frontmatter, "id").ok_or_else(|| {
+                    CompileError::DeserializationError {
+                        filename: input.filename.clone(),
+                        message: "missing process id".to_string(),
+                    }
+                })?;
+                process.id = id.clone();
+                process.name = optional_string_value(&frontmatter, "name");
+                process.is_executable = optional_bool_value(&frontmatter, "isExecutable");
+                process.is_closed = optional_bool_value(&frontmatter, "isClosed");
+                process.process_type = optional_string_value(&frontmatter, "processType");
+                process.documentation = optional_documentation_value(&frontmatter);
+
+                if let Some(definitions) = frontmatter.get("definitions") {
+                    definitions_id =
+                        string_value(definitions, "id").unwrap_or_else(|| definitions_id.clone());
+                    definitions_name = optional_string_value(definitions, "name");
+                    definitions_target_namespace =
+                        optional_string_value(definitions, "targetNamespace");
+                    definitions_exporter = optional_string_value(definitions, "exporter");
+                    definitions_exporter_version =
+                        optional_string_value(definitions, "exporterVersion");
+                }
+                process_diagram = parse_process_diagram(&mdx.frontmatter);
+                id
+            }
             "bpmn:startEvent" => {
                 let event =
                     mdx.parse_start_event()
@@ -317,23 +398,40 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
             }
         };
 
-        if let Some(diagram) = parse_diagram(&mdx.frontmatter) {
-            if diagram.bounds.is_some() {
-                diagram_shapes.push(to_shape(&element_id, &diagram));
-            } else if diagram.waypoints.is_some() {
-                diagram_edges.push(to_edge(&element_id, &diagram));
+        if bpmn_type != "bpmn:process" {
+            if let Some(diagram) = parse_diagram(&mdx.frontmatter) {
+                if diagram.bounds.is_some() {
+                    diagram_shapes.push(to_shape(&element_id, &diagram));
+                } else if diagram.waypoints.is_some() {
+                    diagram_edges.push(to_edge(&element_id, &diagram));
+                }
             }
         }
     }
 
-    let bpmn_diagram = if diagram_shapes.is_empty() && diagram_edges.is_empty() {
+    let bpmn_diagram = if diagram_shapes.is_empty()
+        && diagram_edges.is_empty()
+        && process_diagram.is_none()
+    {
         None
     } else {
+        let diagram_id = process_diagram
+            .as_ref()
+            .map(|d| d.diagram_id.clone())
+            .unwrap_or_else(|| "BPMNDiagram_1".to_string());
+        let plane_id = process_diagram
+            .as_ref()
+            .map(|d| d.plane_id.clone())
+            .unwrap_or_else(|| "BPMNPlane_1".to_string());
+        let plane_bpmn_element = process_diagram
+            .as_ref()
+            .map(|d| d.plane_bpmn_element.clone())
+            .unwrap_or_else(|| process.id.clone());
         Some(BPMNDiagram {
-            id: "BPMNDiagram_1".to_string(),
+            id: diagram_id,
             plane: BPMNPlane {
-                id: "BPMNPlane_1".to_string(),
-                bpmn_element: process.id.clone(),
+                id: plane_id,
+                bpmn_element: plane_bpmn_element,
                 shapes: diagram_shapes,
                 edges: diagram_edges,
             },
@@ -341,11 +439,11 @@ pub fn compile_to_definitions(inputs: &[MdxInput]) -> Result<Definitions, Compil
     };
 
     let definitions = Definitions {
-        id: "definitions_1".to_string(),
-        name: None,
-        target_namespace: None,
-        exporter: Some("detent".to_string()),
-        exporter_version: None,
+        id: definitions_id,
+        name: definitions_name,
+        target_namespace: definitions_target_namespace,
+        exporter: definitions_exporter,
+        exporter_version: definitions_exporter_version,
         process: Some(process),
         bpmn_diagram,
     };

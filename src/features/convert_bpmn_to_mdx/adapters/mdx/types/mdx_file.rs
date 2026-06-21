@@ -113,7 +113,13 @@ impl MdxFile {
 
     /// Parse the frontmatter as a Process
     pub fn parse_process(&self) -> Result<Process, serde_yaml::Error> {
-        self.parse_as()
+        let mut value: serde_yaml::Value = serde_yaml::from_str(&self.frontmatter)?;
+        if let serde_yaml::Value::Mapping(ref mut mapping) = value {
+            mapping.remove(&serde_yaml::Value::String("type".to_string()));
+            mapping.remove(&serde_yaml::Value::String("definitions".to_string()));
+            mapping.remove(&serde_yaml::Value::String("diagram".to_string()));
+        }
+        serde_yaml::from_value(value)
     }
 
     /// Get raw frontmatter for generic parsing

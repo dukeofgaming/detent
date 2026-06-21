@@ -24,6 +24,11 @@
 
 ## Coding Mandates
 
+- Agentic coding work must stay inside this repository workspace and the project devcontainer.
+- Do not access the host filesystem outside the workspace root with any tool. This includes host temp directories such as `/var`, `/tmp`, `/private/tmp`, user home paths outside this repo, global tool caches, or copied worktree/devcontainer folders.
+- Execute shell commands only inside the project devcontainer. Never run `bash`, `cargo`, `git`, package managers, scripts, or other command workflows on the host system.
+- If no devcontainer is active or command execution inside the devcontainer fails because the container is missing/stopped, use the devcontainer tool to start or create the project devcontainer before running commands.
+- If the devcontainer cannot be started or attached, stop and report the blocker. Do not fall back to host commands or host filesystem workarounds.
 - Always run `cargo test` at the end of a complete logical code change, and make sure all tests pass before considering the change done.
 - Slice-level integration tests live under `src/features/<feature>/tests/` and are discovered through stable root harness files in `tests/`.
 - Do not wire slice tests into library code with `#[cfg(test)] mod tests;` unless a test must exercise private internals and there is no better seam.

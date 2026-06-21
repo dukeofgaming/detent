@@ -10,6 +10,7 @@ fn tdd_asset_path() -> std::path::PathBuf {
 }
 
 const EXPECTED_MDX_FILES: &[&str] = &[
+    "hello_world.mdx",
     "_1E892844-423C-464F-ADC4-22F1EC73851B.mdx",
     "_808AA40C-EAA1-40C4-A2DC-27000FBF1866.mdx",
     "_D3F6E97D-7783-492C-98CE-57EC815D304C.mdx",
@@ -101,6 +102,11 @@ fn test_imported_tdd_fixture_compiles() {
         .arg(output_dir)
         .assert()
         .success();
+
+    assert!(
+        output_dir.join("Process_DeveloperWorkflow.mdx").exists(),
+        "Expected process metadata file to be generated"
+    );
 
     detent!()
         .arg("compile")
