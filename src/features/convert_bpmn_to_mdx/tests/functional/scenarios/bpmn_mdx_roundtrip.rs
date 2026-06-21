@@ -14,8 +14,11 @@ use detent::features::convert_bpmn_to_mdx::use_cases::import::{
 use super::ConvertWorld;
 
 fn import_fixture(_world: &mut ConvertWorld, relative_path: &str) -> Vec<MdxOutput> {
+    // --- Arrange ---
     let xml = fs::read_to_string(super::fixture_path(relative_path)).expect("fixture must be readable");
+    // --- Act ---
     let definitions = parse_bpmn(&xml).expect("fixture BPMN must parse");
+    // --- Act ---
     import_to_mdx(&definitions).expect("fixture BPMN must import to MDX")
 }
 
@@ -31,6 +34,7 @@ fn frontmatter_by_filename(outputs: Vec<MdxOutput>) -> BTreeMap<String, serde_ya
 }
 
 fn compile_outputs(outputs: &[MdxOutput]) -> Vec<MdxOutput> {
+    // --- Arrange (convert MDX outputs to compile inputs) ---
     let inputs: Vec<MdxInput> = outputs
         .iter()
         .map(|output| MdxInput {
@@ -38,7 +42,9 @@ fn compile_outputs(outputs: &[MdxOutput]) -> Vec<MdxOutput> {
             content: output.content.clone(),
         })
         .collect();
+    // --- Act (compile) ---
     let definitions = compile_to_definitions(&inputs).expect("imported MDX must compile");
+    // --- Act (import back) ---
     import_to_mdx(&definitions).expect("compiled definitions must import")
 }
 
@@ -131,6 +137,7 @@ fn then_metadata(world: &mut ConvertWorld) {
 
 #[given("the tdd BPMN fixture is imported to MDX")]
 fn given_tdd_import(world: &mut ConvertWorld) {
+    // --- Act (via helper: Arrange file read → Act parse → Act import) ---
     world.import_outputs = Some(import_fixture(world, "tdd/tdd.bpmn2"));
 }
 
@@ -200,8 +207,11 @@ fn given_roundtrip_fixture(world: &mut ConvertWorld, path: String) {
 #[when("I import and compile-roundtrip the fixture")]
 fn when_roundtrip(world: &mut ConvertWorld) {
     let relative = world.bpmn_xml.as_ref().expect("fixture path").clone();
+    // --- Act (import fixture to MDX) ---
     let imported = import_fixture(world, &relative);
+    // --- Act (compile MDX → definitions → MDX) ---
     let roundtripped = compile_outputs(&imported);
+    // --- Assert preparation (serialize frontmatter for comparison) ---
     world.e2e_file_content = Some(format!(
         "{:?}|{:?}",
         frontmatter_by_filename(imported),
