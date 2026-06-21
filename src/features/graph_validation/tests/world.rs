@@ -6,13 +6,13 @@ use std::collections::HashMap;
 mod fixtures;
 #[path = "fixtures/branching_process.rs"]
 mod branching_fixture;
-#[path = "unit/steps/mod.rs"]
+#[path = "unit/steps.rs"]
 mod unit_steps;
-#[path = "functional/steps/mod.rs"]
+#[path = "functional/steps.rs"]
 mod functional_steps;
-#[path = "integration/steps/mod.rs"]
+#[path = "integration/steps.rs"]
 mod integration_steps;
-#[path = "e2e/steps/mod.rs"]
+#[path = "e2e/steps.rs"]
 mod e2e_steps;
 
 #[path = "functional/scenarios/well_formed_process_passes.rs"]

@@ -80,7 +80,7 @@ The impact assessment identified renames from legacy `mod.rs` barrels to
 | Layer barrel | `src/features/convert_bpmn_to_mdx/use_cases.rs` |
 | Feature root exception | `src/features/convert_bpmn_to_mdx/mod.rs` |
 | Type file | `.../adapters/bpmn/types/events/start_event.rs` |
-| Test wiring exception | `.../tests/integration/mod.rs`, `.../tests/bdd/steps/mod.rs` |
+| Test wiring | `.../tests/unit/steps.rs` (folder.rs, with `#[path]` submodules under `steps/`) |
 
 Risk is low: pure file renames with no code changes required. All imports and public API remain identical. `cargo test` validates correctness after refactoring. There are no breaking changes — external crate consumers see no difference and internal `use` statements are unchanged.
 
