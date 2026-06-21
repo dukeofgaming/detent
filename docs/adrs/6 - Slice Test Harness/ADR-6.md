@@ -1,9 +1,9 @@
 ---
 type: adr
-title: ADR-10 - Use a stable root harness for slice-owned integration tests
+title: ADR-6 - Slice Test Harness
 date: 2026-06-01
 status: accepted
-supersedes: "8, 9"
+supersedes:
 ---
 
 ## Context
@@ -33,7 +33,7 @@ slice; project-root `tests/` is only a Cargo discovery shim.
    `tests/feature_slices.rs` includes generated modules from slice paths — no
    per-slice `Cargo.toml` registration.
 
-6. **Screaming test layout** (2025-06, [[ADR-11]] / [[ADR-12]]): within each
+6. **Screaming test layout** (2025-06, [[ADR-7]] / [[ADR-8]]): within each
    slice, tests split into `integration/mod.rs`, optional `unit/mod.rs`, and
    `bdd/world.rs` with `scenarios/`, `steps/`, and `assets/hello_world/` etc.
 
@@ -66,7 +66,7 @@ Rules:
 - Slice tests: `src/features/<feature>/tests/{integration,unit,bdd}/`
 - Slice fixtures: `src/features/<feature>/tests/assets/<scenario>/`
 - No `#[cfg(test)] mod tests` in production slice code unless testing private
-  internals with no better seam ([[ADR-12]] BDD/integration cover public behavior)
+  internals with no better seam ([[ADR-8]] BDD/integration cover public behavior)
 - Slices duplicate fixtures where needed — no shared cross-slice test modules
 
 ### Options
@@ -91,7 +91,7 @@ maintenance. BDD and unit roots discovered the same way as integration.
 2. `cargo test --lib` stays limited to actual library unit tests
 3. New tests in existing slice files need no manifest changes
 4. New slice needs only `tests/integration/mod.rs` (and optional unit/BDD roots)
-5. Layout aligns with [[ADR-11]] (`integration/`, `unit/`, `bdd/`) and [[ADR-12]]
+5. Layout aligns with [[ADR-7]] (`integration/`, `unit/`, `bdd/`) and [[ADR-8]]
 
 ### Negative
 
@@ -101,5 +101,5 @@ maintenance. BDD and unit roots discovered the same way as integration.
 
 ## Related
 
-- [[ADR-11]] — screaming names for test directories
-- [[ADR-12]] — BDD file layout inside `bdd/`
+- [[ADR-7]] — screaming names for test directories
+- [[ADR-8]] — BDD file layout inside `bdd/`

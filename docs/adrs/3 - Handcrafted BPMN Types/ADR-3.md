@@ -1,9 +1,9 @@
 ---
 type: adr
-title: ADR-4 - Handcrafted BPMN Types Instead of XSD Codegen
+title: ADR-3 - Handcrafted BPMN Types
 date: 2026-01-20
 status: accepted
-supersedes: 1
+supersedes:
 ---
 
 ## Context
@@ -27,12 +27,12 @@ What we **kept** from the XSD effort:
 
 - Bundled schemas under `src/assets/schemas/` for **optional runtime validation**
   (libxml, native-only, behind `xsd-validation`) — not as codegen input
-- `quick-xml` + serde as the serialization stack ([[ADR-3]])
+- `quick-xml` + serde as the serialization stack ([[ADR-2]])
 
 The codebase then moved from flat `src/bpmn/` modules to **feature slices**
 (`src/features/convert_bpmn_to_mdx/adapters/bpmn/types/`) while keeping the
-handcrafted-type strategy. Types are adapter-layer IR ([[ADR-2]]), not domain
-objects ([[ADR-7]]).
+handcrafted-type strategy. Types are adapter-layer IR ([[ADR-1]]), not domain
+objects ([[ADR-5]]).
 
 ## Decision
 
@@ -101,6 +101,6 @@ Rejected alongside codegen:
 
 ## Related
 
-- [[ADR-2]] — shared IR for compile/import
-- [[ADR-3]] — dependency stack (quick-xml, optional libxml)
-- [[ADR-7]] — types stay in adapter layer, not domain
+- [[ADR-1]] — shared IR for compile/import
+- [[ADR-2]] — dependency stack (quick-xml, optional libxml)
+- [[ADR-5]] — types stay in adapter layer, not domain

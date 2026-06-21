@@ -42,6 +42,7 @@ supersedes:
 - When an ADR is superseded, update its frontmatter status and add the superseding ADR under `## Related`.
 - Proposed and superseded ADRs are informational; only accepted ADRs are active architecture rules.
 - Do not create ADRs without a number in the title.
+- ADR titles should be short and conversational (e.g. "Screaming Architecture", "Clean Architecture").
 
 ## File Structure
 
@@ -52,8 +53,21 @@ docs/adrs/<N> - <short-name>/
   ADR-N.md
 ```
 
-- The directory name starts with the number and a short (one-line) slug.
+- The directory name starts with the number and a short (one-line) slug matching the title.
 - The file inside is always `ADR-N.md` matching the ADR number.
 - This ensures each ADR has a stable address for wikilinks.
 - Cross-reference other ADRs by number in `## Related` sections.
-- Existing ADRs 1–10 follow this structure.
+- ADRs are numbered sequentially starting at 1 with no gaps.
+
+## Index
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| **ADR-1** | Bidirectional Compiler | accepted |
+| **ADR-2** | Rust Stack | accepted |
+| **ADR-3** | Handcrafted BPMN Types | accepted |
+| **ADR-4** | folder.rs Modules | accepted |
+| **ADR-5** | Clean Architecture | proposed |
+| **ADR-6** | Slice Test Harness | accepted |
+| **ADR-7** | Screaming Architecture | accepted |
+| **ADR-8** | BDD Test Layout | accepted |

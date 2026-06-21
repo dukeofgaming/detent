@@ -1,6 +1,6 @@
 ---
 type: adr
-title: ADR-2 - Bidirectional Compiler Architecture
+title: ADR-1 - Bidirectional Compiler
 date: 2026-01-20
 status: accepted
 supersedes:
@@ -13,7 +13,7 @@ The spec defines two transformations:
 - **Import** (BPMN → MDX): Convert BPMN XML to MDX files, preserving existing MDX bodies
 
 We need to decide on the architecture for these transformations. The shared
-type system is handcrafted BPMN adapter types ([[ADR-4]]), including the
+type system is handcrafted BPMN adapter types ([[ADR-3]]), including the
 rejected XSD-codegen path documented there.
 
 ## Decision
@@ -37,7 +37,7 @@ rejected XSD-codegen path documented there.
     └─────────────┘
 ```
 
-The IR uses handcrafted BPMN adapter types ([[ADR-4]]), ensuring the same type
+The IR uses handcrafted BPMN adapter types ([[ADR-3]]), ensuring the same type
 system validates both compile and import directions.
 
 The module layout organizes concerns inside feature slices:
@@ -63,7 +63,7 @@ src/features/convert_bpmn_to_mdx/
 
 ### Rationale
 
-1. **Shared types**: Handcrafted BPMN adapter types serve as the compile/import IR ([[ADR-4]])
+1. **Shared types**: Handcrafted BPMN adapter types serve as the compile/import IR ([[ADR-3]])
 2. **Round-trip integrity**: Parse and serialize through the same structures
 3. **Deterministic output**: Stable ordering in serialization
 4. **Future extensibility**: IR supports debugger and language server use cases

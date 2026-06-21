@@ -1,6 +1,6 @@
 ---
 type: adr
-title: ADR-6 - Use folder.rs by default for module definitions
+title: ADR-4 - folder.rs Modules
 date: 2026-01-21
 status: accepted
 supersedes:

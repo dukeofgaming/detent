@@ -1,9 +1,9 @@
 ---
 type: adr
-title: ADR-11 - Screaming architecture for directories and files
+title: ADR-7 - Screaming Architecture
 date: 2026-06-06
 status: accepted
-supersedes: 5
+supersedes:
 ---
 
 ## Context
@@ -27,8 +27,8 @@ By mid-2025 the same discoverability problems appeared elsewhere:
 
 Commit `7486af4` extended screaming architecture **project-wide** (superseding
 the type-only scope). Test restructuring followed: `bdd/scenarios/`,
-`steps/{given,when,then,and}.rs`, `integration/` vs `unit/` ([[ADR-10]],
-[[ADR-12]]).
+`steps/{given,when,then,and}.rs`, `integration/` vs `unit/` ([[ADR-6]],
+[[ADR-8]]).
 
 Screaming architecture applies anywhere a developer asks "what lives here?":
 
@@ -66,7 +66,7 @@ src/features/convert_bpmn_to_mdx/adapters/bpmn/types/
 | `tests/fixtures/` (ambiguous) | `tests/assets/<scenario>/` |
 | `utils/`, `common/`, `helpers/` | name the actual concern |
 
-BDD layout detail: [[ADR-12]].
+BDD layout detail: [[ADR-8]].
 
 Build/discovery entrypoints use descriptive names:
 `tests/feature_slices.rs`, `tests/feature_slices_cucumber.rs`, `build.rs`.
@@ -80,7 +80,7 @@ Build/discovery entrypoints use descriptive names:
 ### Rationale
 
 Layer folders (`domain/`, `use_cases/`, `adapters/`, `infrastructure/`) already
-signal Clean Architecture boundaries ([[ADR-7]] proposal). Test and adapter
+signal Clean Architecture boundaries ([[ADR-5]] proposal). Test and adapter
 trees should be equally glanceable. One-type-per-file reduces merge conflicts and
 makes IDE navigation ("go to file") map directly to domain concepts.
 
@@ -94,7 +94,7 @@ one-concern-per-file for BPMN element structs.
 1. Directory tree documents architecture without opening files
 2. `rg` and fuzzy-find map directly to concepts
 3. Scales as BPMN coverage and slice count grow
-4. Consistent with [[ADR-6]] `folder.rs` layer modules and feature `mod.rs` roots
+4. Consistent with [[ADR-4]] `folder.rs` layer modules and feature `mod.rs` roots
 
 ### Negative
 
@@ -104,6 +104,6 @@ one-concern-per-file for BPMN element structs.
 
 ## Related
 
-- [[ADR-6]] — `folder.rs` for layers; `mod.rs` only at feature roots
-- [[ADR-10]] — screaming test directory strategy
-- [[ADR-12]] — BDD file naming inside `bdd/`
+- [[ADR-4]] — `folder.rs` for layers; `mod.rs` only at feature roots
+- [[ADR-6]] — screaming test directory strategy
+- [[ADR-8]] — BDD file naming inside `bdd/`

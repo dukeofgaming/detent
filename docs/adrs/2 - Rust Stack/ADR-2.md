@@ -1,6 +1,6 @@
 ---
 type: adr
-title: ADR-3 - Rust Dependencies and Stack
+title: ADR-2 - Rust Stack
 date: 2026-01-20
 status: accepted
 supersedes:
@@ -8,7 +8,7 @@ supersedes:
 
 ## Context
 
-We need to select Rust dependencies that work in WASM targets (for in-browser execution), are performant, are well-maintained, and minimize reinvention. This ADR supports the handcrafted type strategy from [[ADR-4]] and the bidirectional compiler architecture from [[ADR-2]].
+We need to select Rust dependencies that work in WASM targets (for in-browser execution), are performant, are well-maintained, and minimize reinvention. This ADR supports the handcrafted type strategy from [[ADR-3]] and the bidirectional compiler architecture from [[ADR-1]].
 
 ## Decision
 
@@ -26,7 +26,7 @@ Core dependencies:
 | **MDX frontmatter** | custom parser | YAML between `---` delimiters |
 | **XSD validation (optional)** | `libxml` | Native-only; feature `xsd-validation` |
 
-Historical note: build-time `xsd-parser` was tried and removed; see [[ADR-4]].
+Historical note: build-time `xsd-parser` was tried and removed; see [[ADR-3]].
 
 `Cargo.toml` (runtime dependencies):
 
@@ -68,5 +68,5 @@ xsd-validation = ["libxml"]
 
 ### Negative
 
-1. Build-time `xsd-parser` was removed after [[ADR-4]] superseded codegen; handcrafted types replaced it
-2. Optional native-only `libxml` (feature `xsd-validation`) is not WASM-compatible and must live in infrastructure behind a `SchemaValidator` port ([[ADR-7]]), not in adapter modules
+1. Build-time `xsd-parser` was removed after rejecting XSD codegen (see [[ADR-3]] Context); handcrafted types replaced it
+2. Optional native-only `libxml` (feature `xsd-validation`) is not WASM-compatible and must live in infrastructure behind a `SchemaValidator` port ([[ADR-5]]), not in adapter modules
