@@ -1,45 +1,43 @@
 ---
 name: atomic-commit-assistant
-description: git commit, staged changes, unstaged changes, atomic commit selection, test-before-commit, AI author plus-address. Use when the developer wants OpenCode to turn working tree changes into one or more safe commits.
+description: git commit, staged changes, unstaged changes, atomic commit selection, test-before-commit, AI author plus-address. The agent must never auto-commit. After every logical code change, run all tests and if they pass, propose a commit with a short 1-line summary and a detailed summary, then ask the developer for confirmation.
 ---
 
 # Atomic Commit Assistant
 
-Use ONLY when the developer wants help reviewing changes and producing one or more git commits.
+Use when the developer has finished a logical code change, or when the `/commit` command is invoked. The agent must never commit automatically.
 
 ## Outcomes
 
-- Produce `1+` commits.
+- Propose atomic commits after work is complete and tests pass.
+- Never commit without explicit developer confirmation.
 - Keep each commit atomic.
-- Always confirm each commit with the developer before running `git commit`.
 - Never modify project code, configuration, prompts, or documentation while invoking this command.
 
 ## Required Workflow
 
-1. Inspect the current git state before planning a commit.
+1. After completing a logical code change, run the full test suite (`cargo test`).
+   - If tests fail, do not proceed to commit; report failures and wait for the developer.
+   - If no tests exist for the change set, say so explicitly.
+2. Only when all tests pass, inspect the current git state.
    - Review staged and unstaged changes separately.
    - Prefer `git status --short`, `git diff --staged`, `git diff`, and `git log --oneline -10`.
-   - Treat this command as commit-only: inspect, stage, test, and commit existing changes, but do not rewrite files.
-2. Decide whether the staged area already contains one atomic change.
-   - If yes, write a concise commit summary for that staged change.
-   - If no, suggest a split into multiple commits and ask the developer which commit to do first.
-3. If there are no staged changes, stage only the files or hunks needed for the next atomic commit.
+   - Treat this as commit-only: inspect, stage, test, and commit existing changes, but do not rewrite files.
+3. Present a commit proposal to the developer:
+   - A one-line summary (suitable as a commit title).
+   - A detailed summary of what changed and why.
+   - The files or scope included.
+   - Any important unstaged changes being left out (if any).
+   - The test command and result.
+   - If the change is AI-only, the author email with plus-address suffix.
+4. If staged changes mix unrelated concerns, suggest splitting into multiple commits and ask which to do first.
+5. If there are no staged changes but unstaged changes exist, stage only the files or hunks needed for the next atomic commit.
    - Do not pull unrelated changes into the commit.
    - If a safe non-interactive partial stage is not practical, explain the split and ask the developer how to proceed.
    - Do not edit files to make them easier to commit.
-4. Determine whether the upcoming staged diff is AI-only and untouched by the developer.
+6. Determine whether the upcoming staged diff is AI-only and untouched by the developer.
    - Only treat the change as AI-only when there is strong evidence that the agent wrote the staged scope and the developer did not modify it afterward.
    - If there is any uncertainty, treat it as developer-authored and use the normal author identity.
-5. If tests are present for that atomic change, run them before committing.
-   - Choose the smallest relevant test command that gives meaningful coverage.
-   - If no relevant tests exist, say so explicitly before asking for commit confirmation.
-   - If tests fail, do not commit until the developer decides how to proceed.
-6. Before each commit, present a confirmation message to the developer that includes:
-   - The proposed commit subject and short summary.
-   - The files or scope included.
-   - Any important unstaged changes being left out.
-   - The test command and result, or the reason no test was run.
-   - The author name and email that will be used.
 7. Only after explicit developer confirmation, create the commit.
 8. After each commit, reassess the remaining staged and unstaged changes and continue until there are no more atomic commits to make or the developer stops.
 
@@ -54,8 +52,8 @@ Use ONLY when the developer wants help reviewing changes and producing one or mo
 
 For each proposed commit, provide:
 
-- A one-line subject the developer could use as the commit title.
-- A 2-4 bullet summary of what changed and why.
+- **Summary** (one line): A short, direct line suitable as the commit title.
+- **Details**: A bulleted breakdown of what changed and why (2-4 bullets).
 - A note about what is intentionally excluded from this commit.
 
 ## AI Author Email Rule
@@ -71,7 +69,7 @@ Use the rewritten address only for that single commit. All other commits should 
 
 ## Safety Rules
 
-- Never commit without explicit developer confirmation.
+- Never commit without explicit developer confirmation. Never auto-commit.
 - Never modify files as part of `/commit`; if something looks wrong, stop and ask instead of editing it.
 - Never assume mixed staged changes are acceptable as one commit.
 - Never amend, force-push, or rewrite history unless the developer explicitly asks.
@@ -83,9 +81,9 @@ Use the rewritten address only for that single commit. All other commits should 
 Use a confirmation message like this before each commit:
 
 ```text
-Proposed commit: <subject>
+Proposed commit: <one-line summary>
 
-Summary:
+Details:
 - ...
 - ...
 

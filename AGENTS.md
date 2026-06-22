@@ -31,3 +31,15 @@
 - Slice-level integration tests live under `src/features/<feature>/tests/` and are discovered through stable root harness files in `tests/`.
 - Do not wire slice tests into library code with `#[cfg(test)] mod tests;` unless a test must exercise private internals and there is no better seam.
 - Never write production code without writing tests in TDD fashion.
+
+## Completion Workflow
+
+- After every complete logical code change, run `cargo test` and ensure all tests pass before considering the change done.
+- Never commit automatically. The agent must not invoke `git commit` or the `/commit` skill without explicit developer confirmation.
+- When all tests pass, present a commit proposal to the developer:
+  - **Summary** (one line): A short, direct line suitable as a commit title.
+  - **Details**: A bulleted breakdown of what changed and why.
+  - The files or scope included.
+  - The test command and result.
+  - Ask whether the developer wants to commit the current state.
+- Only proceed to commit after the developer explicitly confirms.
