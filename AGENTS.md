@@ -11,7 +11,7 @@
 | **ADR-5** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` — not binding |
 | **ADR-6** | accepted | Tests live under `src/features/<feature>/tests/` and are discovered through stable root `tests/` harness files |
 | **ADR-7** | accepted | Every file/directory name screams its single concern |
-| **ADR-8** | accepted | BDD at every test level: `tests/world.rs`, `{level}/{level}.feature`, `{level}/scenarios/`, `{level}/steps/{given,when,then,and}.rs` |
+| **ADR-8** | accepted | BDD per test level: `tests/world.rs`, optional `{level}/steps/` (only when level has shared steps), `{level}/scenarios/`, cross-level steps at slice-root `tests/steps/` |
 | **ADR-9** | accepted | Feature code organized as vertical slices under `src/features/<feature>/`; slices own code, tests, and fixtures; no cross-slice adapter imports |
 | **ADR-10** | accepted | Step bodies stay within a single AAA zone: Given arranges only, When acts only, Then asserts only |
 

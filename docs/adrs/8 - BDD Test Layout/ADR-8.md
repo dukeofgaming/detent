@@ -28,44 +28,49 @@ Adopt the following layout under `src/features/<slice>/tests/`:
 ```
 tests/
 ├── world.rs                 # Cucumber World struct + run() entrypoint
+├── steps.rs                 # optional: step definitions shared across levels
+├── steps/                   # (only when steps.rs exists)
+│   ├── given.rs             #   "used by: functional, integration"
+│   ├── when.rs
+│   └── then.rs
 ├── unit/
 │   ├── unit.feature
-│   ├── steps/               # unit-level step definitions
-│   │   ├── mod.rs
-│   │   ├── given.rs
-│   │   ├── when.rs
-│   │   ├── then.rs
-│   │   └── and.rs
-│   └── scenarios/
+│   ├── steps.rs             # optional: unit-exclusive shared steps
+│   ├── steps/               # (only when unit has shared steps)
+│   └── scenarios/           # one .rs file per scenario or tight scenario group
 ├── functional/
 │   ├── functional.feature
-│   ├── steps/               # functional-level step definitions
-│   │   ├── mod.rs
-│   │   ├── given.rs
-│   │   ├── when.rs
-│   │   ├── then.rs
-│   │   └── and.rs
+│   ├── steps.rs             # optional: functional-exclusive shared steps
+│   ├── steps/               # (only when functional has shared steps)
 │   └── scenarios/
 ├── integration/
 │   ├── integration.feature
-│   ├── steps/               # integration-level step definitions
-│   │   ├── mod.rs
-│   │   ├── given.rs
-│   │   ├── when.rs
-│   │   ├── then.rs
-│   │   └── and.rs
+│   ├── steps.rs             # optional: integration-exclusive shared steps
+│   ├── steps/               # (only when integration has shared steps)
 │   └── scenarios/
 ├── e2e/
 │   ├── e2e.feature
-│   ├── steps/               # e2e-level step definitions
-│   │   ├── mod.rs
-│   │   ├── given.rs
-│   │   ├── when.rs
-│   │   ├── then.rs
-│   │   └── and.rs
+│   ├── steps.rs             # optional: e2e-exclusive shared steps
+│   ├── steps/               # (only when e2e has shared steps)
 │   └── scenarios/
 └── assets/                  # fixtures (unchanged)
 ```
+
+Directories marked optional do not exist until there is code to put in them.
+Do not create placeholder files (per [[ADR-7]]). A `steps/` directory appears
+only when a step definition is shared across two or more scenarios at that
+level or slice.
+
+### Step ownership rules
+
+| Step used by | Lives in |
+|-------------|----------|
+| One scenario only | That scenario's `{level}/scenarios/<name>.rs` |
+| 2+ scenarios, same level | That level's `{level}/steps/` |
+| 2+ levels (e.g. functional + integration) | Slice-root `tests/steps/` |
+
+A step defined in one level's `steps/` must not be consumed by scenarios in
+a different level. Cross-level steps live at slice root, exactly once.
 
 ### Test level taxonomy
 
@@ -94,17 +99,21 @@ tests/
    not a test type — it is how every level is authored.
 
 3. **Scenarios in `{level}/scenarios/`.** Each `.rs` file contains step
-   definitions for one or a tight group of related Gherkin scenarios.
+   definitions for one scenario or a tight group of related Gherkin scenarios.
+   One scenario per file is the default; group only when scenarios share the
+   same fixture setup and are <20 lines each.
 
-4. **Per-level `steps/` directories.** Each level has its own `steps/`
-   directory under `{level}/steps/`. Step definitions shared across levels
-   are defined in one level's `steps/` (typically the primary consumer) and
-   discovered globally by Cucumber's inventory — no duplication needed.
-   When a step is truly unique to a level, it lives in that level's `steps/`.
+4. **Optional per-level `steps/` directories.** A `{level}/steps/` directory
+   (with `steps.rs` using ADR-4 folder.rs pattern) is created only when the
+   level has step definitions shared across two or more scenarios at that
+   level. Do not create placeholder step files — a file exists only when it
+   contains a step definition.
 
-5. **Scenario-local steps stay in the scenario file.** When a step is used by
-   exactly one scenario group, it lives in `{level}/scenarios/<group>.rs`. When
-   copied to a second scenario file, it graduates to shared `steps/`.
+5. **Cross-level steps at slice root.** Step definitions used by scenarios in
+   two or more levels (e.g. functional and integration) live in the slice-root
+   `tests/steps/` directory, not inside any level. No level's `steps/` may
+   depend on another level's `steps/`. The slice root is the single source of
+   truth for cross-cutting step behavior.
 
 6. **Modules declared via `#[path = "..."]`.** Inside `world.rs`, scenario
    files are declared with `#[path]` attributes. The steps module uses

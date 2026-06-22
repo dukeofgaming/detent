@@ -4,14 +4,10 @@ use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 use detent::features::convert_bpmn_to_mdx::use_cases::import::MdxOutput;
 use std::path::PathBuf;
 
-#[path = "unit/steps.rs"]
-mod unit_steps;
+#[path = "steps.rs"]
+mod steps;
 #[path = "functional/steps.rs"]
 mod functional_steps;
-#[path = "integration/steps.rs"]
-mod integration_steps;
-#[path = "e2e/steps.rs"]
-mod e2e_steps;
 
 #[path = "functional/scenarios/minimal_mdx_compiles_to_process.rs"]
 mod minimal_mdx_compiles_to_process;

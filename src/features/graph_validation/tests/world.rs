@@ -6,14 +6,10 @@ use std::collections::HashMap;
 mod fixtures;
 #[path = "fixtures/branching_process.rs"]
 mod branching_fixture;
-#[path = "unit/steps.rs"]
-mod unit_steps;
+#[path = "steps.rs"]
+mod steps;
 #[path = "functional/steps.rs"]
 mod functional_steps;
-#[path = "integration/steps.rs"]
-mod integration_steps;
-#[path = "e2e/steps.rs"]
-mod e2e_steps;
 
 #[path = "functional/scenarios/well_formed_process_passes.rs"]
 mod well_formed_process_passes;
@@ -41,8 +37,6 @@ mod branching_process_validated;
 mod parametrized_fixture_validation;
 #[path = "unit/scenarios/graph_operations.rs"]
 mod graph_operations;
-#[path = "e2e/scenarios/placeholder.rs"]
-mod e2e_placeholder;
 
 pub(crate) use branching_fixture::branching_process;
 pub(crate) use fixtures::{linear_process, linear_process_with_retargeted_exit};

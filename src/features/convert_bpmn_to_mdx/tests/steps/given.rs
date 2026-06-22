@@ -4,6 +4,7 @@ use cucumber::given;
 
 use super::super::ConvertWorld;
 
+// Used by: functional (roundtrip outline), integration (all fixture scenarios)
 #[given(regex = r"^the (hello-world|blog-post|tdd) BPMN fixture$")]
 fn given_parametrized_fixture(world: &mut ConvertWorld, name: String) {
     let xml = match name.as_str() {

@@ -65,6 +65,12 @@ src/features/convert_bpmn_to_mdx/adapters/bpmn/types/
 | flat `tests/*.rs` mixing strategies | `tests/{unit,functional,integration,e2e}/` |
 | `tests/fixtures/` (ambiguous) | `tests/assets/<scenario>/` |
 | `utils/`, `common/`, `helpers/` | name the actual concern |
+| empty placeholder files | delete them — only create files when there is actual code |
+
+Every file must justify its existence. Do not create placeholder
+(`given.rs`, `when.rs`, `then.rs`, `and.rs`) step files until a step
+definition needs a home. A `steps/` directory is created only when at
+least one step is shared across scenarios within that level or slice.
 
 BDD layout detail: [[ADR-8]].
 
@@ -95,6 +101,7 @@ one-concern-per-file for BPMN element structs.
 2. `rg` and fuzzy-find map directly to concepts
 3. Scales as BPMN coverage and slice count grow
 4. Consistent with [[ADR-4]] `folder.rs` layer modules and feature `mod.rs` roots
+5. No placeholder files — every file in the tree contains real code ([[ADR-8]])
 
 ### Negative
 

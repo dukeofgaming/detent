@@ -5,6 +5,7 @@ use detent::features::graph_validation::domain::graph::Graph;
 
 use super::super::{FlowAnalysis, GraphValidationWorld};
 
+// Used by: functional, integration
 #[when("I validate the process graph")]
 fn when_validate(world: &mut GraphValidationWorld) {
     let workflow = world
@@ -18,6 +19,7 @@ fn when_validate(world: &mut GraphValidationWorld) {
     }
 }
 
+// Used by: functional, integration
 #[when("I analyze the process flow")]
 fn when_analyze(world: &mut GraphValidationWorld) {
     let workflow = world.workflow.as_ref().expect("workflow must be set");
