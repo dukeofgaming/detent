@@ -18,9 +18,7 @@ pub(crate) fn run_detent(world: &mut ConvertWorld, args: &[&str]) {
         cmd.current_dir(dir);
     }
     for arg in args {
-        if arg.starts_with('@') {
-            cmd.arg(&world.e2e_output_file.as_ref().expect("output file path"));
-        } else if arg.starts_with('#') {
+        if arg.starts_with('@') || arg.starts_with('#') {
             cmd.arg(world.e2e_output_file.as_ref().expect("output file path"));
         } else {
             cmd.arg(arg);

@@ -10,14 +10,14 @@ fn when_parse(world: &mut ConvertWorld) {
     world.parsed_defs = Some(defs);
 }
 
-#[then("the process id is \"hello_world\"")]
+#[then(r#"the process id is "hello_world""#)]
 fn then_process_id(world: &mut ConvertWorld) {
     let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
     let process = defs.process.as_ref().expect("expected a process");
     assert_eq!(process.id, "hello_world");
 }
 
-#[then("the process name is \"hello-world\"")]
+#[then(r#"the process name is "hello-world""#)]
 fn then_process_name(world: &mut ConvertWorld) {
     let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
     let process = defs.process.as_ref().expect("expected a process");
@@ -32,7 +32,7 @@ fn then_process_type(world: &mut ConvertWorld) {
     assert_eq!(process.process_type, Some("Public".to_string()));
 }
 
-#[then("the process documentation is \"This is a hello world activity\"")]
+#[then(r#"the process documentation is "This is a hello world activity""#)]
 fn then_process_doc(world: &mut ConvertWorld) {
     let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
     let process = defs.process.as_ref().expect("expected a process");
@@ -43,14 +43,14 @@ fn then_process_doc(world: &mut ConvertWorld) {
     );
 }
 
-#[then("the definitions were exported by \"jBPM Process Modeler\" version \"2.0\"")]
+#[then(r#"the definitions were exported by "jBPM Process Modeler" version "2.0""#)]
 fn then_definitions_exporter(world: &mut ConvertWorld) {
     let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
     assert_eq!(defs.exporter, Some("jBPM Process Modeler".to_string()));
     assert_eq!(defs.exporter_version, Some("2.0".to_string()));
 }
 
-#[then("the definitions target namespace is \"http://www.omg.org/bpmn20\"")]
+#[then(r#"the definitions target namespace is "http://www.omg.org/bpmn20""#)]
 fn then_definitions_target_namespace(world: &mut ConvertWorld) {
     let defs = world.parsed_defs.as_ref().expect("expected parsed defs");
     assert_eq!(

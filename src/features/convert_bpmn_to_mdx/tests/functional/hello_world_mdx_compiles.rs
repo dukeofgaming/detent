@@ -45,7 +45,7 @@ fn given_hello_world_mdx(world: &mut ConvertWorld) {
     ];
 }
 
-#[then("the compiled task name is \"Hello World\"")]
+#[then(r#"the compiled task name is "Hello World""#)]
 fn then_task_name(world: &mut ConvertWorld) {
     let defs = world.compile_result.as_ref().expect("expected definitions");
     let process = defs.process.as_ref().expect("expected a process");
