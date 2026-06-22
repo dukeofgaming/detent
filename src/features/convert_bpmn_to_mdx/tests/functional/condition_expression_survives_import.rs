@@ -53,7 +53,7 @@ fn given_conditional_flow(world: &mut ConvertWorld) {
     });
 }
 
-#[then("the flow_1 MDX output contains the condition \"amount > 100\"")]
+#[then(r#"the flow_1 MDX output contains the condition "amount > 100""#)]
 fn then_condition_present(world: &mut ConvertWorld) {
     let outputs = world.import_outputs.as_ref().expect("expected import outputs");
     let flow = outputs
