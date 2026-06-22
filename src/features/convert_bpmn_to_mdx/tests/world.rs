@@ -4,60 +4,11 @@ use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 use detent::features::convert_bpmn_to_mdx::use_cases::import::MdxOutput;
 use std::path::PathBuf;
 
-#[path = "steps.rs"]
 mod steps;
-#[path = "functional/steps.rs"]
-mod functional_steps;
-
-#[path = "functional/scenarios/minimal_mdx_compiles_to_process.rs"]
-mod minimal_mdx_compiles_to_process;
-#[path = "functional/scenarios/empty_input_rejected.rs"]
-mod empty_input_rejected;
-#[path = "functional/scenarios/missing_type_rejected.rs"]
-mod missing_type_rejected;
-#[path = "functional/scenarios/dangling_flow_tolerated.rs"]
-mod dangling_flow_tolerated;
-#[path = "functional/scenarios/missing_frontmatter_rejected.rs"]
-mod missing_frontmatter_rejected;
-#[path = "functional/scenarios/unknown_type_rejected.rs"]
-mod unknown_type_rejected;
-#[path = "functional/scenarios/import_rejects_no_process.rs"]
-mod import_rejects_no_process;
-#[path = "functional/scenarios/import_filenames_match_ids.rs"]
-mod import_filenames_match_ids;
-#[path = "functional/scenarios/frontmatter_has_no_xml_artifacts.rs"]
-mod frontmatter_has_no_xml_artifacts;
-#[path = "functional/scenarios/hello_world_mdx_compiles.rs"]
-mod hello_world_mdx_compiles;
-#[path = "functional/scenarios/mdx_compiles_and_imports_back.rs"]
-mod mdx_compiles_and_imports_back;
-#[path = "functional/scenarios/full_process_with_gateways_compiles.rs"]
-mod full_process_with_gateways_compiles;
-#[path = "functional/scenarios/condition_expression_survives_import.rs"]
-mod condition_expression_survives_import;
-#[path = "functional/scenarios/bpmn_mdx_roundtrip.rs"]
-mod bpmn_mdx_roundtrip;
-#[path = "integration/scenarios/hello_world_imports_to_mdx.rs"]
-mod hello_world_imports_to_mdx;
-#[path = "integration/scenarios/hello_world_bpmn_metadata.rs"]
-mod hello_world_bpmn_metadata;
-#[path = "integration/scenarios/bpmn_parsing.rs"]
-mod bpmn_parsing;
-#[cfg(feature = "xsd-validation")]
-#[path = "integration/scenarios/bpmn_xsd_validation.rs"]
-mod bpmn_xsd_validation;
-#[path = "unit/scenarios/mdx_types.rs"]
-mod mdx_types;
-#[path = "unit/scenarios/bpmn_types.rs"]
-mod bpmn_types;
-#[path = "e2e/scenarios/cli_common.rs"]
-mod cli_common;
-#[path = "e2e/scenarios/cli_compile.rs"]
-mod cli_compile;
-#[path = "e2e/scenarios/cli_import.rs"]
-mod cli_import;
-#[path = "e2e/scenarios/cli_validate.rs"]
-mod cli_validate;
+mod functional;
+mod integration;
+mod unit;
+mod e2e;
 
 const HELLO_WORLD_ASSET_DIR: &str = "src/features/convert_bpmn_to_mdx/tests/assets/hello_world";
 

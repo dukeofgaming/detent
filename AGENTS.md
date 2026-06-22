@@ -9,7 +9,7 @@
 | **ADR-3** | accepted | Handcrafted BPMN types (not XSD codegen); types in feature slices under `src/features/` |
 | **ADR-4** | accepted | Use `folder.rs` by default; feature roots use `src/features/<feature>/mod.rs` so each slice stays self-contained |
 | **ADR-5** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` — not binding |
-| **ADR-6** | accepted | Tests live under `src/features/<feature>/tests/` and are discovered through stable root `tests/` harness files |
+| **ADR-6** | accepted | Tests live under `src/features/<feature>/tests/`; discovered through stable root `tests/` harness (`tests/feature_slices.rs`); zero `#[path]` inside slices; no `build.rs` generation |
 | **ADR-7** | accepted | Every file/directory name screams its single concern |
 | **ADR-8** | accepted | BDD per test level: `tests/world.rs`, optional `{level}/steps/` (only when level has shared steps), `{level}/scenarios/`, cross-level steps at slice-root `tests/steps/` |
 | **ADR-9** | accepted | Feature code organized as vertical slices under `src/features/<feature>/`; slices own code, tests, and fixtures; no cross-slice adapter imports |

@@ -2,44 +2,15 @@ use cucumber::{writer, StatsWriter as _, World, WriterExt as _};
 use detent::features::graph_validation::domain::workflow::Workflow;
 use std::collections::HashMap;
 
-#[path = "fixtures/linear_process.rs"]
 mod fixtures;
-#[path = "fixtures/branching_process.rs"]
-mod branching_fixture;
-#[path = "steps.rs"]
 mod steps;
-#[path = "functional/steps.rs"]
-mod functional_steps;
+mod functional;
+mod integration;
+mod unit;
 
-#[path = "functional/scenarios/well_formed_process_passes.rs"]
-mod well_formed_process_passes;
-#[path = "functional/scenarios/no_start_event_rejected.rs"]
-mod no_start_event_rejected;
-#[path = "functional/scenarios/no_end_event_rejected.rs"]
-mod no_end_event_rejected;
-#[path = "functional/scenarios/dangling_target_reported.rs"]
-mod dangling_target_reported;
-#[path = "functional/scenarios/duplicate_id_rejected.rs"]
-mod duplicate_id_rejected;
-#[path = "functional/scenarios/orphan_node_detected.rs"]
-mod orphan_node_detected;
-#[path = "functional/scenarios/dangling_source_reported.rs"]
-mod dangling_source_reported;
-#[path = "functional/scenarios/duplicate_flow_id_rejected.rs"]
-mod duplicate_flow_id_rejected;
-#[path = "functional/scenarios/dead_end_detected.rs"]
-mod dead_end_detected;
-#[path = "functional/scenarios/process_flow_analysis.rs"]
-mod process_flow_analysis;
-#[path = "functional/scenarios/branching_process_validated.rs"]
-mod branching_process_validated;
-#[path = "integration/scenarios/parametrized_fixture_validation.rs"]
-mod parametrized_fixture_validation;
-#[path = "unit/scenarios/graph_operations.rs"]
-mod graph_operations;
-
-pub(crate) use branching_fixture::branching_process;
-pub(crate) use fixtures::{linear_process, linear_process_with_retargeted_exit};
+pub(crate) use fixtures::branching_process;
+pub(crate) use fixtures::linear_process;
+pub(crate) use fixtures::linear_process_with_retargeted_exit;
 
 #[derive(Debug, Default)]
 pub struct FlowAnalysis {

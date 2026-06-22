@@ -17,9 +17,9 @@ fn given_fixture(world: &mut GraphValidationWorld, name: String) {
         "linear" => super::linear_process(),
         "branching" => super::branching_process(),
         "blog-post" => {
-            parse_fixture_to_workflow(include_str!("../../assets/blog_post/blog-post.bpmn2"))
+            parse_fixture_to_workflow(include_str!("../assets/blog_post/blog-post.bpmn2"))
         }
-        "tdd" => parse_fixture_to_workflow(include_str!("../../assets/tdd/tdd.bpmn2")),
+        "tdd" => parse_fixture_to_workflow(include_str!("../assets/tdd/tdd.bpmn2")),
         _ => panic!("unknown fixture: {}", name),
     };
     world.workflow = Some(workflow);

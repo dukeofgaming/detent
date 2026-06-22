@@ -42,34 +42,62 @@ slice; project-root `tests/` is only a Cargo discovery shim.
    Plain `#[test]` modules and the separate `feature_slices_cucumber` harness
    were removed.
 
-Current discovery (`build.rs`):
+Current discovery (explicit harness):
 
-- `src/features/*/tests/world.rs`
+- `tests/feature_slices.rs` declares each slice world module via `#[path]` and
+  one `#[test] fn` per slice that calls `run()`.
 
 Root entrypoint:
 
 - `tests/feature_slices.rs` → one async Cucumber runner per slice
+- No `build.rs` generation — harness is a regular source file visible to
+  all tools at edit time.
+
+### automod research
+
+`automod` (a proc-macro crate that scans directories at compile time to
+auto-generate `mod` declarations) was evaluated and rejected for test
+wiring. It adds a new dependency, introduces proc-macro expansion
+complexity, and does not integrate well with the `folder.rs` convention
+when scanning subdirectories of a module file. Standard `mod` declarations
+in a `{level}.rs` file are simpler and more explicit — one line per
+scenario module, zero tooling surprises.
 
 ## Decision
 
 Keep slice test **files and fixtures** under `src/features/<feature>/tests/`.
-Expose them to Cargo through a **single generated root harness** — not
-`#[cfg(test)] mod tests` in library code, and not per-slice `[[test]]` TOML entries.
+Expose them to Cargo through a **single explicit root harness** — not
+`#[cfg(test)] mod tests` in library code, not per-slice `[[test]]` TOML
+entries, and not a build-script-generated file.
 
 ```rust
 // tests/feature_slices.rs
-include!(concat!(env!("OUT_DIR"), "/feature_slices.rs"));
+#[path = "../src/features/convert_bpmn_to_mdx/tests/world.rs"]
+mod convert_bpmn_to_mdx;
+
+#[test]
+fn convert_bpmn_to_mdx() {
+    let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+    assert!(!rt.block_on(convert_bpmn_to_mdx::run()));
+}
 ```
 
-`build.rs` scans slice directories for `tests/world.rs` and emits `#[path = "..."] mod` wiring plus one `#[test]` function per slice that calls `run()`.
+`tests/feature_slices.rs` declares each slice module with one `#[path]`
+attribute pointing at the slice's `world.rs`. Inside the slice, all module
+resolution uses standard Rust `mod` declarations ([[ADR-4]] `folder.rs`
+pattern) — zero `#[path]` attributes inside slice-owned test code.
 
 Rules:
 
 - Slice tests: `src/features/<feature>/tests/{unit,functional,integration,e2e}/` (see [[ADR-8]])
 - Slice entrypoint: `src/features/<feature>/tests/world.rs`
+- Level modules: `{level}.rs` at `tests/` declares child scenario modules and `mod steps;` via standard Rust resolution
+- Scenario files live directly in `{level}/`, not in a `scenarios/` subdirectory ([[ADR-8]])
 - Slice fixtures: `src/features/<feature>/tests/assets/<scenario>/`
 - No `#[cfg(test)] mod tests` in production slice code unless testing private
   internals with no better seam
+- No `#[path]` attributes inside slice-owned test code — all module resolution
+  uses standard `mod` ([[ADR-4]] `folder.rs` pattern)
 - Slices duplicate fixtures where needed — no shared cross-slice test modules
 
 ### Options

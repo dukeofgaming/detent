@@ -3,9 +3,9 @@ use cucumber::{given, then, when};
 use super::ConvertWorld;
 
 const HELLO_WORLD_BPMN: &str =
-    include_str!("../../../assets/hello_world/hello-world.bpmn");
+    include_str!("../assets/hello_world/hello-world.bpmn");
 const HELLO_WORLD_BPMN2: &str =
-    include_str!("../../../assets/hello_world/hello-world.bpmn2");
+    include_str!("../assets/hello_world/hello-world.bpmn2");
 
 #[given(regex = r#"^hello-world BPMN content from "(hello-world\.bpmn|hello-world\.bpmn2)"$"#)]
 fn given_fixture(world: &mut ConvertWorld, name: String) {
