@@ -88,14 +88,14 @@ fn main() -> ExitCode {
 
     #[cfg(feature = "graph-validation")]
     {
-        return match cli.command {
+        match cli.command {
             Commands::Validate { files } => graph_validation::infrastructure::cli::validate::run(files),
             Commands::Import {
                 bpmn_file,
                 output_directory,
             } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
             Commands::Compile { files, output } => graph_validation::infrastructure::cli::compile::run(files, output),
-        };
+        }
     }
 
     #[cfg(not(feature = "graph-validation"))]

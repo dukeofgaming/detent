@@ -193,7 +193,7 @@ fn then_tdd_metadata(world: &mut ConvertWorld) {
     let ce = yes_flow.get("conditionExpression").expect("conditionExpression");
     let ce_map = ce.as_mapping().expect("mapping");
     let xsi_val = ce_map
-        .get(&serde_yaml::Value::String("type".to_string()))
+        .get(serde_yaml::Value::String("type".to_string()))
         .expect("type key");
     assert_eq!(xsi_val.as_str().unwrap(), "bpmn:tFormalExpression");
     assert!(yes_flow.get("@xsi:type").is_none());
