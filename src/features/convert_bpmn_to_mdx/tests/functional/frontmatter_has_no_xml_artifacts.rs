@@ -1,6 +1,6 @@
 use cucumber::then;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[then("no output contains '@' or '$text' in its frontmatter")]
 fn then_no_xml_artifacts(world: &mut ConvertWorld) {

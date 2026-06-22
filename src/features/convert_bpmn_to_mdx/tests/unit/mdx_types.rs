@@ -4,11 +4,11 @@ use cucumber::{given, then, when};
 use detent::features::convert_bpmn_to_mdx::adapters::bpmn::{SequenceFlow, StartEvent, Task};
 use detent::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given(regex = r#"^the hello-world MDX file "([^"]+)"$"#)]
 fn given_mdx_file(world: &mut ConvertWorld, filename: String) {
-    let content = fs::read_to_string(super::hello_world_asset_path(&filename))
+    let content = fs::read_to_string(super::super::hello_world_asset_path(&filename))
         .unwrap_or_else(|_| panic!("Failed to read {filename}"));
     world.mdx_inputs = vec![detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput {
         filename: filename.clone(),
@@ -181,7 +181,7 @@ fn given_all_mdx(world: &mut ConvertWorld) {
         "_4083739B-66F0-4B92-A348-A37DF3B29083.mdx",
         "_44A6FA69-CAAD-4DCE-BAE3-5F38D0A709FB.mdx",
     ] {
-        let content = fs::read_to_string(super::hello_world_asset_path(name))
+        let content = fs::read_to_string(super::super::hello_world_asset_path(name))
             .unwrap_or_else(|_| panic!("Failed to read {name}"));
         world.mdx_inputs.push(
             detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput {

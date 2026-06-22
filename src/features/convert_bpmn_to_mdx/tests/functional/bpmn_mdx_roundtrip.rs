@@ -11,11 +11,11 @@ use detent::features::convert_bpmn_to_mdx::use_cases::import::{
     import_to_mdx, MdxOutput,
 };
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 fn import_fixture(_world: &mut ConvertWorld, relative_path: &str) -> Vec<MdxOutput> {
     // Arrange
-    let xml = fs::read_to_string(super::fixture_path(relative_path)).expect("fixture must be readable");
+    let xml = fs::read_to_string(super::super::fixture_path(relative_path)).expect("fixture must be readable");
     // Act
     let definitions = parse_bpmn(&xml).expect("fixture BPMN must parse");
     // Act

@@ -1,6 +1,6 @@
 use cucumber::given;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("a BPMN definition with no process")]
 fn given_no_process(world: &mut ConvertWorld) {

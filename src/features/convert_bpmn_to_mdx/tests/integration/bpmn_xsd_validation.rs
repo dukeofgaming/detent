@@ -1,6 +1,6 @@
 use cucumber::{given, then, when};
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 const HELLO_WORLD_BPMN: &str =
     include_str!("../assets/hello_world/hello-world.bpmn");

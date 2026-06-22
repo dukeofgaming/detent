@@ -1,7 +1,7 @@
 use cucumber::{given, then};
 use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("an MDX input set with a service task, a script task, and an exclusive gateway")]
 fn given_rich_inputs(world: &mut ConvertWorld) {

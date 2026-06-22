@@ -1,7 +1,7 @@
 use cucumber::{given, then, when};
 use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("BPMN XML preserving user and manual tasks")]
 fn given_task_xml(world: &mut ConvertWorld) {

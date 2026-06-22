@@ -1,6 +1,6 @@
 use cucumber::given;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("no MDX inputs")]
 fn given_no_inputs(world: &mut ConvertWorld) {

@@ -3,7 +3,7 @@ use detent::features::convert_bpmn_to_mdx::adapters::bpmn::{
     Definitions, EndEvent, Process, SequenceFlow, StartEvent, Task,
 };
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("in-memory definitions with start, task, end, and two flows")]
 fn given_simple_defs(world: &mut ConvertWorld) {

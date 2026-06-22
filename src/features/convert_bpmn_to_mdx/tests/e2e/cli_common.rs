@@ -3,7 +3,7 @@ use std::fs;
 use cucumber::{given, then, when};
 use predicates::prelude::*;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 macro_rules! detent {
     () => {{

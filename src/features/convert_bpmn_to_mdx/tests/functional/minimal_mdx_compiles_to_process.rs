@@ -1,7 +1,7 @@
 use cucumber::{given, then};
 use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("a minimal MDX input set with start, task, end, and two flows")]
 fn given_minimal_inputs(world: &mut ConvertWorld) {

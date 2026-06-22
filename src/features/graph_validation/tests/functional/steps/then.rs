@@ -1,6 +1,6 @@
 use cucumber::then;
 
-use super::super::GraphValidationWorld;
+use super::super::super::GraphValidationWorld;
 
 // Used by: functional (8 validation scenarios)
 #[then(regex = r#"^validation fails reporting "([^"]+)"$"#)]

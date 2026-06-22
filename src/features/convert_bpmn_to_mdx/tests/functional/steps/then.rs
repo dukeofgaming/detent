@@ -1,6 +1,6 @@
 use cucumber::then;
 
-use super::super::ConvertWorld;
+use super::super::super::ConvertWorld;
 
 #[then("compilation fails")]
 fn then_compile_fails(world: &mut ConvertWorld) {

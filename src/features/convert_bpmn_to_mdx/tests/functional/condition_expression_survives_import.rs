@@ -3,7 +3,7 @@ use detent::features::convert_bpmn_to_mdx::adapters::bpmn::{
     ConditionExpression, Definitions, EndEvent, Process, SequenceFlow, StartEvent,
 };
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("in-memory definitions whose sequence flow carries a condition expression")]
 fn given_conditional_flow(world: &mut ConvertWorld) {

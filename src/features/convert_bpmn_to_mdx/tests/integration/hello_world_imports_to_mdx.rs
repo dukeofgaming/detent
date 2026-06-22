@@ -1,6 +1,6 @@
 use cucumber::{then, when};
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[when("I import it to MDX")]
 fn when_import(world: &mut ConvertWorld) {

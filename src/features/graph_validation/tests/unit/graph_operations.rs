@@ -1,11 +1,11 @@
 use cucumber::{given, then, when};
 use detent::features::graph_validation::domain::graph::Graph;
 
-use super::GraphValidationWorld;
+use super::super::GraphValidationWorld;
 
 #[given("a linear process graph")]
 fn given_linear_graph(world: &mut GraphValidationWorld) {
-    world.workflow = Some(super::linear_process());
+    world.workflow = Some(super::super::linear_process());
 }
 
 #[when(regex = r#"^I find node "([^"]+)"$"#)]

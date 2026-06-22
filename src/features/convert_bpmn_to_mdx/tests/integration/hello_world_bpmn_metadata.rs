@@ -1,6 +1,6 @@
 use cucumber::{then, when};
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[when("I parse the BPMN to definitions")]
 fn when_parse(world: &mut ConvertWorld) {

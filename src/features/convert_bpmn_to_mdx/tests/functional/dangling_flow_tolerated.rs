@@ -1,7 +1,7 @@
 use cucumber::{given, then};
 use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("an MDX input set where a sequence flow targets a non-existent node")]
 fn given_dangling_flow(world: &mut ConvertWorld) {

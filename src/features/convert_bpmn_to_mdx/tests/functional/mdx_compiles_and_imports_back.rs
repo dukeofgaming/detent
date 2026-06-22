@@ -1,6 +1,6 @@
 use cucumber::then;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[then(regex = r"^importing the compiled definitions produces (\d+) MDX outputs$")]
 fn then_roundtrip(world: &mut ConvertWorld, n: usize) {

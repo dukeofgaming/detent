@@ -2,11 +2,11 @@ use std::fs;
 
 use cucumber::{given, then, when};
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("the hello-world BPMN XML for flow node tests")]
 fn given_bpmn(world: &mut ConvertWorld) {
-    let xml = fs::read_to_string(super::hello_world_asset_path("hello-world.bpmn2"))
+    let xml = fs::read_to_string(super::super::hello_world_asset_path("hello-world.bpmn2"))
         .expect("Failed to read BPMN");
     world.bpmn_xml = Some(xml);
 }

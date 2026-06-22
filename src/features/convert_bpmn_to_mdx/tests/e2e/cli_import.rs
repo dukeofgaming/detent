@@ -3,7 +3,7 @@ use std::fs;
 use cucumber::{given, then, when};
 
 use super::cli_common::run_detent;
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 const EXPECTED_MDX_FILES: &[&str] = &[
     "hello_world.mdx",
@@ -26,17 +26,17 @@ fn extract_frontmatter(content: &str) -> Option<String> {
 
 #[given("hello-world BPMN file path")]
 fn given_bpmn_path(world: &mut ConvertWorld) {
-    world.e2e_output_file = Some(super::hello_world_asset_path("hello-world.bpmn2"));
+    world.e2e_output_file = Some(super::super::hello_world_asset_path("hello-world.bpmn2"));
 }
 
 #[given("tdd BPMN file path")]
 fn given_tdd_path(world: &mut ConvertWorld) {
-    world.e2e_output_file = Some(super::fixture_path("tdd/tdd.bpmn2"));
+    world.e2e_output_file = Some(super::super::fixture_path("tdd/tdd.bpmn2"));
 }
 
 #[when("I import hello-world BPMN to the temp output directory")]
 fn when_import_hello(world: &mut ConvertWorld) {
-    let bpmn = super::hello_world_asset_path("hello-world.bpmn2")
+    let bpmn = super::super::hello_world_asset_path("hello-world.bpmn2")
         .to_string_lossy()
         .into_owned();
     let out = world
@@ -53,7 +53,7 @@ fn when_import_hello(world: &mut ConvertWorld) {
 
 #[when("I import tdd BPMN to the temp output directory")]
 fn when_import_tdd(world: &mut ConvertWorld) {
-    let bpmn = super::fixture_path("tdd/tdd.bpmn2")
+    let bpmn = super::super::fixture_path("tdd/tdd.bpmn2")
         .to_string_lossy()
         .into_owned();
     let out = world
@@ -82,7 +82,7 @@ fn then_expected_files(world: &mut ConvertWorld) {
 #[then("imported hello-world frontmatter matches reference")]
 fn then_frontmatter_matches(world: &mut ConvertWorld) {
     let out = world.e2e_work_dir.as_ref().expect("temp workspace");
-    let reference_dir = super::hello_world_asset_dir();
+    let reference_dir = super::super::hello_world_asset_dir();
     for file_name in EXPECTED_MDX_FILES {
         let generated = fs::read_to_string(out.join(file_name)).expect("read generated");
         let reference = fs::read_to_string(reference_dir.join(file_name)).expect("read reference");

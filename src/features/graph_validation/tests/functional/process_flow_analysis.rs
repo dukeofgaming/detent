@@ -1,6 +1,6 @@
 use cucumber::then;
 
-use super::{analysis_of, FlowAnalysis, GraphValidationWorld};
+use super::super::{analysis_of, FlowAnalysis, GraphValidationWorld};
 
 fn analysis(world: &GraphValidationWorld) -> &FlowAnalysis {
     analysis_of(world)

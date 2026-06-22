@@ -1,7 +1,7 @@
 use cucumber::{given, when};
 
 use super::cli_common::run_detent;
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[when("I compile hello-world MDX to the output file")]
 fn when_compile_hello_world(world: &mut ConvertWorld) {
@@ -14,7 +14,7 @@ fn when_compile_hello_world(world: &mut ConvertWorld) {
         world,
         &[
             "compile",
-            &super::hello_world_asset_dir().to_string_lossy(),
+            &super::super::hello_world_asset_dir().to_string_lossy(),
             "--output",
             &out.to_string_lossy(),
         ],
@@ -28,7 +28,7 @@ fn when_compile_individual(world: &mut ConvertWorld) {
         .as_ref()
         .expect("output file")
         .clone();
-    let dir = super::hello_world_asset_dir();
+    let dir = super::super::hello_world_asset_dir();
     let mut args = vec!["compile".to_string()];
     for entry in std::fs::read_dir(&dir).expect("read dir") {
         let path = entry.expect("entry").path();

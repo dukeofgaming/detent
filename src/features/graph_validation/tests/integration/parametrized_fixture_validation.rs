@@ -3,7 +3,7 @@ use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 use detent::features::graph_validation::adapters::bpmn::to_workflow;
 use detent::features::graph_validation::domain::workflow::Workflow;
 
-use super::GraphValidationWorld;
+use super::super::GraphValidationWorld;
 
 fn parse_fixture_to_workflow(xml: &str) -> Workflow {
     let defs = parse_bpmn(xml).expect("fixture must parse");
@@ -14,8 +14,8 @@ fn parse_fixture_to_workflow(xml: &str) -> Workflow {
 #[given(regex = r"^the (linear|branching|blog-post|tdd) BPMN fixture$")]
 fn given_fixture(world: &mut GraphValidationWorld, name: String) {
     let workflow = match name.as_str() {
-        "linear" => super::linear_process(),
-        "branching" => super::branching_process(),
+        "linear" => super::super::linear_process(),
+        "branching" => super::super::branching_process(),
         "blog-post" => {
             parse_fixture_to_workflow(include_str!("../assets/blog_post/blog-post.bpmn2"))
         }

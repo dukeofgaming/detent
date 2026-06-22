@@ -1,7 +1,7 @@
 use cucumber::given;
 use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
 
-use super::ConvertWorld;
+use super::super::ConvertWorld;
 
 #[given("an MDX input with unknown element type")]
 fn given_unknown_type(world: &mut ConvertWorld) {
