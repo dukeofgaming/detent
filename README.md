@@ -100,6 +100,6 @@ detent compile flows/onboarding -o build/process.bpmn
 
 | Path | Layer | Description |
 |------|-------|-------------|
-| `src/features/convert_bpmn_to_mdx/` | Vertical slice (#3) | BPMN/MDX transpilation domain, adapters, use cases, tests |
+| `src/features/bpmn_mdx_transpiler/` | Vertical slice (#3) | BPMN/MDX transpilation domain, adapters, use cases, tests |
 | `src/features/graph_validation/` | Vertical slice (#4) | Additive graph-validation slice, isolated from #3 |
 | `tests/` | Fixtures | Asset fixtures only |

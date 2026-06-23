@@ -1,5 +1,5 @@
 use crate::features::graph_validation::domain::workflow::{Flow, Node, NodeType, Workflow};
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::Process;
+use crate::features::bpmn_mdx_transpiler::adapters::bpmn::Process;
 
 pub fn to_workflow(p: &Process) -> Workflow {
     let mut nodes = Vec::new();

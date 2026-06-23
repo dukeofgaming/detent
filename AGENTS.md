@@ -7,7 +7,7 @@
 | **ADR-1** | accepted | Shared IR (BPMN types) for bidirectional compile/import; round-trip integrity |
 | **ADR-2** | accepted | Dependencies must work in WASM targets; prefer serde, quick-xml, clap |
 | **ADR-3** | accepted | Handcrafted BPMN types (not XSD codegen); types in feature slices under `src/features/` |
-| **ADR-4** | accepted | Use `folder.rs` by default; feature roots use `src/features/<feature>/mod.rs` so each slice stays self-contained |
+| **ADR-4** | accepted | Use `folder.rs` style (`feature.rs` alongside `feature/`); no `mod.rs` module files |
 | **ADR-5** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` — not binding |
 | **ADR-6** | accepted | Tests live under `src/features/<feature>/tests/`; discovered through stable root `tests/` harness (`tests/feature_slices.rs`); zero `#[path]` inside slices; no `build.rs` generation |
 | **ADR-7** | accepted | Every file/directory name screams its single concern |

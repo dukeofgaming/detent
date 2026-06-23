@@ -1,5 +1,5 @@
 use cucumber::given;
-use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
+use detent::features::bpmn_mdx_transpiler::adapters::bpmn::parse_bpmn;
 use detent::features::graph_validation::adapters::bpmn::to_workflow;
 use detent::features::graph_validation::domain::workflow::Workflow;
 

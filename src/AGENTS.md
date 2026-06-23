@@ -7,7 +7,7 @@ Before any edit, verify against ALL active ADRs. Proposed ADRs are informational
 | **ADR-1** | accepted | Shared IR (BPMN types) for bidirectional compile/import; round-trip integrity |
 | **ADR-2** | accepted | Dependencies must work in WASM targets; prefer serde, quick-xml, clap |
 | **ADR-3** | accepted | Handcrafted BPMN types (not XSD codegen); types in feature slices under `src/features/` |
-| **ADR-4** | accepted | Use `folder.rs` by default; feature roots use `src/features/<feature>/mod.rs` so each slice stays self-contained |
+| **ADR-4** | accepted | Use `folder.rs` style (`feature.rs` alongside `feature/`); no `mod.rs` module files |
 | **ADR-5** | proposed | Clean Architecture: Domain/use-cases/adapters/infrastructure live inside feature slices under `src/features/` |
 | **ADR-6** | accepted | Slice tests stay under `src/features/<feature>/tests/` and are discovered through stable root `tests/` harness files |
 | **ADR-7** | accepted | Every file/directory name screams its single concern; avoid generic names like `utils/`, `common/`, `steps.rs` |

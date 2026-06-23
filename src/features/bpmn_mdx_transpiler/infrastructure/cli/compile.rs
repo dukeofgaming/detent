@@ -4,7 +4,6 @@ use std::process::ExitCode;
 
 use crate::features::bpmn_mdx_transpiler::adapters::bpmn::serialize_bpmn;
 use crate::features::bpmn_mdx_transpiler::application::compile::{compile_to_definitions, MdxInput};
-use crate::features::graph_validation::application::validate::validate_bpmn_definitions;
 
 pub fn run(mut files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
     if files.is_empty() {
@@ -100,11 +99,6 @@ pub fn run(mut files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
         }
     };
 
-    if let Err(errors) = validate_bpmn_definitions(&definitions) {
-        eprintln!("Compilation failed: Graph validation failed:\n{}", errors.join("\n"));
-        return ExitCode::FAILURE;
-    }
-
     let xml = match serialize_bpmn(&definitions) {
         Ok(xml) => xml,
         Err(e) => {
@@ -116,7 +110,7 @@ pub fn run(mut files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
     let output_path = output.unwrap_or_else(|| {
         let first = &files[0];
         if first.is_dir() {
-            let dir_name = if first.display().to_string() == "." {
+            let dir_name = if                 first.display().to_string() == "." {
                 std::env::current_dir()
                     .ok()
                     .and_then(|p| p.file_name().map(|n| n.to_os_string()))

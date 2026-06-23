@@ -1,5 +1,5 @@
 use crate::features::graph_validation::adapters::bpmn::to_workflow;
-use crate::features::convert_bpmn_to_mdx::adapters::bpmn::{Definitions, Process};
+use crate::features::bpmn_mdx_transpiler::adapters::bpmn::{Definitions, Process};
 use crate::features::graph_validation::domain::graph::Graph;
 
 pub fn validate_bpmn_process(process: &Process) -> Result<(), Vec<String>> {

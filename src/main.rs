@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use detent::features::convert_bpmn_to_mdx;
+use detent::features::bpmn_mdx_transpiler;
 #[cfg(feature = "graph-validation")]
 use detent::features::graph_validation;
 
@@ -93,18 +93,18 @@ fn main() -> ExitCode {
             Commands::Import {
                 bpmn_file,
                 output_directory,
-            } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
+            } => bpmn_mdx_transpiler::infrastructure::cli::import::run(bpmn_file, output_directory),
             Commands::Compile { files, output } => graph_validation::infrastructure::cli::compile::run(files, output),
         }
     }
 
     #[cfg(not(feature = "graph-validation"))]
     match cli.command {
-        Commands::Validate { files } => convert_bpmn_to_mdx::infrastructure::cli::validate::run(files),
+        Commands::Validate { files } => bpmn_mdx_transpiler::infrastructure::cli::validate::run(files),
         Commands::Import {
             bpmn_file,
             output_directory,
-        } => convert_bpmn_to_mdx::infrastructure::cli::import::run(bpmn_file, output_directory),
-        Commands::Compile { files, output } => convert_bpmn_to_mdx::infrastructure::cli::compile::run(files, output),
+        } => bpmn_mdx_transpiler::infrastructure::cli::import::run(bpmn_file, output_directory),
+        Commands::Compile { files, output } => bpmn_mdx_transpiler::infrastructure::cli::compile::run(files, output),
     }
 }
