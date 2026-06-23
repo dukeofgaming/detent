@@ -27,7 +27,8 @@
         "foam.foam-vscode",
         "denoland.vscode-deno",
         "CucumberOpen.cucumber-official",
-        "SonarSource.sonarlint-vscode"
+        "SonarSource.sonarlint-vscode",
+        "redhat.vscode-extension-bpmn-editor"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
