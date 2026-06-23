@@ -1,0 +1,43 @@
+{
+  "name": "detent",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers-community/features/deno:1": {}
+  },
+  "runArgs": [
+    "-u", "root",
+    "-v",
+    "/var/run/docker.sock:/var/run/docker.sock",
+    "-v",
+    "${localEnv:HOME}/.config/opencode:/home/vscode/.config/opencode:ro"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode",
+        "fill-labs.dependi",
+        "unifiedjs.vscode-mdx",
+        "sst-dev.opencode",
+        "foam.foam-vscode",
+        "denoland.vscode-deno",
+        "CucumberOpen.cucumber-official",
+        "SonarSource.sonarlint-vscode",
+        "redhat.vscode-extension-bpmn-editor"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+        "rust-analyzer.check.command": "clippy"
+      }
+    }
+  },
+  "postCreateCommand": "mkdir -p /workspaces/detent/target /workspaces/detent/artifacts && cargo fetch && cargo check",
+  "postStartCommand": "sudo -u vscode npm install -g @devcontainers/cli",
+  "remoteUser": "vscode"
+}

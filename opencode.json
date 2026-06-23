@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "commit": {
+      "description": "Review changes and create atomic commits",
+      "template": "Use the atomic-commit-assistant skill. Review staged and unstaged changes, identify the next atomic commit, run relevant tests when present, and always confirm with the developer before each commit. If the staged changes are mixed, propose multiple commits and ask which one to do first. Never modify project code, configuration, prompts, or documentation while invoking this command."
+    }
+  },
+  "plugin": [
+    "opencode-devcontainers"
+  ]
+}

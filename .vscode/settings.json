@@ -1,0 +1,10 @@
+{
+  "task.allowAutomaticTasks": "on",
+  "rust-analyzer.cargo.allTargets": true,
+  "cucumber.features": [
+    "src/features/**/tests/**/*.feature"
+  ],
+  "cucumber.glue": [
+    "src/features/**/tests/**/*.rs"
+  ]
+}
