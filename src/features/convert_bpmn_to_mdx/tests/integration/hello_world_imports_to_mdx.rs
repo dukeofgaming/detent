@@ -7,7 +7,7 @@ fn when_import(world: &mut ConvertWorld) {
     let xml = world.bpmn_xml.as_ref().expect("bpmn_xml must be set");
     let defs = detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn(xml)
         .expect("parse_bpmn failed");
-    let outputs = detent::features::convert_bpmn_to_mdx::use_cases::import::import_to_mdx(&defs)
+    let outputs = detent::features::convert_bpmn_to_mdx::application::import::import_to_mdx(&defs)
         .expect("import_to_mdx failed");
     world.import_outputs = Some(outputs);
 }

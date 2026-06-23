@@ -1,5 +1,5 @@
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
-use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
+use crate::features::graph_validation::application::validate::validate_bpmn_definitions;
 
 use super::schema_validator::SchemaValidator;
 

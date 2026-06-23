@@ -1,5 +1,5 @@
 use cucumber::{given, then};
-use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
+use detent::features::convert_bpmn_to_mdx::application::compile::MdxInput;
 use std::fs;
 
 use super::super::ConvertWorld;

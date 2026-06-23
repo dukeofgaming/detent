@@ -1,7 +1,7 @@
 use cucumber::{writer, StatsWriter as _, World, WriterExt as _};
 use detent::features::convert_bpmn_to_mdx::adapters::bpmn::Definitions;
-use detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput;
-use detent::features::convert_bpmn_to_mdx::use_cases::import::MdxOutput;
+use detent::features::convert_bpmn_to_mdx::application::compile::MdxInput;
+use detent::features::convert_bpmn_to_mdx::application::import::MdxOutput;
 use std::path::PathBuf;
 
 mod steps;

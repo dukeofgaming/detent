@@ -4,10 +4,10 @@ use std::fs;
 use cucumber::{given, then, when};
 use detent::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 use detent::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
-use detent::features::convert_bpmn_to_mdx::use_cases::compile::{
+use detent::features::convert_bpmn_to_mdx::application::compile::{
     compile_to_definitions, MdxInput,
 };
-use detent::features::convert_bpmn_to_mdx::use_cases::import::{
+use detent::features::convert_bpmn_to_mdx::application::import::{
     import_to_mdx, MdxOutput,
 };
 

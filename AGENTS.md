@@ -18,7 +18,7 @@
 ## Architecture
 
 - `src/` contains only the CLI entry point (`main.rs`), crate root (`lib.rs`), `features/`, and runtime assets under `src/assets/` (BPMN XSD schemas for optional `xsd-validation`; not codegen source of truth per [[ADR-3]]).
-- Feature-layer code lives under `src/features/<feature>/` as vertical slices ([[ADR-9]]), each using up to four layer folders/files: domain, use_cases, adapters, infrastructure. Compatibility shims under `src/` must not become the primary implementation home.
+- Feature-layer code lives under `src/features/<feature>/` as vertical slices ([[ADR-9]]), each using up to four layer folders/files: domain, application, adapters, infrastructure. Compatibility shims under `src/` must not become the primary implementation home.
 
 ## Coding Mandates
 

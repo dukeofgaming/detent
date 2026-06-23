@@ -7,10 +7,10 @@ use crate::features::convert_bpmn_to_mdx::adapters::bpmn::parse_bpmn;
 #[cfg(feature = "xsd-validation")]
 use crate::features::convert_bpmn_to_mdx::infrastructure::validate_bpmn_xsd;
 use crate::features::convert_bpmn_to_mdx::adapters::mdx::MdxFile;
-use crate::features::graph_validation::use_cases::schema_validator::NoopSchemaValidator;
+use crate::features::graph_validation::application::schema_validator::NoopSchemaValidator;
 #[cfg(feature = "xsd-validation")]
-use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
-use crate::features::graph_validation::use_cases::validate_workflow;
+use crate::features::graph_validation::application::validate::validate_bpmn_definitions;
+use crate::features::graph_validation::application::validate_workflow;
 
 pub fn run(files: Vec<PathBuf>) -> ExitCode {
     let mut has_errors = false;

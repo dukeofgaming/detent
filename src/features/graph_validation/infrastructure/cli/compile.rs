@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use crate::features::convert_bpmn_to_mdx::adapters::bpmn::serialize_bpmn;
-use crate::features::convert_bpmn_to_mdx::use_cases::compile::{compile_to_definitions, MdxInput};
-use crate::features::graph_validation::use_cases::validate::validate_bpmn_definitions;
+use crate::features::convert_bpmn_to_mdx::application::compile::{compile_to_definitions, MdxInput};
+use crate::features::graph_validation::application::validate::validate_bpmn_definitions;
 
 pub fn run(mut files: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
     if files.is_empty() {

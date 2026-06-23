@@ -10,7 +10,7 @@ use super::super::ConvertWorld;
 fn given_mdx_file(world: &mut ConvertWorld, filename: String) {
     let content = fs::read_to_string(super::super::hello_world_asset_path(&filename))
         .unwrap_or_else(|_| panic!("Failed to read {filename}"));
-    world.mdx_inputs = vec![detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput {
+    world.mdx_inputs = vec![detent::features::convert_bpmn_to_mdx::application::compile::MdxInput {
         filename: filename.clone(),
         content,
     }];
@@ -184,7 +184,7 @@ fn given_all_mdx(world: &mut ConvertWorld) {
         let content = fs::read_to_string(super::super::hello_world_asset_path(name))
             .unwrap_or_else(|_| panic!("Failed to read {name}"));
         world.mdx_inputs.push(
-            detent::features::convert_bpmn_to_mdx::use_cases::compile::MdxInput {
+            detent::features::convert_bpmn_to_mdx::application::compile::MdxInput {
                 filename: name.to_string(),
                 content,
             },
