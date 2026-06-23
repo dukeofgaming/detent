@@ -116,6 +116,11 @@ Feature: Convert BPMN to MDX e2e tests
     Then the command succeeds
     And roundtrip BPMN contains tdd task ids
 
+  Scenario: Import blog-post BPMN
+    Given a fresh temp workspace
+    When I import blog-post BPMN to the temp output directory
+    Then the command succeeds
+
   Scenario: Import missing BPMN file
     When I run detent with args "import nonexistent.bpmn"
     Then the command fails
@@ -132,6 +137,12 @@ Feature: Convert BPMN to MDX e2e tests
 
   Scenario: Validate BPMN file
     Given hello-world BPMN file path
+    When I validate the prepared file with detent
+    Then the command succeeds
+    And stdout contains "✓"
+
+  Scenario: Validate blog-post BPMN file
+    Given blog-post BPMN file path
     When I validate the prepared file with detent
     Then the command succeeds
     And stdout contains "✓"

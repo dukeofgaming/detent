@@ -28,6 +28,37 @@ pub(crate) fn fixture_path(relative_path: &str) -> PathBuf {
         .join(relative_path)
 }
 
+macro_rules! detent {
+    () => {{
+        assert_cmd::Command::new(env!("CARGO_BIN_EXE_detent"))
+    }};
+}
+
+pub(crate) fn run_detent(world: &mut ConvertWorld, args: &[&str]) {
+    let mut cmd = detent!();
+    if let Some(dir) = &world.e2e_work_dir {
+        cmd.current_dir(dir);
+    }
+    for arg in args {
+        if arg.starts_with('@') || arg.starts_with('#') {
+            cmd.arg(world.e2e_output_file.as_ref().expect("output file path"));
+        } else {
+            cmd.arg(arg);
+        }
+    }
+    let output = cmd.output().expect("detent command failed");
+    world.e2e_last_success = output.status.success();
+    world.e2e_last_stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    world.e2e_last_stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+}
+
+pub(crate) fn write_temp_mdx(world: &mut ConvertWorld, name: &str, content: &str) {
+    let base = world.e2e_work_dir.as_ref().expect("temp workspace");
+    let path = base.join(name);
+    std::fs::write(&path, content).expect("write mdx");
+    world.e2e_output_file = Some(path);
+}
+
 #[derive(Debug, Default, World)]
 pub struct ConvertWorld {
     pub bpmn_xml: Option<String>,

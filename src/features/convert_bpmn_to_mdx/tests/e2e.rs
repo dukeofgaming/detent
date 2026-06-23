@@ -1,5 +1,13 @@
-
-mod cli_common;
-mod cli_compile;
-mod cli_import;
-mod cli_validate;
+mod steps;
+mod dangling_flow_compile;
+mod import_blog_post;
+mod validate_bpmn_file;
+mod validate_blog_post;
+mod validate_dangling_tolerated;
+mod validate_exclusive_gateway;
+mod validate_parallel_gateway;
+mod validate_service_task;
+mod validate_script_task;
+mod validate_manual_task;
+mod validate_user_task;
+mod validate_gateway_without_id;

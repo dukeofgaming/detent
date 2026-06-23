@@ -1,9 +1,9 @@
 use std::fs;
 
-use cucumber::{given, then, when};
+use cucumber::then;
+use predicates::prelude::*;
 
-use super::cli_common::run_detent;
-use super::super::ConvertWorld;
+use super::super::super::ConvertWorld;
 
 const EXPECTED_MDX_FILES: &[&str] = &[
     "hello_world.mdx",
@@ -24,47 +24,88 @@ fn extract_frontmatter(content: &str) -> Option<String> {
     Some(rest[..end_pos].trim().to_string())
 }
 
-#[given("hello-world BPMN file path")]
-fn given_bpmn_path(world: &mut ConvertWorld) {
-    world.e2e_output_file = Some(super::super::hello_world_asset_path("hello-world.bpmn2"));
-}
-
-#[given("tdd BPMN file path")]
-fn given_tdd_path(world: &mut ConvertWorld) {
-    world.e2e_output_file = Some(super::super::fixture_path("tdd/tdd.bpmn2"));
-}
-
-#[when("I import hello-world BPMN to the temp output directory")]
-fn when_import_hello(world: &mut ConvertWorld) {
-    let bpmn = super::super::hello_world_asset_path("hello-world.bpmn2")
-        .to_string_lossy()
-        .into_owned();
-    let out = world
-        .e2e_work_dir
-        .as_ref()
-        .expect("temp workspace")
-        .to_string_lossy()
-        .into_owned();
-    run_detent(
-        world,
-        &["import", &bpmn, "--output-directory", &out],
+#[then("the command succeeds")]
+fn then_success(world: &mut ConvertWorld) {
+    assert!(
+        world.e2e_last_success,
+        "expected success; stderr={} stdout={}",
+        world.e2e_last_stderr, world.e2e_last_stdout
     );
 }
 
-#[when("I import tdd BPMN to the temp output directory")]
-fn when_import_tdd(world: &mut ConvertWorld) {
-    let bpmn = super::super::fixture_path("tdd/tdd.bpmn2")
-        .to_string_lossy()
-        .into_owned();
-    let out = world
+#[then("the command fails")]
+fn then_failure(world: &mut ConvertWorld) {
+    assert!(
+        !world.e2e_last_success,
+        "expected failure; stdout={}",
+        world.e2e_last_stdout
+    );
+}
+
+#[then(regex = r#"^stdout contains "(.*)"$"#)]
+fn then_stdout_contains(world: &mut ConvertWorld, snippet: String) {
+    assert!(
+        predicate::str::contains(&snippet).eval(&world.e2e_last_stdout),
+        "stdout {:?} missing {:?}",
+        world.e2e_last_stdout,
+        snippet
+    );
+}
+
+#[then(regex = r#"^stderr contains "(.*)"$"#)]
+fn then_stderr_contains(world: &mut ConvertWorld, snippet: String) {
+    assert!(
+        predicate::str::contains(&snippet).eval(&world.e2e_last_stderr),
+        "stderr {:?} missing {:?}",
+        world.e2e_last_stderr,
+        snippet
+    );
+}
+
+#[then(regex = r#"^the file "([^"]+)" exists in the temp workspace$"#)]
+fn then_file_exists(world: &mut ConvertWorld, name: String) {
+    let path = world
         .e2e_work_dir
         .as_ref()
         .expect("temp workspace")
-        .to_string_lossy()
-        .into_owned();
-    run_detent(
-        world,
-        &["import", &bpmn, "--output-directory", &out],
+        .join(name);
+    assert!(path.exists(), "expected {} to exist", path.display());
+}
+
+#[then(regex = r#"^the file "([^"]+)" does not exist in the temp workspace$"#)]
+fn then_file_missing(world: &mut ConvertWorld, name: String) {
+    let path = world
+        .e2e_work_dir
+        .as_ref()
+        .expect("temp workspace")
+        .join(name);
+    assert!(!path.exists(), "expected {} to be absent", path.display());
+}
+
+#[then(regex = r#"^the file "([^"]+)" contains "(.*)"$"#)]
+fn then_file_contains(world: &mut ConvertWorld, name: String, snippet: String) {
+    let path = world
+        .e2e_work_dir
+        .as_ref()
+        .expect("temp workspace")
+        .join(name);
+    let content = fs::read_to_string(&path).expect("read file");
+    assert!(content.contains(&snippet), "missing {snippet} in {content}");
+}
+
+#[then("the dangling target id appears in compiled output")]
+fn then_dangling_target(world: &mut ConvertWorld) {
+    let content = world.e2e_file_content.as_ref().expect("output content");
+    assert!(content.contains("ghost_task"));
+}
+
+#[then(regex = r#"^stdout contains "✓" (\d+) times$"#)]
+fn then_checkmark_count(world: &mut ConvertWorld, count: usize) {
+    assert_eq!(
+        world.e2e_last_stdout.matches('✓').count(),
+        count,
+        "stdout={}",
+        world.e2e_last_stdout
     );
 }
 
@@ -82,7 +123,7 @@ fn then_expected_files(world: &mut ConvertWorld) {
 #[then("imported hello-world frontmatter matches reference")]
 fn then_frontmatter_matches(world: &mut ConvertWorld) {
     let out = world.e2e_work_dir.as_ref().expect("temp workspace");
-    let reference_dir = super::super::hello_world_asset_dir();
+    let reference_dir = super::super::super::hello_world_asset_dir();
     for file_name in EXPECTED_MDX_FILES {
         let generated = fs::read_to_string(out.join(file_name)).expect("read generated");
         let reference = fs::read_to_string(reference_dir.join(file_name)).expect("read reference");
@@ -98,23 +139,6 @@ fn then_frontmatter_matches(world: &mut ConvertWorld) {
         }
         assert_eq!(gen_yaml, ref_yaml, "Frontmatter mismatch for {file_name}");
     }
-}
-
-#[when("I compile the imported tdd MDX to BPMN in the temp workspace")]
-fn when_compile_tdd(world: &mut ConvertWorld) {
-    let out = world
-        .e2e_work_dir
-        .as_ref()
-        .expect("temp workspace")
-        .to_path_buf();
-    let output_file = out.join("roundtrip.bpmn");
-    world.e2e_output_file = Some(output_file.clone());
-    let out_s = out.to_string_lossy().into_owned();
-    let output_s = output_file.to_string_lossy().into_owned();
-    run_detent(
-        world,
-        &["compile", &out_s, "--output", &output_s],
-    );
 }
 
 #[then("roundtrip BPMN contains tdd task ids")]
